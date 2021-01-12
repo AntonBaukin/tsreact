@@ -19,7 +19,8 @@ module.exports = (env, args) => {
       rules
     },
     output: {
-      path: paths.output
+      path: paths.output,
+      filename: '[name].[contenthash].js',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json']
