@@ -1,15 +1,7 @@
-const WebpackCopy = require('copy-webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const copy = require('./copy')
+const check = require('./check')
 
-module.exports = ({ mode, paths }) => [
-	new WebpackCopy({
-		patterns: [
-			{
-				from: paths.public
-			}
-		]
-	}),
-	new ForkTsCheckerWebpackPlugin({
-		async: false
-	})
+module.exports = (vars) => [
+	...copy(vars),
+	...check(vars),
 ]
