@@ -13,9 +13,11 @@ const useCss = (paths) => [
 	{
 		loader: 'css-loader',
 		options: {
-			modules: true,
 			sourceMap: true,
-			importLoaders: 1
+			importLoaders: 1,
+			modules: {
+				localIdentName: '[local]-[hash:base64:8]'
+			}
 		}
 	},
 	{
