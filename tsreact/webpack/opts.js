@@ -38,7 +38,7 @@ module.exports = ({ mode }) => ({
 				minChunks: 2,
 				priority: -20,
 				reuseExistingChunk: true
-			}
+			},
 		}
 	}
 })

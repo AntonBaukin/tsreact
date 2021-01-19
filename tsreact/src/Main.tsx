@@ -1,5 +1,7 @@
+import Hello from './Hello'
+
 const Main = () => (
-	<h1>Hello, World!</h1>
+	<Hello />
 )
 
 export default Main

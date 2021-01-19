@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$/index" />
     <content url="file://$MODULE_DIR$/public" />
     <content url="file://$MODULE_DIR$/src" />
+    <content url="file://$MODULE_DIR$/styles" />
     <content url="file://$MODULE_DIR$/webpack" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

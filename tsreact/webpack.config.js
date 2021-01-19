@@ -4,11 +4,10 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 module.exports = (env, args) => {
   const mode = require('./webpack/mode')({ env, args })
   const paths = require('./webpack/paths')({ mode })
-  const rules = require('./webpack/rules')({ mode })
+  const rules = require('./webpack/rules')({ paths })
   const plugins = require('./webpack/plugins')({ mode, paths })
   const optimization = require('./webpack/opts')({ mode })
   const devServer = require('./webpack/server')()
-  const isdev = mode === 'development'
 
   return {
     mode,
@@ -22,12 +21,17 @@ module.exports = (env, args) => {
       path: paths.output,
       filename: '[name].[contenthash].js',
     },
-    resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.json']
-    },
     entry: {
-      main: paths.main.entry
+      main: paths.main.entry,
+      styles: paths.styles.entry,
     },
-    devtool: isdev ? 'source-map' : false,
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.json'],
+      modules: [ paths.modules ],
+      alias: {
+        src: paths.main.sources
+      }
+    },
+    devtool: 'source-map',
   }
 }

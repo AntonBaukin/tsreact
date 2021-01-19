@@ -3,7 +3,6 @@
     "noEmit": true,
     "module": "es6",
     "target": "es5",
-    "outDir": "./build/",
     "jsx": "react-jsxdev",
     "allowJs": true,
     "strict": true,
