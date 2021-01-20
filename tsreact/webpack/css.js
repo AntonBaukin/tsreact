@@ -1,11 +1,21 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const jsonImporter = require('node-sass-json-importer')()
 
 const cssPlugins = ({ paths }) => [
 	new MiniCssExtractPlugin({
 		filename: path.join(paths.styles.output, '[name].[contenthash].css')
 	})
 ]
+
+const DEFAULT_MODULE_IMPORT = '@import "default.module.scss"; \n'
+
+const defaultScssImports = (content, loaderContext) => {
+	const { resourcePath } = loaderContext
+	return resourcePath.endsWith('.module.scss')
+		? DEFAULT_MODULE_IMPORT.concat(content)
+		: content
+}
 
 const useCss = (paths) => [
 	{
@@ -39,7 +49,9 @@ const useCss = (paths) => [
 		loader: 'sass-loader',
 		options: {
 			sourceMap: true,
+			additionalData: defaultScssImports,
 			sassOptions: {
+				importer: jsonImporter,
 				includePaths: [
 					paths.styles.sources
 				]

@@ -1,23 +1,4 @@
-.roboto {
-  font-family: 'Roboto', sans-serif;
-}
-
-.tahoma {
-  font-family: 'Tahoma', sans-serif;
-}
-
-.verdana {
-  font-family: 'Verdana', sans-serif;
-}
-
-div {
-  padding: 0 1em;
-}
-
-p.verdana {
-  max-width: 40em;
-  text-align: justify;
-  hyphens: auto;
-  line-height: 1.44;
-  padding: 0 1em;
+.heading {
+  font-family: $fontFamilyForCaptions;
+  font-size: $fontSizeBase * 1.44;
 }
