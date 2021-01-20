@@ -1,8 +1,9 @@
+const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
-const cssPlugins = () => [
+const cssPlugins = ({ paths }) => [
 	new MiniCssExtractPlugin({
-		filename: '[name].[contenthash].css'
+		filename: path.join(paths.styles.output, '[name].[contenthash].css')
 	})
 ]
 
@@ -29,7 +30,10 @@ const useCss = (paths) => [
 		}
 	},
 	{
-		loader: 'resolve-url-loader'
+		loader: 'resolve-url-loader',
+		options: {
+			sourceMap: true,
+		}
 	},
 	{
 		loader: 'sass-loader',

@@ -1,5 +1,4 @@
-const WebpackCopy = require('copy-webpack-plugin')
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const path = require('path')
 
 module.exports = (env, args) => {
   const mode = require('./webpack/mode')({ env, args })
@@ -19,7 +18,7 @@ module.exports = (env, args) => {
     },
     output: {
       path: paths.output,
-      filename: '[name].[contenthash].js',
+      filename: path.join(paths.main.output, '[name].[contenthash].js')
     },
     entry: {
       main: paths.main.entry,

@@ -10,11 +10,15 @@ module.exports = () => ({
 		sources: path.resolve(base, 'src'),
 		entry: path.resolve(index, 'main.tsx'),
 		html: path.resolve(index, 'index.html'),
-		output: 'scripts',
+		output: 'scripts'
 	},
 	styles: {
 		sources: path.resolve(base, 'styles'),
 		entry: path.resolve(index, 'styles.js'),
-		output: 'styles',
+		output: 'styles'
+	},
+	fonts: {
+		output: 'fonts',
+		public: '../fonts'
 	}
 })
