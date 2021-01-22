@@ -1,4 +1,5 @@
-import Hello from './Hello'
+import Hello from 'src/Hello'
+import './styles.scss'
 
 const Main = () => (
 	<Hello />

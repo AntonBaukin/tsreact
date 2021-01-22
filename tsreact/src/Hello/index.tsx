@@ -1,16 +1,18 @@
-import fonts from 'styles/fonts.json'
+import classNames from 'classnames'
 import styles from './styles.module.scss'
 
-const style = {
-	fontSize: fonts.fontSizeBase
-}
-
 const Hello = () => (
-	<div
-		className={styles.heading}
-		style={style}
-	>
-		Hello, World!
+	<div className={classNames('container', styles.container)}>
+		<div className="card">
+			<div className="card-header">
+				<span className={classNames('card-title', styles.heading)}>
+					Hello, World!
+				</span>
+			</div>
+			<div className="card-body">
+				So, Bootstrap was added...
+			</div>
+		</div>
 	</div>
 )
 

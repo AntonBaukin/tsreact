@@ -1,0 +1,57 @@
+//
+// Variables defined for entire application and Bootstrap.
+//
+@import "fonts.json";
+@import "measures.json";
+
+//
+// Breakpoints & Grid System & Containers
+//
+
+$xs-max: $screenWidthPhone - 0.02px;
+$sm-min: $screenWidthPhone;
+$sm-max: $screenWidthTablet - 0.02px;
+$md-min: $screenWidthTablet;
+$md-max: $screenWidthDesktop - 0.02px;
+$lg-min: $screenWidthDesktop;
+$lg-max: $screenWidthWideDesktop - 0.02px;
+$xl-min: $screenWidthWideDesktop;
+$xl-max: $screenWidthHugeDesktop - 0.02px;
+$xxl-min: $screenWidthHugeDesktop;
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: $sm-min,
+  md: $md-min,
+  lg: $lg-min,
+  xl: $xl-min,
+  xxl: $xxl-min,
+);
+
+$container-max-widths: (
+  sm: $sm-min - 20px,
+  md: $md-min - 30px,
+  lg: $lg-min - 40px,
+  xl: $xl-min - 60px,
+  xxl: $xxl-min - 80px
+);
+
+//
+// Fonts
+//
+
+$font-family-sans-serif: $fontFamilyForCaptions;
+$font-family-base: $font-family-sans-serif;
+
+$font-size-base: $fontSizeBase;
+$font-weight-base: $fontWeightNormal;
+
+$font-weight-lighter: $fontWeightThin;
+$font-weight-light: $fontWeightLight;
+$font-weight-normal: $fontWeightNormal;
+$font-weight-bolder: $fontWeightBolder;
+$font-weight-bold: $fontWeightBold;
+
+$headings-font-weight: $font-weight-normal;
+$display-font-weight: $font-weight-light;
+$lead-font-weight: $font-weight-light;

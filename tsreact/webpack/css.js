@@ -27,7 +27,8 @@ const useCss = (paths) => [
 			sourceMap: true,
 			importLoaders: 1,
 			modules: {
-				localIdentName: '[local]-[hash:base64:8]'
+				localIdentName: '[local]-[hash:base64:4]',
+				auto: (resourcePath) => resourcePath.endsWith('.module.scss'),
 			}
 		}
 	},

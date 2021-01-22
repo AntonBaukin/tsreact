@@ -1,1 +1,6 @@
-@import "fonts.json";
+//
+// Global variables plus privately used by the application.
+// We place them in separated file not to rebuild Bootstrap
+// (and other SCSS libraries) on each update.
+//
+@import "globals";

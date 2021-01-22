@@ -1,4 +1,7 @@
+.container {
+  margin-top: 1.25em;
+}
+
 .heading {
-  font-family: $fontFamilyForCaptions;
-  font-size: $fontSizeBase * 1.44;
+  user-select: none;
 }
