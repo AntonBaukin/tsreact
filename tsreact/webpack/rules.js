@@ -1,4 +1,5 @@
 const { useCss } = require('./css')
+const { useFontsLoader } = require('./fonts')
 
 module.exports = ({ paths }) => [
 	{
@@ -17,13 +18,6 @@ module.exports = ({ paths }) => [
 	},
 	{
 		test: /\.woff2$/,
-		use: {
-			loader: 'file-loader',
-			options: {
-				name: '[name].[ext]',
-				outputPath: paths.fonts.output,
-				publicPath: paths.fonts.public
-			}
-		}
+		use: useFontsLoader(paths)
 	},
 ]

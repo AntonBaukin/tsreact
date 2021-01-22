@@ -28,7 +28,8 @@ module.exports = (env, args) => {
       extensions: ['.ts', '.tsx', '.js', '.json'],
       modules: [ paths.modules ],
       alias: {
-        src: paths.main.sources
+        src: paths.main.sources,
+        styles: paths.styles.sources
       }
     },
     devtool: 'source-map',

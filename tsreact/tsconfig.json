@@ -15,9 +15,10 @@
     "moduleResolution": "node",
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [
-      "./styles",
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./styles", "./node_modules/@types"],
+    "paths": {
+      "src/*": ["src/*"],
+      "styles/*": ["styles/*"],
+    }
   }
 }
