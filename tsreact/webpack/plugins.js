@@ -3,6 +3,7 @@ const copy = require('./copy')
 const check = require('./check')
 const html = require('./html')
 const { cssPlugins } = require('./css')
+const { iconsSpritePlugins } = require('./icons')
 
 module.exports = (vars) => [
 	...clean(vars),
@@ -10,4 +11,5 @@ module.exports = (vars) => [
 	...copy(vars),
 	...html(vars),
 	...cssPlugins(vars),
+	...iconsSpritePlugins(vars),
 ]

@@ -1,16 +1,21 @@
 import classNames from 'classnames'
+import Icon from 'src/components/Icon'
 import styles from './styles.module.scss'
 
 const Hello = () => (
 	<div className={classNames('container', styles.container)}>
 		<div className="card">
-			<div className="card-header">
+			<div className="card-header h5">
 				<span className={classNames('card-title', styles.heading)}>
-					Hello, World!
+					<span className={styles.icon}>
+						<Icon name="alarm" />
+					</span>
+					<span>Hello, World!</span>
 				</span>
 			</div>
 			<div className="card-body">
-				So, Bootstrap was added...
+				<div>So, Bootstrap was added...</div>
+				<div>And Bootstrap Icons either! </div>
 			</div>
 		</div>
 	</div>

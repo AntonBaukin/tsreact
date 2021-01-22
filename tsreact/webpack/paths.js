@@ -1,5 +1,6 @@
 const path = require('path')
 const base = path.join(__dirname, '..')
+const modules = path.join(base, 'node_modules')
 const index = path.join(base, 'index')
 
 module.exports = () => ({
@@ -20,5 +21,9 @@ module.exports = () => ({
 	fonts: {
 		output: 'fonts',
 		public: '../fonts'
+	},
+	icons: {
+		bootstrap: path.resolve(modules, 'bootstrap-icons', 'icons'),
+		spriteFile: path.join('images', 'icons.svg')
 	}
 })

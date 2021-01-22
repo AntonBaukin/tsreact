@@ -5,3 +5,10 @@
 .heading {
   user-select: none;
 }
+
+.icon {
+  position: relative;
+  top: -0.15em;
+  padding-right: 0.5em;
+  color: $red;
+}

@@ -4,3 +4,7 @@
 // (and other SCSS libraries) on each update.
 //
 @import "globals";
+
+// Also include Bootstrap variables for consistency.
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
