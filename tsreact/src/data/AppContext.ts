@@ -2,9 +2,9 @@ import { createContext } from 'react'
 import { Store } from 'redux'
 import Registry from './Registry'
 
-export interface Items<State> {
+export interface Items {
 	store: Store,
-	registry: Registry<State>
+	registry: Registry
 }
 
 /**
@@ -12,18 +12,18 @@ export interface Items<State> {
  * Created by an AppContainerBase and provided
  * via React' context.
  */
-export default class AppContext<State>
+export default class AppContext
 {
-	static React = createContext({} as AppContext<any>)
+	static React = createContext({} as AppContext)
 
-	constructor(items: Items<State>) {
+	constructor(items: Items) {
 		this.$items = items
 	}
 	
-	private readonly $items: Items<State>
+	private readonly $items: Items
 
 	/**
-	 * Redux's Root Store.
+	 * Redux store.
 	 */
 	get store() {
 		return this.$items.store

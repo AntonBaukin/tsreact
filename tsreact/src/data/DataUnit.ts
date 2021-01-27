@@ -1,59 +1,61 @@
+import isString from 'lodash/isString'
 import { AnyAction } from 'redux'
 import AppContext from './AppContext'
 
-export interface DataUnitConstructor<State> {
-	new (appContext: AppContext<State>): DataUnit<State>
-}
-
-/**
- * Data Unit is named handler of the data in the store.
- */
-export default class DataUnit<State>
+export default abstract class DataUnit
 {
-	constructor(appContext: AppContext<State>) {
-		this.$appContext = appContext
-	}
+	/* Data Unit Registration */
 
-	get appContext() {
-		return this.$appContext
-	}
+	/**
+	 * Context of the application.
+	 * Assigned when unit instance is registered.
+	 */
+	abstract get appContext(): AppContext
 
-	private readonly $appContext: AppContext<State>
-
-
-	/* Registry Entry */
-
-	static DOMAIN: string = ''
+	abstract set appContext(appContext: AppContext)
 
 	/**
 	 * Domain name is a string of names with dots.
 	 * It's a package, or namespace within the store.
 	 * Empty string means the root domain.
 	 */
-	get domainName(): string {
-		return (this.constructor as typeof DataUnit).DOMAIN
-	}
+	abstract get domainName(): string
 
 	/**
-	 * Name of the model within the domain.
-	 * Defaults to the class name, thus making
-	 * a data unit to be a state handling singleton.
+	 * Name of the model unique within the domain.
 	 */
-	get unitName(): string {
-		return this.constructor.name
-	}
+	abstract get unitName(): string
 
 
 	/* Redux Reducer */
 
-	reduce(state: State, action: AnyAction): State {
-		return state
-	}
+	abstract reduce(state: Object, action: AnyAction): Object
+
+	abstract makeAction(...args: [any]): AnyAction
 }
 
 /**
- * Full name of a Data Unit instance.
+ * Full name of a Data Unit instance — is a type of Redux action.
  */
-export const unitName = <State>(du: DataUnit<State>) => (
+export const unitFullName = (du: DataUnit) => (
 	`${du.domainName}.${du.unitName}`
 )
+
+export const checkDataUnit = (some: Object): DataUnit => {
+	const unit = some as DataUnit
+
+	if (!isString(unit.domainName)) {
+		throw new Error('Data unit domain name is not specified')
+	}
+
+	if (!isString(unit.unitName)) {
+		throw new Error('Data unit name is not specified')
+	}
+
+	//?: { unit name contains dots or spaces }
+	if (/[\s.]/.test(unit.unitName)) {
+		throw new Error(`Data unit name is illegal: ${unit.unitName}`)
+	}
+
+	return unit
+}

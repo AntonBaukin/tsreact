@@ -1,8 +1,8 @@
 import { Reducer, AnyAction } from 'redux'
-import DataUnit, { DataUnitConstructor, unitName } from './DataUnit'
 import AppContext from "./AppContext"
+import DataUnit, { unitFullName, checkDataUnit } from './DataUnit'
 
-export class Entry<State>
+export class Entry
 {
 	get name() {
 		return this.$name
@@ -14,65 +14,85 @@ export class Entry<State>
 		return this.$unit
 	}
 
-	private readonly $unit: DataUnit<State>
+	private readonly $unit: DataUnit
 
 	get reducer() {
 		return this.$reducer
 	}
 
-	private readonly $reducer: Reducer<State>
+	private readonly $reducer: Reducer
 
-	constructor(name: string, unit: DataUnit<State>, reducer: Reducer<State>) {
+	constructor(name: string, unit: DataUnit, reducer: Reducer) {
 		this.$name = name
 		this.$unit = unit
 		this.$reducer = reducer
 	}
 }
 
-export default class Registry<State>
+export default class Registry
 {
 	/* Registry of Data Units */
 
-	registerUnit(dataUnit: DataUnit<State>) {
-		const fullName = unitName(dataUnit)
+	get appContext(): AppContext {
+		if (this.$appContext === undefined) {
+			throw new Error(`Application Context is not defined for Registry`)
+		}
 
+		return this.$appContext
+	}
+
+	private $appContext: AppContext | undefined
+
+	set appContext(appContext: AppContext) {
+		if (this.$appContext !== undefined) {
+			throw new Error(`Application Context was defined for Registry`)
+		}
+
+		this.$appContext = appContext
+	}
+
+	registerUnit(dataUnit: DataUnit) {
+		const fullName = unitFullName(checkDataUnit(dataUnit))
+
+		//?: { unit with same FQN is registered }
 		if (this.$registry.has(fullName)) {
 			throw new Error(
 				`Data Unit of class ${dataUnit.constructor.name} ` +
-				`is a already registerd under name: ${fullName}!`
+				`is a already registerd under name: ${fullName}`
 			)
 		}
 
+		//~: add unit to the register
 		this.$registry.set(fullName, this.makeEntry(fullName, dataUnit))
+
+		//~: assign the application context
+		dataUnit.appContext = this.appContext
 	}
 
-	registerUnits(
-		appContext: AppContext<State>,
-		dataUnits: Array<DataUnitConstructor<State>>
-	) {
-		dataUnits.forEach(DataUnitClass => new DataUnitClass(appContext))
+	registerUnits(dataUnits: Array<DataUnit>) {
+		dataUnits.forEach(dataUnit => this.registerUnit(dataUnit))
 	}
 
 	/**
 	 * Maps data unit [instance] name to registered instance.
 	 */
-	$registry = new Map<String, Entry<State>>()
+	$registry = new Map<String, Entry>()
 
-	protected makeReducer(dataUnit: DataUnit<State>): Reducer<State> {
-		return (state: State | undefined, action: AnyAction) => (
-			dataUnit.reduce(state ?? ({} as State), action)
+	protected makeReducer(dataUnit: DataUnit): Reducer {
+		return (state: Object | undefined, action: AnyAction) => (
+			dataUnit.reduce(state ?? {}, action)
 		)
 	}
 
-	protected makeEntry(name: string, dataUnit: DataUnit<State>): Entry<State> {
-		return new Entry<State>(name, dataUnit, this.makeReducer(dataUnit))
+	protected makeEntry(name: string, dataUnit: DataUnit): Entry {
+		return new Entry(name, dataUnit, this.makeReducer(dataUnit))
 	}
 
 
 	/* Registry as a Redux Reducer */
 
-	reducer = (incomeState: State | undefined, action: AnyAction) => {
-		let state: State = incomeState ?? ({} as State)
+	reducer = (incomeState: Object | undefined, action: AnyAction) => {
+		let state: Object = incomeState ?? {}
 
 		this.$registry.forEach(entry => {
 			state = entry.unit.reduce(state, action)
