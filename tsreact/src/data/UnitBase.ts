@@ -5,7 +5,7 @@ import { AnyAction } from 'redux'
 import AppContext from './AppContext'
 import DataUnit, { unitFullName } from './DataUnit'
 
-export default abstract class UnitBase<LocalType extends Object> extends DataUnit
+export default abstract class UnitBase<LocalType extends Object = Object> extends DataUnit
 {
 	/* Data Unit Registration */
 
@@ -27,7 +27,7 @@ export default abstract class UnitBase<LocalType extends Object> extends DataUni
 		this.$appContext = appContext
 	}
 
-	readonly domain = ''
+	readonly domain: string = ''
 
 	get domainName() {
 		return this.domain
@@ -49,6 +49,12 @@ export default abstract class UnitBase<LocalType extends Object> extends DataUni
 
 
 	/* Redux Reducer */
+
+	readonly reducer: boolean = true
+
+	get isReducer(): boolean {
+		return this.reducer !== false
+	}
 
 	reduce(state: Object, action: AnyAction): Object {
 		if (action.type === this.fullName) {
@@ -87,11 +93,19 @@ export default abstract class UnitBase<LocalType extends Object> extends DataUni
 		return result as LocalType
 	}
 
+	/**
+	 * If domain is empty string, safely returns the incoming state.
+	 * Else, selects sub-object by the domain path, and safely returns it.
+	 */
+	domainSlice(state: Object): LocalType {
+		return this.safeState(this.domain.length === 0 ? state : get(state, this.domain, {}))
+	}
+
 
 	/* Redux Actions */
 
-	get actionMaker() {
-		return this.bindActionMaker()
+	curryActionMaker(...boundArgs: any[]) {
+		return (...callArgs) => this.makeAction(...boundArgs, ...callArgs)
 	}
 
 	bindActionMaker(...boundArgs: any[]) {
@@ -106,6 +120,10 @@ export default abstract class UnitBase<LocalType extends Object> extends DataUni
 	}
 
 	makePayload(...args: any[]): any {
+		if (args.length === 0) {
+			return undefined
+		}
+
 		if (args.length === 1) {
 			return args[0]
 		}
@@ -113,12 +131,12 @@ export default abstract class UnitBase<LocalType extends Object> extends DataUni
 		throw new Error(`Failed create default payload for unit ${this.fullName}`)
 	}
 
-	get dispatcher() {
-		return this.bindDispatcher()
+	bind(...boundArgs: any[]) {
+		return () => this.dispatch(...boundArgs)
 	}
 
-	bindDispatcher(...boundArgs: any[]) {
-		return () => this.dispatch(...boundArgs)
+	curry(...boundArgs: any[]) {
+		return (...callArgs) => this.dispatch(...boundArgs, ...callArgs)
 	}
 
 	/**

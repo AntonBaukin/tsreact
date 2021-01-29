@@ -29,6 +29,8 @@ export default abstract class DataUnit
 
 	/* Redux Reducer */
 
+	abstract get isReducer(): boolean
+
 	abstract reduce(state: Object, action: AnyAction): Object
 
 	abstract makeAction(...args: [any]): AnyAction
@@ -38,7 +40,7 @@ export default abstract class DataUnit
  * Full name of a Data Unit instance — is a type of Redux action.
  */
 export const unitFullName = (du: DataUnit) => (
-	`${du.domainName}.${du.unitName}`
+	du.domainName.length === 0 ? du.unitName : `${du.domainName}.${du.unitName}`
 )
 
 export const checkDataUnit = (some: Object): DataUnit => {

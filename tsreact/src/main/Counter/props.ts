@@ -15,8 +15,8 @@ export interface PropTypes {
 }
 
 export const defaultProps = {
-	onIncrement: counter.bindDispatcher(1),
-	onDecrement: counter.bindDispatcher(-1),
+	onIncrement: counter.bind(+1),
+	onDecrement: counter.bind(-1),
 } as const
 
 export const mapStateToProps = createSelector(

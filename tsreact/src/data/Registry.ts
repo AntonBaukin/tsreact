@@ -20,9 +20,9 @@ export class Entry
 		return this.$reducer
 	}
 
-	private readonly $reducer: Reducer
+	private readonly $reducer: Reducer | undefined
 
-	constructor(name: string, unit: DataUnit, reducer: Reducer) {
+	constructor(name: string, unit: DataUnit, reducer: Reducer | undefined) {
 		this.$name = name
 		this.$unit = unit
 		this.$reducer = reducer
@@ -85,7 +85,8 @@ export default class Registry
 	}
 
 	protected makeEntry(name: string, dataUnit: DataUnit): Entry {
-		return new Entry(name, dataUnit, this.makeReducer(dataUnit))
+		const reducer = dataUnit.isReducer ? this.makeReducer(dataUnit) : undefined
+		return new Entry(name, dataUnit, reducer)
 	}
 
 
@@ -95,7 +96,9 @@ export default class Registry
 		let state: Object = incomeState ?? {}
 
 		this.$registry.forEach(entry => {
-			state = entry.unit.reduce(state, action)
+			state = entry.unit.reduce === undefined
+				? state
+				: entry.unit.reduce(state, action)
 		})
 
 		return state

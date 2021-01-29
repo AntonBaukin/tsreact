@@ -1,15 +1,12 @@
-import { Provider } from 'react-redux'
-import AppContext from 'src/data/AppContext'
+import AppBase from 'src/components/AppBase'
 import Hello from '../main/Hello'
 import appContext from './context'
 import './styles.scss'
 
-const Main = () => (
-	<AppContext.React.Provider value={appContext}>
-		<Provider store={appContext.store}>
-			<Hello />
-		</Provider>
-	</AppContext.React.Provider>
+const MainApp = () => (
+	<AppBase appContext={appContext}>
+		<Hello />
+	</AppBase>
 )
 
-export default Main
+export default MainApp

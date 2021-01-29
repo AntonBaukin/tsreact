@@ -1,10 +1,10 @@
-import { createStore } from 'redux'
+import { createAppStore } from 'src/components/AppBase'
 import AppContext from 'src/data/AppContext'
 import Registry from 'src/data/Registry'
 import dataUnits from './units'
 
 const registry = new Registry()
-const store = createStore(registry.reducer, {})
+const store = createAppStore(registry.reducer)
 const appContext = new AppContext({ store, registry })
 
 registry.appContext = appContext
