@@ -33,7 +33,27 @@ export default abstract class DataUnit
 
 	abstract reduce(state: Object, action: AnyAction): Object
 
-	abstract makeAction(...args: [any]): AnyAction
+	abstract makeAction(...args: any[]): AnyAction
+
+
+	/* Active Unit */
+
+	abstract get isActive(): boolean
+
+	abstract isActOn(action: AnyAction): boolean
+
+	/**
+	 * Returns a set of Redux action types this unit acts on.
+	 * Undefined result means that the unit checks any action
+	 * with it's predicate isActOn().
+	 */
+	abstract get actedTypes(): Set<string> | undefined
+
+	/**
+	 * If unit is active and responds to the given action, this
+	 * method is invoked by the middleware to cause side-effects.
+	 */
+	abstract react(action: AnyAction): void
 }
 
 /**

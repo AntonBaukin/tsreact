@@ -1,11 +1,11 @@
 import { createSelector } from 'reselect'
 import UnitBase from 'src/data/UnitBase'
 
-interface CounterType {
+export interface CounterType {
 	counter: number
 }
 
-interface PayloadType {
+export interface PayloadType {
 	increment: number
 }
 
@@ -19,7 +19,11 @@ export default new class extends UnitBase<CounterType>
 
 	readonly initialState = initialState
 
-	makePayload(increment: integer) {
+	bind(increment: number) {
+		return super.bind(increment)
+	}
+
+	makePayload(increment: number) {
 		return { increment }
 	}
 

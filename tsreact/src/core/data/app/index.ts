@@ -1,5 +1,5 @@
 import appInit from './AppInit'
 
-export default [
+export default () => [
 	appInit,
 ]

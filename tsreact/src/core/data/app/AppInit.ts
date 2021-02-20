@@ -1,10 +1,10 @@
 import UnitBase from 'src/data/UnitBase'
-import DOMAINS from 'src/data/domains.json'
 import AppContext from 'src/data/AppContext'
+import { Domains } from '../domains'
 
 export default new class extends UnitBase
 {
-	readonly domain = DOMAINS.CORE
+	readonly domain = Domains.APP
 
 	readonly name = 'AppInit'
 

@@ -44,8 +44,14 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	}
 
 	get fullName(): string {
-		return unitFullName(this)
+		if (this.$fullName) {
+			return this.$fullName
+		}
+
+		return this.$fullName = unitFullName(this)
 	}
+
+	private $fullName: string | undefined
 
 
 	/* Redux Reducer */
@@ -105,7 +111,7 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	/* Redux Actions */
 
 	curryActionMaker(...boundArgs: any[]) {
-		return (...callArgs) => this.makeAction(...boundArgs, ...callArgs)
+		return (...callArgs: any[]) => this.makeAction(...boundArgs, ...callArgs)
 	}
 
 	bindActionMaker(...boundArgs: any[]) {
@@ -131,18 +137,67 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 		throw new Error(`Failed create default payload for unit ${this.fullName}`)
 	}
 
+	/**
+	 * Returns function with bound arguments that fire the action
+	 * of this unit. Note that if this unit is active, it may react
+	 * on own action or other. All arguments given to the resulting
+	 * function at the call time are ignored. This is useful for
+	 * on-click handlers not to mess with the event.
+	 */
 	bind(...boundArgs: any[]) {
-		return () => this.dispatch(...boundArgs)
+		return () => this.fire(...boundArgs)
 	}
 
+	/**
+	 * Unlike bind, curries all the arguments given, followed by
+	 * the arguments of the call time.
+	 */
 	curry(...boundArgs: any[]) {
-		return (...callArgs) => this.dispatch(...boundArgs, ...callArgs)
+		return (...callArgs: any[]) => this.fire(...boundArgs, ...callArgs)
 	}
 
 	/**
 	 * Creates action and synchronously dispatches it to Redux.
 	 */
-	dispatch(...args: any[]): void {
-		this.appContext.store.dispatch(this.makeAction(...args))
+	fire(...args: any[]): void {
+		this.dispatch(this.makeAction(...args))
+	}
+
+	/**
+	 * Synchronously dispatches given action to Redux.
+	 * This call is allowed only in UI handlers, or
+	 * inside react() of active units.
+	 */
+	dispatch(action: AnyAction): void {
+		this.appContext.store.dispatch(action)
+	}
+
+
+	/* Active Unit */
+
+	get isActive() {
+		return false
+	}
+
+	isActOn(action: AnyAction): boolean {
+		return false
+	}
+
+	private static EMPTY_SET = new Set<string>()
+
+	/**
+	 * Returns empty set of action types, hence this unit
+	 * (if active) may act only on it's own action.
+	 */
+	get actedTypes(): Set<string> | undefined {
+		return UnitBase.EMPTY_SET
+	}
+
+	react(action: AnyAction): void {
+		throw new Error('Active Unit implementation is required')
 	}
 }
+
+export const unitActionType = (du: DataUnit) => (
+	du instanceof UnitBase ? du.fullName : unitFullName(du)
+)

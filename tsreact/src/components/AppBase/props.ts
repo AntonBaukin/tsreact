@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { func, object, node } from 'prop-types'
 import AppContext from 'src/data/AppContext'
-import appInit from 'src/data/core/AppInit'
+import appInit from 'src/core/data/app/AppInit'
 
 export const propTypes = {
 	children: node,
@@ -12,7 +12,7 @@ export const propTypes = {
 export interface PropTypes {
 	children: ReactNode | undefined,
 	appContext: AppContext,
-	onAppInit: () => void,
+	onAppInit: (appContext: AppContext) => void,
 }
 
 export const defaultProps = {

@@ -1,7 +1,7 @@
-import coreUnits from 'src/data/core'
-import counter from 'src/main/data/Counter'
+import coreApp from 'src/core/data/app'
+import main from 'src/main/data'
 
 export default [
-	...coreUnits,
-	counter,
+	...coreApp(),
+	...main(),
 ]
