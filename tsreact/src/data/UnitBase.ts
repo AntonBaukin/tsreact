@@ -58,9 +58,40 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 
 	readonly reducer: boolean = true
 
+	/**
+	 * Lists action types or data units this unit is acts on.
+	 * (Predicate isActOn() is also checked.)
+	 */
+	readonly reduceOn: (string | DataUnit)[] = []
+
+	/**
+	 * If set true, actsOn is ignored, and this unit
+	 * reacts on any action passing isActOn() check.
+	 * Overwrite it if defining the flag true.
+	 */
+	readonly reduceOnAny: boolean = false
+
 	get isReducer(): boolean {
 		return this.reducer !== false
 	}
+
+	get reduceTypes(): Set<string> | undefined {
+		if (this.reduceOnAny === true) {
+			return undefined
+		}
+
+		if (this.$reduceTypes) {
+			return this.$reduceTypes
+		}
+
+		this.$reduceTypes = new Set(
+			this.reduceOn.map(x => typeof x === 'string' ? x : unitActionType(x))
+		)
+
+		return this.$reduceTypes
+	}
+
+	private $reduceTypes: Set<string> | undefined
 
 	reduce(state: Object, action: AnyAction): Object {
 		if (action.type === this.fullName) {
@@ -198,6 +229,6 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	}
 }
 
-export const unitActionType = (du: DataUnit) => (
-	du instanceof UnitBase ? du.fullName : unitFullName(du)
-)
+export function unitActionType(du: DataUnit) {
+	return du instanceof UnitBase ? du.fullName : unitFullName(du)
+}

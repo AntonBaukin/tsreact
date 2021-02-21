@@ -1,14 +1,14 @@
 import { AnyAction } from 'redux'
 import ThunkUnit from 'src/data/ThunkUnit'
-import counterUnit, { PayloadType } from './Counter'
+import counterUnit, { CounterType, PayloadType } from './Counter'
 
-export default new class extends ThunkUnit
+export default new class extends ThunkUnit<CounterType>
 {
 	readonly name = 'Countlog'
 
-	readonly reducer = false
+	readonly reduceOn = [ counterUnit ]
 
-	readonly ACTS_ON = [ counterUnit ]
+	readonly actsOn = [ counterUnit ]
 
 	thunk(action: AnyAction) {
 		const payload = action.payload as PayloadType
@@ -17,6 +17,12 @@ export default new class extends ThunkUnit
 		console.log(`${direction} counter by ${Math.abs(increment)}`)
 
 		const counter = counterUnit.selectCounter(this.state)
-		console.log(`Counter value is ${counter}`)
+		console.log(`Counter value now is ${counter}`)
+	}
+
+	reduce(state: Object, action: AnyAction): Object {
+		const { counter } = this.domainSlice(state)
+		console.log(`Counter in logger reducer ${counter}`)
+		return state
 	}
 }

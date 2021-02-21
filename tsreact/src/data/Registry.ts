@@ -1,7 +1,9 @@
-import { Reducer, AnyAction, Middleware, MiddlewareAPI } from 'redux'
+import { AnyAction, Middleware, MiddlewareAPI } from 'redux'
 import AppContext from "./AppContext"
 import DataUnit, { checkDataUnit } from './DataUnit'
 import { unitActionType } from './UnitBase'
+
+export type Reducer = (state: Object, action: AnyAction) => Object
 
 export class Entry
 {
@@ -78,13 +80,41 @@ export default class Registry
 		//~: assign the application context
 		dataUnit.appContext = this.appContext
 
+		//?: { register reduce unit }
+		if (dataUnit.isReducer) {
+			this.registerReduceUnit(dataUnit)
+		}
+
 		//?: { register active unit }
 		if (dataUnit.isActive) {
 			this.registerActiveUnit(dataUnit)
 		}
 	}
 
-	private registerActiveUnit(activeUnit: DataUnit) {
+	protected registerReduceUnit(dataUnit: DataUnit) {
+		const unitType = unitActionType(dataUnit)
+		const reduceTypes = dataUnit.reduceTypes
+
+		//?: { unit reduces every action }
+		if (reduceTypes === undefined) {
+			this.$reduceAny.add(unitType)
+			return
+		}
+
+		//~: register for each type of interest
+		reduceTypes.forEach(type => {
+			let unitTypes = this.$reduceMap.get(type)
+
+			if (!unitTypes) {
+				unitTypes = new Set<string>()
+				this.$reduceMap.set(type, unitTypes)
+			}
+
+			unitTypes.add(unitType)
+		})
+	}
+
+	protected registerActiveUnit(activeUnit: DataUnit) {
 		const unitType = unitActionType(activeUnit)
 		const actedTypes = activeUnit.actedTypes
 
@@ -111,6 +141,18 @@ export default class Registry
 		dataUnits.forEach(dataUnit => this.registerUnit(dataUnit))
 	}
 
+	protected getEntry(unitName: string): Entry {
+		const entry = this.$registry.get(unitName)
+
+		//!: note that entry above may be undefined if the action is
+		//   not related to data units, but reduce unit was registered.
+		if (!entry) {
+			throw new Error(`Data unit ${unitName} is not found`)
+		}
+
+		return entry
+	}
+
 	/**
 	 * Maps data unit [instance] name to registration entry.
 	 */
@@ -119,6 +161,16 @@ export default class Registry
 	/**
 	 * Maps action type to full names of registered units.
 	 * On an action with this name those units will be invoked.
+	 */
+	protected readonly $reduceMap = new Map<string, Set<string>>()
+
+	/**
+	 * Registers reduce units that reduce on every action.
+	 */
+	protected readonly $reduceAny = new Set<string>()
+
+	/**
+	 * Same as $reduceMap, for active units.
 	 */
 	protected readonly $actMap = new Map<string, Set<string>>()
 
@@ -144,10 +196,57 @@ export default class Registry
 	reducer = (incomeState: Object | undefined, action: AnyAction) => {
 		let state: Object = incomeState ?? {}
 
-		this.$registry.forEach(entry => {
-			state = entry.unit.reduce === undefined
-				? state
-				: entry.unit.reduce(state, action)
+		//0: reduce with the data unit of the action type (if exists)
+		state = this.reduceOwn(state, action)
+
+		//1: reduce with data units that refer this type
+		state = this.reduceRefs(state, action)
+
+		//2: reduce with data units that refer this type
+		state = this.reduceAny(state, action)
+
+		return state
+	}
+
+	protected reduceOwn(state: Object, action: AnyAction): Object {
+		//~: lookup entry by action type as it's full name
+		const entry = this.$registry.get(action.type)
+		if (!entry || !entry.reducer) {
+			return state
+		}
+
+		//!: reduce with primary data unit
+		return entry.reducer(state, action)
+	}
+
+	protected reduceElse(state: Object, action: AnyAction, unitName: string): Object {
+		//!: exclude unit being the action owner
+		if (unitName === action.type) {
+			return state
+		}
+
+		const entry = this.getEntry(unitName)
+		return entry.reducer ? entry.reducer(state, action) : state
+	}
+
+	protected reduceRefs(incomeState: Object, action: AnyAction): Object {
+		const reduceNames = this.$reduceMap.get(action.type)
+
+		let state = incomeState
+		if (reduceNames) {
+			reduceNames.forEach(unitName => {
+				state = this.reduceElse(state, action, unitName)
+			})
+		}
+
+		return state
+	}
+
+	protected reduceAny(incomeState: Object, action: AnyAction): Object {
+		let state = incomeState
+
+		this.$reduceAny.forEach(unitName => {
+			state = this.reduceElse(state, action, unitName)
 		})
 
 		return state
@@ -178,7 +277,7 @@ export default class Registry
 	}
 
 	protected reactOwn(api: MiddlewareAPI, action: AnyAction) {
-		//~: lookup entry by action name as it's full name
+		//~: lookup entry by action type as it's full name
 		const entry = this.$registry.get(action.type)
 		if (!entry || !entry.isActOn(action)) {
 			return
@@ -189,18 +288,12 @@ export default class Registry
 	}
 
 	protected reactElse(api: MiddlewareAPI, action: AnyAction, unitName: string) {
-		//~: exclude unit acted as the action owner
+		//!: exclude unit acted as the action owner
 		if (unitName === action.type) {
 			return
 		}
 
-		const entry = this.$registry.get(unitName)
-
-		//!: note that entry above may be undefined if the action is
-		//   not related to data units, but acted unit was registered.
-		if (!entry) {
-			throw new Error(`Data unit ${unitName} is not found`)
-		}
+		const entry = this.getEntry(unitName)
 
 		//?: { unit responds to this action }
 		if (entry.isActOn(action)) {
@@ -209,7 +302,6 @@ export default class Registry
 	}
 
 	protected reactRefs(api: MiddlewareAPI, action: AnyAction) {
-		//~: get the names of units to call
 		const actedNames = this.$actMap.get(action.type)
 
 		if (actedNames) {

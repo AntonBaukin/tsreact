@@ -1,7 +1,7 @@
 import { AnyAction } from 'redux'
 import { handleAsyncError } from 'src/utils/errors'
-import DataUnit, { unitFullName } from './DataUnit'
-import UnitBase from './UnitBase'
+import DataUnit from './DataUnit'
+import UnitBase, { unitActionType } from './UnitBase'
 
 export default abstract class ActiveUnit<LocalType extends Object = Object>
 	extends UnitBase<LocalType>
@@ -16,14 +16,14 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	 * Lists action types or data units this unit is acts on.
 	 * (Predicate isActOn() is also checked.)
 	 */
-	readonly ACTS_ON: (string | DataUnit)[] = []
+	readonly actsOn: (string | DataUnit)[] = []
 
 	/**
-	 * If set true, ACTS_ON is ignored, and this unit
+	 * If set true, actsOn is ignored, and this unit
 	 * reacts on any action passing isActOn() check.
 	 * Overwrite it if defining the flag true.
 	 */
-	readonly ACTS_ON_ANY: boolean = false
+	readonly actsOnAny: boolean = false
 
 	/**
 	 * By default, active unit acts on own action (having type
@@ -42,7 +42,7 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	}
 
 	get actedTypes(): Set<string> | undefined {
-		if (this.ACTS_ON_ANY === true) {
+		if (this.actsOnAny === true) {
 			return undefined
 		}
 
@@ -51,7 +51,7 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 		}
 
 		this.$actedTypes = new Set(
-			this.ACTS_ON.map(x => typeof x === 'string' ? x : unitFullName(x))
+			this.actsOn.map(x => typeof x === 'string' ? x : unitActionType(x))
 		)
 
 		return this.$actedTypes

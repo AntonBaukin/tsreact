@@ -31,6 +31,13 @@ export default abstract class DataUnit
 
 	abstract get isReducer(): boolean
 
+	/**
+	 * If this data unit is a reducer, it may reduce not only
+	 * on own action, but on any action type from the resulting
+	 * set, or even any action, if the result is undefined.
+	 */
+	abstract get reduceTypes(): Set<string> | undefined
+
 	abstract reduce(state: Object, action: AnyAction): Object
 
 	abstract makeAction(...args: any[]): AnyAction
