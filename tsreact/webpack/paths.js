@@ -2,6 +2,7 @@ const path = require('path')
 const base = path.join(__dirname, '..')
 const modules = path.join(base, 'node_modules')
 const index = path.join(base, 'index')
+const lang = path.join(base, 'lang')
 
 module.exports = () => ({
 	modules: path.resolve(base, 'node_modules'),
@@ -25,5 +26,10 @@ module.exports = () => ({
 	icons: {
 		bootstrap: path.resolve(modules, 'bootstrap-icons', 'icons'),
 		spriteFile: path.join('images', 'icons.svg')
+	},
+	lang: {
+		items: ['en'],
+		output: 'lang',
+		en: path.resolve(lang, 'en.json'),
 	}
 })

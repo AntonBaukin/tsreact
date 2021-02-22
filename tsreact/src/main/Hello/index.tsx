@@ -17,7 +17,7 @@ const Hello = () => (
 
 			<div className="card-body">
 				<div>So, Bootstrap was added...</div>
-				<div>And Bootstrap Icons either! </div>
+				<div>And Bootstrap Icons either!</div>
 				<Counter />
 			</div>
 		</div>
