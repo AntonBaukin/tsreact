@@ -1,5 +1,11 @@
 {
-  "hello": "Hello, World!",
-  "so": "So, Bootstrap was added...",
-  "and": "And Bootstrap Icons either!"
+  "HELLO": "Hello, World!",
+  "SO": "So, Bootstrap was added...",
+  "AND": "And Bootstrap Icons either!",
+  "COUNTER": "Counter:",
+  "COUNTER_VALUE": "${value}",
+  "INCREMENT": "Increment",
+  "INCREMENT_BY": "Increment by ${value}",
+  "DECREMENT": "Decrement",
+  "DECREMENT_BY": "Decrement by ${value}",
 }

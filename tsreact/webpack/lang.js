@@ -7,7 +7,7 @@ const copyLang = (paths, lang) => new WebpackCopyPlugin({
 		toType: 'template',
 
 		transform: (content) => (
-			`(window.LANG = window.LANG || {})[${lang}] = `.concat(content.toString())
+			`(window.LANG = window.LANG || {}).${lang} = `.concat(content.toString())
 		)
 	}]
 })

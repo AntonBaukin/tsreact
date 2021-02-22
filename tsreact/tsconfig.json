@@ -15,6 +15,7 @@
     "moduleResolution": "node",
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
     "typeRoots": ["./styles", "./node_modules/@types"],
     "paths": {
       "src/*": ["src/*"],

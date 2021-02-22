@@ -1,4 +1,5 @@
 import classNames from 'classnames'
+import Text from 'src/components/Text'
 import Icon from 'src/components/Icon'
 import Counter from 'src/main/Counter'
 import styles from './styles.module.scss'
@@ -11,13 +12,13 @@ const Hello = () => (
 					<span className={styles.icon}>
 						<Icon name="alarm" />
 					</span>
-					<span>Hello, World!</span>
+					<span><Text>HELLO</Text></span>
 				</span>
 			</div>
 
 			<div className="card-body">
-				<div>So, Bootstrap was added...</div>
-				<div>And Bootstrap Icons either!</div>
+				<div><Text>SO</Text></div>
+				<div><Text>AND</Text></div>
 				<Counter />
 			</div>
 		</div>
