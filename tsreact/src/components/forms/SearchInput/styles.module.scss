@@ -1,0 +1,12 @@
+.inputGroup {
+  :global(.input-group-text) {
+    border-color: $dark;
+    background: $dark;;
+    color: $light;
+  }
+}
+
+.searchInput {
+  width: 100%;
+  border-color: $dark;
+}

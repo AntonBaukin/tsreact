@@ -16,6 +16,7 @@ export const propTypes = {
 	// Used to save the controlled value.
 	onChange: func.isRequired,
 
+	id: string,
 	name: string,
 	type: oneOf(TEXT_INPUT_TYPES),
 	placeholder: string,
@@ -36,6 +37,7 @@ export type OnTextChangeLater = (value: string) => void
 export interface PropTypes {
 	value: string,
 	onChange: OnTextChange,
+	id?: string,
 	name?: string,
 	type?: TextInputType,
 	placeholder?: string,

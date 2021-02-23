@@ -14,6 +14,7 @@ import {
 const TextInput = ({
 	value,
 	onChange,
+	id,
 	name,
 	type,
 	placeholder,
@@ -55,8 +56,9 @@ const TextInput = ({
 
 	return (
 		<input
-			type={type}
+			id={id}
 			name={name}
+			type={type}
 			value={value}
 			placeholder={placeholder}
 			onChange={onChangeMixed}
