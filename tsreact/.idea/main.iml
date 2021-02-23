@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$/fonts" />
     <content url="file://$MODULE_DIR$/index" />
     <content url="file://$MODULE_DIR$/lang" />
+    <content url="file://$MODULE_DIR$/node_modules/bootstrap/scss" />
     <content url="file://$MODULE_DIR$/public" />
     <content url="file://$MODULE_DIR$/src" />
     <content url="file://$MODULE_DIR$/styles" />

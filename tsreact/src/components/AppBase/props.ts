@@ -1,17 +1,27 @@
 import { ReactNode } from 'react'
-import { func, object, node } from 'prop-types'
+import { func, object, arrayOf, node, oneOfType } from 'prop-types'
+import { RouteConfig } from 'react-router-config'
 import AppContext from 'src/data/AppContext'
 import appInit from 'src/core/data/app/AppInit'
 
 export const propTypes = {
+	appContext: object.isRequired,
+
+	// Routes configuration object.
+	routes: oneOfType([object, arrayOf(object)]),
+
+	// Render the given content instead of the routes.
 	children: node,
-	appContext: object,
+
+	// Invoked on the component mount.
+	// Default implementation fires AppInit action.
 	onAppInit: func,
 } as const
 
 export interface PropTypes {
-	children: ReactNode | undefined,
 	appContext: AppContext,
+	children?: ReactNode,
+	routes?: RouteConfig | RouteConfig[],
 	onAppInit: (appContext: AppContext) => void,
 }
 

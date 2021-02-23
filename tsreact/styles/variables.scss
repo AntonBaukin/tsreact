@@ -8,3 +8,9 @@
 // Also include Bootstrap variables for consistency.
 @import "~bootstrap/scss/functions";
 @import "~bootstrap/scss/variables";
+
+// Main :: Root
+$root-xgap-screen-sm: 1rem;
+$root-title-height: 4rem;
+$root-title-color: map-get($theme-colors, "light");
+$root-title-bg: map-get($theme-colors, "dark");

@@ -18,7 +18,7 @@ module.exports = (env, args) => {
     },
     output: {
       path: paths.output,
-      filename: path.join(paths.main.output, '[name].[contenthash].js')
+      filename: path.join(paths.main.output, '[name].[contenthash:8].js')
     },
     entry: {
       main: paths.main.entry,

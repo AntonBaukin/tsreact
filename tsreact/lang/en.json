@@ -1,4 +1,6 @@
 {
+  "ROOT_TITLE": "Clinical Table Search",
+
   "HELLO": "Hello, World!",
   "SO": "So, Bootstrap was added...",
   "AND": "And Bootstrap Icons either!",
@@ -7,5 +9,5 @@
   "INCREMENT": "Increment",
   "INCREMENT_BY": "Increment by ${value}",
   "DECREMENT": "Decrement",
-  "DECREMENT_BY": "Decrement by ${value}",
+  "DECREMENT_BY": "Decrement by ${value}"
 }

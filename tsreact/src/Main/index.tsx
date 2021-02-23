@@ -1,12 +1,13 @@
 import AppBase from 'src/components/AppBase'
-import Hello from '../main/Hello'
 import appContext from './context'
+import routes from './routes'
 import './styles.scss'
 
 const MainApp = () => (
-	<AppBase appContext={appContext}>
-		<Hello />
-	</AppBase>
+	<AppBase
+		appContext={appContext}
+		routes={routes}
+	/>
 )
 
 export default MainApp

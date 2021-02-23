@@ -1,0 +1,7 @@
+.search {
+  height: calc(100vh - #{$root-title-height});
+
+  .scroll {
+    padding: 0 $root-xgap-screen-sm;
+  }
+}

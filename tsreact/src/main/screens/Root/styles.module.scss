@@ -1,0 +1,15 @@
+.mainRoot {
+  width: 100%;
+  max-width: 100%;
+  height: $root-title-height;
+  padding: 0 $root-xgap-screen-sm;
+  background-color: $root-title-bg;
+
+  .title {
+    @include text-ellipsis;
+    @include noselect;
+    margin: 0;
+    line-height: $root-title-height;
+    color: $root-title-color;
+  }
+}
