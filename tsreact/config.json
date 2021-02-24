@@ -1,4 +1,7 @@
 {
+  "endpoints": {
+    "main": "https://clinicaltables.nlm.nih.gov/api/npi_idv/v3"
+  },
   "dev": {
     "redux": {
     }

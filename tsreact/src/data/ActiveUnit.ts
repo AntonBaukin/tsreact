@@ -1,5 +1,6 @@
 import { AnyAction } from 'redux'
-import { handleAsyncError } from 'src/utils/errors'
+import RestClient from 'src/rest/RestClient'
+import { logAsyncError } from 'src/utils/log'
 import DataUnit from './DataUnit'
 import UnitBase, { unitActionType } from './UnitBase'
 
@@ -60,13 +61,17 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	private $actedTypes: Set<string> | undefined
 
 
-	/* Active Unit */
+	/* Active Unit Support */
 
 	/**
 	 * Returns current Redux state for read only.
 	 */
 	get state(): Object {
 		return this.appContext.store.getState()
+	}
+
+	get restClient(): RestClient {
+		return this.appContext.restClient
 	}
 
 	/**
@@ -118,7 +123,7 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	 * resulting promise of this thunk.
 	 */
 	catchError(error : Error) {
-		handleAsyncError(error)
+		logAsyncError(error)
 	}
 
 	/**
