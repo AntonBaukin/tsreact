@@ -1,3 +1,4 @@
+import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import FetchUnit, { JsonPayload } from 'src/data/FetchUnit'
 import { Json } from 'src/utils/objects'
@@ -45,11 +46,12 @@ export default new class extends FetchUnit<NpiDomain>
 			return state
 		}
 
+		const domain = this.domainSlice(state)
 		const page: SearchPage = {
 			total: data.total,
 			limit: requestParams!.maxList,
 			size: NPI_PAGE_SIZE,
-			index: 0,
+			index: get(domain.page, 'index', 0),
 			params: requestParams!,
 			records: data.records,
 		}

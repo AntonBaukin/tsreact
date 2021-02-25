@@ -31,6 +31,7 @@ const Pages = ({ page, onSetPage }: PropTypes) => {
 			pageLinkClassName={styles.link}
 			containerClassName={styles.pages}
 			breakClassName={styles.page}
+			forcePage={page.index}
 			onPageChange={onPageChange}
 		/>
 	)

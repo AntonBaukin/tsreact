@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual'
 import { createSelector } from 'reselect'
 import { NPI_PAGE_SIZE, NPI_PAGES_FETCH } from 'src/utils/env'
 import UnitBase from 'src/data/UnitBase'
@@ -5,6 +6,7 @@ import { NPI, NpiDomain, initialState, SearchParams } from './domain'
 
 export interface SearchPayload {
 	searchText: string
+	limit?: number
 }
 
 export default new class extends UnitBase<NpiDomain>
@@ -15,21 +17,29 @@ export default new class extends UnitBase<NpiDomain>
 
 	readonly initialState = initialState
 
-	makePayload = (searchText: string): SearchPayload => ({ searchText })
+	fire(searchText: string, limit?: number) {
+		super.fire(searchText, limit)
+	}
+
+	makePayload(searchText: string, limit?: number): SearchPayload {
+		return ({ searchText, limit })
+	}
 
 	reduceOwnAction(state: Object, payload: SearchPayload) {
 		const searchText = cleanSearchText(payload.searchText)
 		const domain = this.domainSlice(state)
+		const searchParams = makeParams(searchText, payload.limit)
+		let { page } = domain
 
-		if (domain.searchText === searchText) {
+		if (isEqual(domain.searchParams, searchParams)) {
 			return state
 		}
 
-		return this.mergeDomain(state, {
-			searchText,
-			searchParams: makeParams(searchText),
-			page: undefined,
-		})
+		if (!isEqual(page?.params.terms, searchParams?.terms)) {
+			page = undefined //<— reset search results
+		}
+
+		return this.mergeDomain(state, {	searchText,	searchParams, page })
 	}
 
 	private readonly selectSlice = (state: Object) => this.domainSlice(state)
@@ -44,9 +54,12 @@ function cleanSearchText(searchText: string) {
 	return searchText.trim().replace(/\s+/g, ' ').toLocaleLowerCase()
 }
 
-function makeParams(searchText: string): SearchParams | undefined {
+function makeParams(
+	searchText: string,
+	limit?: number,
+): SearchParams | undefined {
 	const terms = cleanSearchText(searchText)
-	const maxList: number = NPI_PAGE_SIZE * NPI_PAGES_FETCH
+	const maxList = limit || NPI_PAGE_SIZE * NPI_PAGES_FETCH
 
 	if (terms.length === 0) {
 		return undefined
