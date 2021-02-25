@@ -218,22 +218,22 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	}
 
 	/**
-	 * Returns single instance of fire curries without arguments.
+	 * Returns single instance of fire curried without arguments.
 	 * Useful in the most cases: when all call arguments are passed
 	 * to the action maker of this unit.
 	 */
-	get carried(): ((...callArgs: any[]) => void) {
-		if (this.$carried === undefined) {
-			this.$carried = this.curry()
+	get curried(): ((...callArgs: any[]) => void) {
+		if (this.$curried === undefined) {
+			this.$curried = this.curry()
 		}
 
-		return this.$carried
+		return this.$curried
 	}
 
-	$carried: undefined | ((...callArgs: any[]) => void)
+	$curried: undefined | ((...callArgs: any[]) => void)
 
 	/**
-	 * Unlike bind, curries all the arguments given, followed by
+	 * Unlike bind, curried all the arguments given, followed by
 	 * the arguments of the call time.
 	 */
 	curry(...boundArgs: any[]) {

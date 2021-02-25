@@ -13,3 +13,5 @@ export const IS_DEV_ENV = [
 ].includes(process.env.NODE_ENV)
 
 export const NPI_PAGE_SIZE = get(CONFIG, 'data.npi.pageSize', 10)
+
+export const NPI_PAGES_FETCH = get(CONFIG, 'data.npi.pagesFetch', 10)

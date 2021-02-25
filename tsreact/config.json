@@ -5,7 +5,8 @@
 
   "data": {
     "npi": {
-      "pageSize": 10
+      "pageSize": 10,
+      "pagesFetch": 10
     }
   },
 

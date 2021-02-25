@@ -1,6 +1,7 @@
 import { connect } from 'react-redux'
 import Text from 'src/components/Text'
 import { PropTypes, propTypes, defaultProps, mapStateToProps } from './props'
+import Pages from './Pages'
 import Item from './Item'
 import styles from './styles.module.scss'
 
@@ -20,6 +21,10 @@ const Results = (props: any) => {
 				<Text total={total}>SEARCH_TOTAL</Text>
 			</div>
 
+			<div className={styles.pages}>
+				<Pages page={page} />
+			</div>
+
 			<div className={styles.items}>
 				{items.map((record, index) => (
 					<Item
@@ -28,6 +33,10 @@ const Results = (props: any) => {
 						record={record}
 					/>
 				))}
+			</div>
+
+			<div className={styles.pages}>
+				<Pages page={page} />
 			</div>
 		</div>
 	)

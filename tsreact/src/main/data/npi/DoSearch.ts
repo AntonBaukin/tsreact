@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { NPI_PAGE_SIZE } from 'src/utils/env'
+import { NPI_PAGE_SIZE, NPI_PAGES_FETCH } from 'src/utils/env'
 import UnitBase from 'src/data/UnitBase'
 import { NPI, NpiDomain, initialState, SearchParams } from './domain'
 
@@ -17,7 +17,7 @@ export default new class extends UnitBase<NpiDomain>
 
 	makePayload = (searchText: string): SearchPayload => ({ searchText })
 
-	reduceOwnAction(state: Object, payload : SearchPayload) {
+	reduceOwnAction(state: Object, payload: SearchPayload) {
 		const searchText = cleanSearchText(payload.searchText)
 		const domain = this.domainSlice(state)
 
@@ -46,8 +46,7 @@ function cleanSearchText(searchText: string) {
 
 function makeParams(searchText: string): SearchParams | undefined {
 	const terms = cleanSearchText(searchText)
-	//--> *2 to fetch the second page ahead
-	const maxList: number = NPI_PAGE_SIZE * 2
+	const maxList: number = NPI_PAGE_SIZE * NPI_PAGES_FETCH
 
 	if (terms.length === 0) {
 		return undefined

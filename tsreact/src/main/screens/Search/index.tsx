@@ -11,7 +11,7 @@ const Search = () => (
 			<div className={styles.inputBlock}>
 				<SearchInput
 					id="main-search-input"
-					onSearch={doSearch.carried}
+					onSearch={doSearch.curried}
 				/>
 			</div>
 

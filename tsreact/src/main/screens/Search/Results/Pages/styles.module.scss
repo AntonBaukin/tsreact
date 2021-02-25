@@ -1,0 +1,40 @@
+.pages {
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  $size: $search-pager-item-size;
+
+  @include noselect;
+  display: inline-block;
+  list-style: none;
+  min-width: $size;
+  height: $size;
+  line-height: $size;
+  text-align: center;
+  border: 1px solid $search-pager-color;
+
+  & + .page {
+    border-left: none;
+  }
+
+  .link, .link:active, .link:visited, .link:hover {
+    outline: none;
+    color: $search-pager-color;
+    text-decoration: none;
+  }
+
+  &.active {
+    background-color: $search-pager-color;
+    color: $search-pager-color-alt;
+
+    .link, .link:active, .link:visited, .link:hover {
+      color: $search-pager-color-alt;
+    }
+  }
+}
+
+.previous, .next {
+  display: none;
+}
