@@ -1,0 +1,9 @@
+.searchResults {
+  .total {
+    @include noselect;
+  }
+
+  .items {
+    margin: 1rem 0;
+  }
+}

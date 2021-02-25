@@ -1,13 +1,4 @@
 {
   "ROOT_TITLE": "Clinical Table Search",
-
-  "HELLO": "Hello, World!",
-  "SO": "So, Bootstrap was added...",
-  "AND": "And Bootstrap Icons either!",
-  "COUNTER": "Counter:",
-  "COUNTER_VALUE": "${value}",
-  "INCREMENT": "Increment",
-  "INCREMENT_BY": "Increment by ${value}",
-  "DECREMENT": "Decrement",
-  "DECREMENT_BY": "Decrement by ${value}"
+  "SEARCH_TOTAL": "Total results: ${total}"
 }

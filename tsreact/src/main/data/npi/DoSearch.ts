@@ -31,6 +31,13 @@ export default new class extends UnitBase<NpiDomain>
 			page: undefined,
 		})
 	}
+
+	private readonly selectSlice = (state: Object) => this.domainSlice(state)
+
+	readonly selectPage = createSelector(
+		this.selectSlice,
+		({ page }) => page
+	)
 }
 
 function cleanSearchText(searchText: string) {

@@ -1,0 +1,25 @@
+.searchRecord {
+  padding: 0.5rem $root-xgap-screen-sm;
+  margin: 0 (-$root-xgap-screen-sm);
+
+  &.even {
+    background-color: $search-record-even-bg;
+  }
+
+  &.odd {
+    background-color: $search-record-odd-bg;
+  }
+
+  .type {
+    text-align: right;
+    font-size: 0.8em;
+  }
+
+  .name {
+  }
+
+  .address {
+    margin-top: 0.5rem;
+    font-size: 0.8em;
+  }
+}
