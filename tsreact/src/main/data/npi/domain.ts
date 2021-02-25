@@ -23,11 +23,20 @@ export interface NpiDomain
 }
 
 /**
- * NPI database record.
+ * Record of plain search in NPI database.
  */
-export interface Record
+export interface SearchRecord
 {
-	id: string
+	id: string,
+	type: string,
+	name: string,
+	address: string,
+}
+
+export interface SearchResults
+{
+	total: number,
+	records: SearchRecord[]
 }
 
 /**
@@ -68,7 +77,7 @@ export interface SearchPage
 	/**
 	 * Loaded records.
 	 */
-	records: Record[]
+	records: SearchRecord[]
 
 	/**
 	 * Parameters used to fetch the data.

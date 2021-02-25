@@ -1,13 +1,10 @@
 import get from 'lodash/get'
 import set from 'lodash/set'
 
-export type JsonValue = string|number|boolean|null|Json|JsonArray
+export type JsonValue = string|number|boolean|null|Json|Array<JsonValue>
 
 export interface Json {
 	[x: string]: JsonValue
-}
-
-export interface JsonArray extends Array<JsonValue> {
 }
 
 /**

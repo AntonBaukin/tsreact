@@ -1,8 +1,17 @@
 import isEqual from 'lodash/isEqual'
 import FetchUnit, { JsonPayload } from 'src/data/FetchUnit'
 import { Json } from 'src/utils/objects'
-import { NPI, NpiDomain, initialState, SearchParams } from './domain'
+import { NPI_PAGE_SIZE } from 'src/utils/env'
+import { TxSearchResults } from './TxSearch'
 import doSearch from './DoSearch'
+import {
+	NPI,
+	NpiDomain,
+	initialState,
+	SearchParams,
+	SearchResults,
+	SearchPage,
+} from './domain'
 
 export default new class extends FetchUnit<NpiDomain>
 {
@@ -23,14 +32,28 @@ export default new class extends FetchUnit<NpiDomain>
 	}
 
 	reduceOwnAction(state: Object, payload: JsonPayload<NpiDomain>) {
-		const requestParams = this.makeParamsFromSlice(payload.slice)
-		const actualParams = this.makeParamsFromSlice(this.domainSlice(state))
+		const requestParams = payload.slice.searchParams
+		const actualParams = this.domainSlice(state).searchParams
 
 		//?: { this request is obsolete }
 		if (!isEqual(requestParams, actualParams)) {
 			return state
 		}
 
-		return state
+		const data = TxSearchResults.one<SearchResults>(payload.json)
+		if (!data) {
+			return state
+		}
+
+		const page: SearchPage = {
+			total: data.total,
+			limit: requestParams!.maxList,
+			size: NPI_PAGE_SIZE,
+			index: 0,
+			params: requestParams!,
+			records: data.records,
+		}
+
+		return this.mergeDomain(state, { page })
 	}
 }

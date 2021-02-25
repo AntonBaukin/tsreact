@@ -143,7 +143,7 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	 * Redux safe utility. Merges the given delta of the domain
 	 * model into the global state.
 	 */
-	mergeDomain(state: Object, domain: LocalType): Object {
+	mergeDomain(state: Object, domain: Object): Object {
 		if (this.domain.length === 0) {
 			return {	...state, ...domain }
 		}
