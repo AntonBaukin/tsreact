@@ -2,6 +2,7 @@ import get from 'lodash/get'
 import set from 'lodash/set'
 import isNil from 'lodash/isNil'
 import { AnyAction } from 'redux'
+import { deepSet } from 'src/utils/objects'
 import AppContext from './AppContext'
 import DataUnit, { unitFullName } from './DataUnit'
 
@@ -138,6 +139,29 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 		return this.safeState(this.domain.length === 0 ? state : get(state, this.domain, {}))
 	}
 
+	/**
+	 * Redux safe utility. Merges the given delta of the domain
+	 * model into the global state.
+	 */
+	mergeDomain(state: Object, domain: LocalType): Object {
+		if (this.domain.length === 0) {
+			return {	...state, ...domain }
+		}
+
+		const slice = { ...this.domainSlice(state), ...domain }
+		return deepSet(state, this.domain, slice)
+	}
+
+	/**
+	 * Use with care! In complex models you likely need
+	 * to merge, even to clean up.
+	 */
+	replaceDomain(state: Object, domain: LocalType): Object {
+		return this.domain.length === 0
+			? domain
+			: deepSet(state, this.domain, domain)
+	}
+
 
 	/* Redux Actions */
 
@@ -169,6 +193,20 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	}
 
 	/**
+	 * Bound fire without arguments. Useful only when
+	 * the action maker of this unit has no arguments.
+	 */
+	get bound(): (() => void) {
+		if (this.$bound === undefined) {
+			this.$bound = this.bind()
+		}
+
+		return this.$bound
+	}
+
+	$bound: undefined | (() => void)
+
+	/**
 	 * Returns function with bound arguments that fire the action
 	 * of this unit. Note that if this unit is active, it may react
 	 * on own action or other. All arguments given to the resulting
@@ -178,6 +216,21 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 	bind(...boundArgs: any[]) {
 		return () => this.fire(...boundArgs)
 	}
+
+	/**
+	 * Returns single instance of fire curries without arguments.
+	 * Useful in the most cases: when all call arguments are passed
+	 * to the action maker of this unit.
+	 */
+	get carried(): ((...callArgs: any[]) => void) {
+		if (this.$carried === undefined) {
+			this.$carried = this.curry()
+		}
+
+		return this.$carried
+	}
+
+	$carried: undefined | ((...callArgs: any[]) => void)
 
 	/**
 	 * Unlike bind, curries all the arguments given, followed by

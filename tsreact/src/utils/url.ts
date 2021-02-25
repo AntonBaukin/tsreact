@@ -58,7 +58,7 @@ export function checkEndpoints(): void {
 			throw new Error(`Wrong URL format for endpoint ${name}: ${value}`)
 		}
 
-		if (!['http', 'https'].includes(protocol)) {
+		if (!['http:', 'https:'].includes(protocol)) {
 			throw new Error(`Endpoint ${name} is not of HTTP(S) protocol: ${value}`)
 		}
 	})

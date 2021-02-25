@@ -1,7 +1,5 @@
-import counterUnit from './Counter'
-import countlogUnit from './Countlog'
+import npiUnits from './npi'
 
 export default () => [
-	counterUnit,
-	countlogUnit,
+	...npiUnits(),
 ]

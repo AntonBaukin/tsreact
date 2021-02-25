@@ -1,10 +1,10 @@
 import { compose, createStore, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { IS_DEV_ENV, DEVTOOLS_REDUX } from 'src/utils/env'
+import { IS_DEV_ENV, REDUX_DEVTOOLS_OPTS } from 'src/utils/env'
 
 export function createAppStore(reducer, ...middleware) {
 	const composeEnhancers = IS_DEV_ENV
-		? composeWithDevTools(DEVTOOLS_REDUX)
+		? composeWithDevTools(REDUX_DEVTOOLS_OPTS)
 		: compose
 
 	const enhancer = composeEnhancers(
