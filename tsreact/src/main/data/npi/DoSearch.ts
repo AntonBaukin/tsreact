@@ -39,7 +39,8 @@ function cleanSearchText(searchText: string) {
 
 function makeParams(searchText: string): SearchParams | undefined {
 	const terms = cleanSearchText(searchText)
-	const maxList: number = NPI_PAGE_SIZE
+	//--> *2 to fetch the second page ahead
+	const maxList: number = NPI_PAGE_SIZE * 2
 
 	if (terms.length === 0) {
 		return undefined

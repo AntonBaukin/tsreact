@@ -32,7 +32,7 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	 */
 	isActOn(action: AnyAction): boolean {
 		if (action.type === this.fullName) {
-			return true
+			return this.isActOnOwn(action)
 		}
 
 		if (this.actedTypes !== undefined) {
@@ -40,6 +40,10 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 		}
 
 		return false
+	}
+
+	isActOnOwn(action: AnyAction): boolean {
+		return true
 	}
 
 	get actedTypes(): Set<string> | undefined {
@@ -122,7 +126,7 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 	 * Asynchronously reacts on an error created when resolving
 	 * resulting promise of this thunk.
 	 */
-	catchError(error : Error) {
+	catchError(error: Error) {
 		logAsyncError(error)
 	}
 

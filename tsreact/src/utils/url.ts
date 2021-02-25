@@ -3,6 +3,8 @@ import isEmpty from 'lodash/isEmpty'
 import { Endpoints } from 'src/rest/Endpoints'
 import { ENDPOINTS } from './env'
 
+export const MIME_JSON = 'application/json'
+
 export type UrlParamValue = string | number | boolean | undefined | null
 
 export interface UrlParams {

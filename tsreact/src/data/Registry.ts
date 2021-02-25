@@ -279,12 +279,11 @@ export default class Registry
 	protected reactOwn(api: MiddlewareAPI, action: AnyAction) {
 		//~: lookup entry by action type as it's full name
 		const entry = this.$registry.get(action.type)
-		if (!entry || !entry.isActOn(action)) {
-			return
-		}
 
-		//!: invoke primary data unit
-		entry.unit.react(action)
+		//?: { unit exists & responds to this action }
+		if (entry && entry.isActOn(action)) {
+			entry.unit.react(action)
+		}
 	}
 
 	protected reactElse(api: MiddlewareAPI, action: AnyAction, unitName: string) {
