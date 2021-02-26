@@ -8,7 +8,7 @@ import { Json } from 'src/utils/objects'
 
 export type TransformClass<Target> = new () => Transform<Target>
 
-export type Path = string | number | (string | number)[]
+export type Path = string | number | (string | number | undefined)[]
 
 /**
  * Transformation strategy that takes a JSON object and
@@ -43,7 +43,7 @@ export default class Transform<Target extends Object = Json>
 	 * Assigns source data and new target instance.
 	 * Overwrite it if you need a cleanup before each transformation.
 	 */
-	$init(data: Json): this {
+	$init(data: Json, ...params: any[]): this {
 		this.$data = data
 		this.$result = {} as Target
 		return this
@@ -77,7 +77,7 @@ export default class Transform<Target extends Object = Json>
 	/* Transformation Helpers */
 
 	$get(path: Path): any {
-		return get(this.$data, path)
+		return get(this.$data, path as any)
 	}
 
 	$string(path: Path): string | undefined {

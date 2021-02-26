@@ -34,15 +34,15 @@ export default new class extends ActiveUnit
 
 	makePayload = (payload: NavigatePayload) => payload
 
-	push(path: string) {
+	push = (path: string) => {
 		this.fire({ type: NavigateType.PUSH, path })
 	}
 
-	replace(path: string) {
+	replace = (path: string) => {
 		this.fire({ type: NavigateType.REPLACE, path })
 	}
 
-	pop() {
+	pop = () => {
 		this.fire({ type: NavigateType.POP })
 	}
 

@@ -24,7 +24,6 @@ const Item = ({ index, record, onShowRecord }: PropTypes) => {
 
 			<div className={styles.showRecord}>
 				<button
-					type="button"
 					className="btn btn-sm btn-outline-dark"
 					onClick={onClick}
 				>

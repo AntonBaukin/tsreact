@@ -32,14 +32,19 @@ export interface NpiDomain
  */
 export interface SearchRecord
 {
-	id: string,
-	type: string,
-	name: string,
-	address: string,
+	id: string
+	type: string
+	name: string
+	address: string
 }
 
 export interface FullRecord extends SearchRecord
 {
+	gender: string
+	country: string
+	state: string
+	city: string
+	phone: string
 }
 
 /**

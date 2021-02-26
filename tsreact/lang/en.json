@@ -1,4 +1,5 @@
 {
   "ROOT_TITLE": "Clinical Table Search",
-  "SEARCH_TOTAL": "Total results: ${total}"
+  "SEARCH_TOTAL": "Total results: ${total}",
+  "RECORD_BACK": "Back"
 }

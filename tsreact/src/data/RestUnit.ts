@@ -144,16 +144,16 @@ export default abstract class RestUnit<LocalType extends Object = Object>
 				return
 			}
 
-			return this.handleJson(action, slice, json, response)
+			return this.handleJson(json, action, slice, response)
 		}
 
 		return undefined
 	}
 
 	handleJson(
+		json: Json,
 		action: AnyAction,
 		slice: LocalType,
-		json: Json,
 		response: Response
 	): void | Promise<any> {
 		if (this.actionFromJson) {
