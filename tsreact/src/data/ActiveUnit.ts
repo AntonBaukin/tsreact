@@ -1,5 +1,4 @@
 import { AnyAction } from 'redux'
-import RestClient from 'src/rest/RestClient'
 import { logAsyncError } from 'src/utils/log'
 import DataUnit from './DataUnit'
 import UnitBase, { unitActionType } from './UnitBase'
@@ -74,8 +73,12 @@ export default abstract class ActiveUnit<LocalType extends Object = Object>
 		return this.appContext.store.getState()
 	}
 
-	get restClient(): RestClient {
+	get restClient() {
 		return this.appContext.restClient
+	}
+
+	get history() {
+		return this.appContext.history
 	}
 
 	/**

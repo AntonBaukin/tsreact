@@ -44,6 +44,11 @@ export default new class extends UnitBase<NpiDomain>
 
 	private readonly selectSlice = (state: Object) => this.domainSlice(state)
 
+	readonly selectSearchText = createSelector(
+		this.selectSlice,
+		({ searchText }) => searchText
+	)
+
 	readonly selectPage = createSelector(
 		this.selectSlice,
 		({ page }) => page

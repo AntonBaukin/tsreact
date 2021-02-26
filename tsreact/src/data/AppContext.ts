@@ -1,12 +1,14 @@
 import { createContext } from 'react'
 import { Store } from 'redux'
+import { History } from 'history'
 import RestClient from 'src/rest/RestClient'
 import Registry from './Registry'
 
 export interface Items {
-	store: Store,
-	registry: Registry,
-	restClient: RestClient,
+	store: Store
+	history: History,
+	registry: Registry
+	restClient: RestClient
 }
 
 /**
@@ -29,6 +31,13 @@ export default class AppContext
 	 */
 	get store() {
 		return this.$items.store
+	}
+
+	/**
+	 * Browser history used by the router.
+	 */
+	get history() {
+		return this.$items.history
 	}
 
 	get registry() {

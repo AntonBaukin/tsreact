@@ -1,5 +1,5 @@
 import { Component, ReactNode } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { Router } from 'react-router-dom'
 import { renderRoutes } from 'react-router-config'
 import { Provider } from 'react-redux'
 import AppContext from 'src/data/AppContext'
@@ -48,9 +48,9 @@ export default abstract class AppBase extends Component<PropTypes>
 		return (
 			<AppContext.React.Provider value={this.appContext}>
 				<Provider store={this.appContext.store}>
-					<BrowserRouter>
+					<Router history={this.appContext.history}>
 						{this.renderApp()}
-					</BrowserRouter>
+					</Router>
 				</Provider>
 			</AppContext.React.Provider>
 		)

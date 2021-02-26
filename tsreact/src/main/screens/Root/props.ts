@@ -1,4 +1,3 @@
-import { ReactNode } from 'react'
 import { object } from 'prop-types'
 import { RouteConfig } from 'react-router-config'
 
