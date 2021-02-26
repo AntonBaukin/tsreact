@@ -1,0 +1,20 @@
+.record {
+  height: calc(100vh - #{$root-title-height});
+  padding: 1rem 0;
+
+  .scroll {
+    padding: 0 $root-xgap-screen-sm;
+  }
+
+  .field {
+    padding: 0.5rem $root-xgap-screen-sm;
+
+    &.even {
+      background-color: $record-field-even-bg;
+    }
+
+    &.odd {
+      background-color: $record-field-odd-bg;
+    }
+  }
+}

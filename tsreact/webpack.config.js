@@ -6,7 +6,7 @@ module.exports = (env, args) => {
   const rules = require('./webpack/rules')({ paths })
   const plugins = require('./webpack/plugins')({ mode, paths })
   const optimization = require('./webpack/opts')({ mode })
-  const devServer = require('./webpack/server')()
+  const devServer = require('./webpack/server')({ paths })
 
   return {
     mode,
@@ -18,6 +18,7 @@ module.exports = (env, args) => {
     },
     output: {
       path: paths.output,
+      publicPath: paths.publicPath,
       filename: path.join(paths.main.output, '[name].[contenthash:8].js')
     },
     entry: {

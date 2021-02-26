@@ -20,6 +20,11 @@ export interface NpiDomain
 	 * Loaded data. When search text alters, page is removed.
 	 */
 	page?: SearchPage
+
+	/**
+	 * Full records loaded individually.
+	 */
+	records: FullRecord[]
 }
 
 /**
@@ -32,6 +37,18 @@ export interface SearchRecord
 	name: string,
 	address: string,
 }
+
+export interface FullRecord extends SearchRecord
+{
+}
+
+/**
+ * In some places of the UI search record is temporary used
+ * instead of the full one. This simply checks.
+ */
+export const isFullRecord = (record: SearchRecord | FullRecord) => (
+	Object.keys(record).length > 4
+)
 
 export interface SearchResults
 {
@@ -92,4 +109,5 @@ export interface SearchPage
  */
 export const initialState = {
 	searchText: '',
+	records: [],
 } as NpiDomain

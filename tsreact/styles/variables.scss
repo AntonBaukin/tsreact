@@ -20,10 +20,13 @@ $root-title-color: $light;
 $root-title-bg: $dark;
 
 // Main :: Search
-$search-input-padding: 1rem;
 $search-input-border: $dark;
 $search-record-even-bg: #f6f6f6;
 $search-record-odd-bg: #e2e2e2;
 $search-pager-item-size: 2rem;
 $search-pager-color: $dark;
 $search-pager-color-alt: $light;
+
+// Main :: Record
+$record-field-even-bg: #e2e2e2;
+$record-field-odd-bg: #f6f6f6;

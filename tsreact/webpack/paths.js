@@ -1,3 +1,4 @@
+const config = require('../config.json')
 const path = require('path')
 const base = path.join(__dirname, '..')
 const modules = path.join(base, 'node_modules')
@@ -5,6 +6,7 @@ const index = path.join(base, 'index')
 const lang = path.join(base, 'lang')
 
 module.exports = () => ({
+	publicPath: config.publicPath || '/',
 	modules: path.resolve(base, 'node_modules'),
 	public: path.resolve(base, 'public'),
 	output: path.resolve(base, 'build'),
