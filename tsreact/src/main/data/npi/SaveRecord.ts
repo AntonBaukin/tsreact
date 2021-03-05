@@ -11,8 +11,7 @@ export default new class extends UnitBase<NpiDomain>
 
 	makePayload = (record: FullRecord) => record
 
-	reduceOwnAction(state: Object, payload: FullRecord) {
-		const { records } = this.domainSlice(state)
-		return this.mergeDomain(state, { records: [payload, ...records] })
-	}
+	reduceOwnAction = this.sliceProducer((slice: NpiDomain, payload: FullRecord) => {
+		slice.records.unshift(payload)
+	})
 }

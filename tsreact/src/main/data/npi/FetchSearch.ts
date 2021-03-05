@@ -32,30 +32,30 @@ export default new class extends FetchUnit<NpiDomain>
 		return this.toParams(slice.searchParams)
 	}
 
-	reduceOwnAction(state: Object, payload: JsonPayload<NpiDomain>) {
+	reduceOwnAction = this.sliceProducer((
+		slice: NpiDomain,
+		payload: JsonPayload<NpiDomain>
+	) => {
 		const requestParams = payload.slice.searchParams
-		const actualParams = this.domainSlice(state).searchParams
+		const actualParams = slice.searchParams
 
 		//?: { this request is obsolete }
 		if (!isEqual(requestParams, actualParams)) {
-			return state
+			return
 		}
 
 		const data = TxSearchResults.one<SearchResults>(payload.json)
 		if (!data) {
-			return state
+			return
 		}
 
-		const domain = this.domainSlice(state)
-		const page: SearchPage = {
+		slice.page = {
 			total: data.total,
 			limit: requestParams!.maxList,
 			size: NPI_PAGE_SIZE,
-			index: get(domain.page, 'index', 0),
+			index: get(slice.page, 'index', 0),
 			params: requestParams!,
 			records: data.records,
 		}
-
-		return this.mergeDomain(state, { page })
-	}
+	})
 }

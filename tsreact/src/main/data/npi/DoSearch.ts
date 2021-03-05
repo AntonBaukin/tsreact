@@ -25,22 +25,20 @@ export default new class extends UnitBase<NpiDomain>
 		return ({ searchText, limit })
 	}
 
-	reduceOwnAction(state: Object, payload: SearchPayload) {
+	reduceOwnAction = this.sliceProducer((slice: NpiDomain, payload: SearchPayload) => {
 		const searchText = cleanSearchText(payload.searchText)
-		const domain = this.domainSlice(state)
 		const searchParams = makeParams(searchText, payload.limit)
-		let { page } = domain
 
-		if (isEqual(domain.searchParams, searchParams)) {
-			return state
+		if (isEqual(slice.searchParams, searchParams)) {
+			return
 		}
 
-		if (!isEqual(page?.params.terms, searchParams?.terms)) {
-			page = undefined //<— reset search results
+		if (!isEqual(slice.page?.params.terms, searchParams?.terms)) {
+			slice.page = undefined //<— reset search results
 		}
 
-		return this.mergeDomain(state, {	searchText,	searchParams, page })
-	}
+		Object.assign(slice, { searchText, searchParams })
+	})
 
 	private readonly selectSlice = (state: Object) => this.domainSlice(state)
 

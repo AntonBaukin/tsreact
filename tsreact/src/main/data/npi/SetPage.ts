@@ -38,8 +38,7 @@ export default new class extends ActiveUnit<NpiDomain>
 		doSearch.fire(searchText, newLimit)
 	}
 
-	reduceOwnAction(state: Object, { index }: PageIndexPayload) {
-		const { page } = this.domainSlice(state)
-		return this.mergeDomain(state, { page: { ...page, index } })
-	}
+	reduceOwnAction = this.sliceProducer((slice: NpiDomain, payload: PageIndexPayload) => {
+		slice.page!.index = payload.index
+	})
 }

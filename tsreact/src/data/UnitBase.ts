@@ -1,10 +1,22 @@
 import get from 'lodash/get'
 import set from 'lodash/set'
 import isNil from 'lodash/isNil'
+import cloneDeep from 'lodash/cloneDeep'
 import { AnyAction } from 'redux'
+import produce from 'immer'
 import { deepSet } from 'src/utils/objects'
 import AppContext from './AppContext'
 import DataUnit, { unitFullName } from './DataUnit'
+
+/**
+ * Type for Immer producer that handles domain slices.
+ * @param state Global immutable state, for read-only.
+ */
+export type SliceProducer<LocalType, PayloadType> = (
+	slice: LocalType,
+	payload: PayloadType,
+	state: Object,
+) => void
 
 export default abstract class UnitBase<LocalType extends Object = Object> extends DataUnit
 {
@@ -117,13 +129,15 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 			return state as LocalType
 		}
 
+		const clone = cloneDeep(this.initialState)
 		let result = state
+
 		for (const key of Object.keys(this.initialState)) {
 			if (isNil(get(state, key))) {
 				if (result === state) {
-					result = { ...result, [key]: get(this.initialState, key) }
+					result = { ...result, [key]: cloneDeep(get(this.initialState, key)) }
 				} else {
-					set(result, key, get(this.initialState, key))
+					set(result, key, cloneDeep(get(this.initialState, key)))
 				}
 			}
 		}
@@ -160,6 +174,31 @@ export default abstract class UnitBase<LocalType extends Object = Object> extend
 		return this.domain.length === 0
 			? domain
 			: deepSet(state, this.domain, domain)
+	}
+
+	/**
+	 * Returns reduce function of (state, payload) that updates
+	 * slice of the domain using immer producer.
+	 */
+	sliceProducer<PayloadType>(producer: SliceProducer<LocalType, PayloadType>) {
+		return (state: Object, payload: PayloadType) => (
+			produce(state, draft => {
+				let slice: Object | undefined
+
+				if (this.domain.length === 0) {
+					slice = Object.assign(draft, cloneDeep(this.initialState) || {})
+				} else {
+					slice = get(draft, this.domain)
+
+					if (slice === undefined) {
+						slice = cloneDeep(this.initialState)
+						set(draft, this.domain, slice)
+					}
+				}
+
+				producer(slice as LocalType, payload, state)
+			})
+		)
 	}
 
 
