@@ -14,7 +14,7 @@ import {
 	SearchPage,
 } from './domain'
 
-export default new class extends FetchUnit<NpiDomain>
+class FetchSearch extends FetchUnit<NpiDomain>
 {
 	readonly name = 'FetchSearch'
 
@@ -59,3 +59,5 @@ export default new class extends FetchUnit<NpiDomain>
 		}
 	})
 }
+
+export default new FetchSearch()

@@ -1,6 +1,5 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const jsonImporter = require('node-sass-json-importer')()
 
 const cssPlugins = ({ paths }) => [
 	new MiniCssExtractPlugin({
@@ -52,7 +51,7 @@ const useCss = (paths) => [
 			sourceMap: true,
 			additionalData: defaultScssImports,
 			sassOptions: {
-				importer: jsonImporter,
+				// importer: jsonImporter,
 				includePaths: [
 					paths.styles.sources
 				]

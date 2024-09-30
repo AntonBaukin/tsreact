@@ -8,7 +8,7 @@ export interface PageIndexPayload {
 	index: number
 }
 
-export default new class extends ActiveUnit<NpiDomain>
+class SetPage extends ActiveUnit<NpiDomain>
 {
 	readonly name = 'SetPage'
 
@@ -42,3 +42,5 @@ export default new class extends ActiveUnit<NpiDomain>
 		slice.page!.index = payload.index
 	})
 }
+
+export default new SetPage()

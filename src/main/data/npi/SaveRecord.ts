@@ -1,7 +1,7 @@
 import UnitBase from 'src/data/UnitBase'
 import { NPI, NpiDomain, initialState, FullRecord } from './domain'
 
-export default new class extends UnitBase<NpiDomain>
+class SaveRecord extends UnitBase<NpiDomain>
 {
 	readonly name = 'SaveRecord'
 
@@ -15,3 +15,5 @@ export default new class extends UnitBase<NpiDomain>
 		slice.records.unshift(payload)
 	})
 }
+
+export default new SaveRecord()

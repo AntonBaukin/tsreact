@@ -29,7 +29,7 @@ const ef = [
 	'addr_practice.phone',
 ].join(',')
 
-export default new class extends FetchUnit<NpiDomain>
+class FetchRecord extends FetchUnit<NpiDomain>
 {
 	readonly name = 'FetchRecord'
 
@@ -64,3 +64,5 @@ export default new class extends FetchUnit<NpiDomain>
 		({ records }) => records
 	)
 }
+
+export default new FetchRecord()

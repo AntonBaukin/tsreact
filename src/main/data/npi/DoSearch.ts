@@ -9,7 +9,7 @@ export interface SearchPayload {
 	limit?: number
 }
 
-export default new class extends UnitBase<NpiDomain>
+class DoSearch extends UnitBase<NpiDomain>
 {
 	readonly name = 'DoSearch'
 
@@ -52,6 +52,8 @@ export default new class extends UnitBase<NpiDomain>
 		({ page }) => page
 	)
 }
+
+export default new DoSearch()
 
 function cleanSearchText(searchText: string) {
 	return searchText.trim().replace(/\s+/g, ' ').toLocaleLowerCase()

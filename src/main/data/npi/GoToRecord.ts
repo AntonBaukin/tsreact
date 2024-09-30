@@ -7,7 +7,7 @@ export interface GoToRecordPayload {
 	id: string
 }
 
-export default new class extends ActiveUnit<NpiDomain>
+class GoToRecord extends ActiveUnit<NpiDomain>
 {
 	readonly name = 'GoToRecord'
 
@@ -22,3 +22,5 @@ export default new class extends ActiveUnit<NpiDomain>
 		navigate.push(`/record/${id}`)
 	}
 }
+
+export default new GoToRecord()
