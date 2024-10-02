@@ -1,6 +1,8 @@
-import ReactDOM from 'react-dom'
-import Main from '../src/main/Main'
+import { createRoot } from 'react-dom/client'
+import Main from 'sources/main/Main'
+
+const reactRoot = createRoot(document.body)
 
 document.addEventListener('DOMContentLoaded', () => {
-	ReactDOM.render(<Main />, document.body.querySelector('#main'))
+  reactRoot.render(<Main />);
 })
