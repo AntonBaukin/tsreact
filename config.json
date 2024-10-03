@@ -1,5 +1,9 @@
 {
   "publicPath": "/",
+  "reactRootId": "react-application",
+  "pageTitle": "Sample React Application",
+  "defaultLang": "en",
+  "globalLangVariable": "APP_LANG",
   "endpoints": {
     "main": "/api"
   }

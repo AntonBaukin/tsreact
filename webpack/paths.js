@@ -10,9 +10,10 @@ module.exports = () => ({
   modules: path.resolve(base, 'node_modules'),
   public: path.resolve(base, 'public'),
   output: path.resolve(base, 'build'),
+  config: path.resolve(base, 'config.json'),
   main: {
     sources: path.resolve(base, 'sources'),
-    entry: path.resolve(index, 'main.tsx'),
+    entry: path.resolve(index, 'main.js'),
     html: path.resolve(index, 'index.html'),
     outputTemplate: path.join('scripts', '[name].[contenthash:8].js'),
   },

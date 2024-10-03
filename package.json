@@ -43,7 +43,7 @@
   },
   "scripts": {
     "build": "webpack --mode=production",
-    "start": "webpack serve --hot --env=development",
+    "dev": "webpack serve --env=development",
     "test": "jest"
   }
 }

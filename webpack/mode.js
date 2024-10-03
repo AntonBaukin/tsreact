@@ -1,8 +1,8 @@
 const { PROD, DEV } = require('./utils')
 
-module.exports = ({ env, args }) => {
-  const isDevEnv = env[DEV] === true
-  const isArgProd = args.mode === PROD
+module.exports = ({ env, args } = {}) => {
+  const isDevEnv = env?.[DEV] === true
+  const isArgProd = args?.mode === PROD
   let mode = process.env.NODE_ENV
 
   if (!mode) {

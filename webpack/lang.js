@@ -1,4 +1,5 @@
 const WebpackCopyPlugin = require('copy-webpack-plugin')
+const config = require('../config.json')
 
 const copyLang = (paths, lang) => new WebpackCopyPlugin({
   patterns: [{
@@ -7,7 +8,7 @@ const copyLang = (paths, lang) => new WebpackCopyPlugin({
     toType: 'template',
 
     transform: (content) => (
-      `(window.LANG = window.LANG || {}).${lang} = `
+      `(window.${config.globalLangVariable} = window.${config.globalLangVariable} || {}).${lang} = `
         .concat(content.toString())
     )
   }]
