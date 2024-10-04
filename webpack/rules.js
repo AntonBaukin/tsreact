@@ -1,5 +1,5 @@
 const { useCss } = require('./css')
-const { useFontsLoader } = require('./fonts')
+const { useFontsAsset } = require('./fonts')
 
 module.exports = ({ paths }) => [
   {
@@ -18,6 +18,6 @@ module.exports = ({ paths }) => [
   },
   {
     test: /\.woff2$/,
-    use: useFontsLoader(paths)
+    ...useFontsAsset(paths)
   },
 ]

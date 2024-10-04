@@ -24,7 +24,6 @@ module.exports = () => ({
   },
   fonts: {
     output: 'fonts',
-    public: '../fonts'
   },
   icons: {
     bootstrap: path.resolve(modules, 'bootstrap-icons', 'icons'),

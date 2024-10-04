@@ -1,4 +1,5 @@
 const TerserPlugin = require('terser-webpack-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const { isPROD, isDEV } = require('./utils')
 
 const terser = (mode) => new TerserPlugin({
@@ -15,6 +16,7 @@ module.exports = ({ mode }) => ({
   minimize: isPROD(mode),
   minimizer: [
     terser(mode),
+    new CssMinimizerPlugin(),
   ],
   moduleIds: 'deterministic',
   chunkIds: 'deterministic',
