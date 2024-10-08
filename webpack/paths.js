@@ -6,6 +6,7 @@ const lang = path.join(base, 'lang')
 const config = require('../config.json')
 
 module.exports = () => ({
+  base: path.resolve(base),
   publicPath: config.publicPath || '/',
   modules: path.resolve(base, 'node_modules'),
   public: path.resolve(base, 'public'),
