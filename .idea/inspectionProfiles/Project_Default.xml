@@ -2,9 +2,8 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="Duplicates" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="JSUnusedGlobalSymbols" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="JSUnusedLocalSymbols" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="JSXNamespaceValidation" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PointlessArithmeticExpression" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="m_ignoreExpressionsContainingConstants" value="true" />
     </inspection_tool>
@@ -23,7 +22,7 @@
       <option name="SUGGEST_FOR_CONSTANTS" value="false" />
       <disabledExtension id="moduleInfo" />
     </inspection_tool>
-    <inspection_tool class="unused" enabled="true" level="WEAK WARNING" enabled_by_default="true" klass="packageLocal" inner_class="packageLocal" method="protected">
+    <inspection_tool class="unused" enabled="true" level="WEAK WARNING" enabled_by_default="true" klass="packageLocal" inner_class="packageLocal" method="protected" checkParameterExcludingHierarchy="false">
       <option name="LOCAL_VARIABLE" value="true" />
       <option name="FIELD" value="true" />
       <option name="METHOD" value="true" />

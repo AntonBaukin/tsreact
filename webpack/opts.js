@@ -1,44 +1,46 @@
-const TerserPlugin = require("terser-webpack-plugin");
-const { isprod, isdev } = require('./utils')
+const TerserPlugin = require('terser-webpack-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
+const { isPROD, isDEV } = require('./utils')
 
 const terser = (mode) => new TerserPlugin({
-	extractComments: isdev(mode),
-	terserOptions: {
-		sourceMap: true,
-		format: {
-			comments: isdev(mode),
-		},
-	}
+  extractComments: isDEV(mode),
+  terserOptions: {
+    sourceMap: true,
+    format: {
+      comments: isDEV(mode),
+    },
+  }
 })
 
 module.exports = ({ mode }) => ({
-	minimize: isprod(mode),
-	minimizer: [
-		terser(mode),
-	],
-	moduleIds: 'deterministic',
-	chunkIds: 'deterministic',
-	runtimeChunk: 'single',
-	splitChunks: {
-		chunks: 'all',
-		minSize: 8 * 1024,
-		minRemainingSize: 0,
-		maxSize: (isdev(mode) ? 2048 : 256) * 1024,
-		minChunks: 1,
-		maxAsyncRequests: 4,
-		maxInitialRequests: 4,
-		enforceSizeThreshold: 64 * 1024,
-		cacheGroups: {
-			libraries: {
-				test: /[\\/]node_modules[\\/]/,
-				priority: -10,
-				reuseExistingChunk: true
-			},
-			default: {
-				minChunks: 2,
-				priority: -20,
-				reuseExistingChunk: true
-			},
-		}
-	}
+  minimize: isPROD(mode),
+  minimizer: [
+    terser(mode),
+    new CssMinimizerPlugin(),
+  ],
+  moduleIds: 'deterministic',
+  chunkIds: 'deterministic',
+  runtimeChunk: 'single',
+  splitChunks: {
+    chunks: 'all',
+    minSize: 4 * 1024,
+    minRemainingSize: 0,
+    maxSize: (isDEV(mode) ? 1024 : 256) * 1024,
+    minChunks: 1,
+    maxAsyncRequests: 16,
+    maxInitialRequests: 4,
+    enforceSizeThreshold: 64 * 1024,
+    cacheGroups: {
+      libraries: {
+        test: /[\\/]node_modules[\\/]/,
+        priority: -10,
+        reuseExistingChunk: true
+      },
+      default: {
+        minChunks: 2,
+        priority: -20,
+        reuseExistingChunk: true
+      },
+    }
+  }
 })

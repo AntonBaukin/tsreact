@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= htmlWebpackPlugin.options.defaultLang %>">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Sample React Application</title>
-    <script defer = "defer" src = "/lang/en.js"></script>
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script defer="defer" src="/lang/<%= htmlWebpackPlugin.options.defaultLang %>.js"></script>
   </head>
   <body>
-    <article id="main"/>
+    <article id="<%= htmlWebpackPlugin.options.reactRootId %>"></article>
   </body>
 </html>

@@ -1,17 +1,38 @@
-const clean = require('./clean')
-const copy = require('./copy')
-const check = require('./check')
-const html = require('./html')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const WebpackCopyPlugin = require('copy-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+const config = require('../config.json')
+const { isPROD } = require('./utils')
 const lang = require('./lang')
 const { cssPlugins } = require('./css')
 const { iconsSpritePlugins } = require('./icons')
 
-module.exports = (vars) => [
-	...clean(vars),
-	...check(vars),
-	...copy(vars),
-	...html(vars),
-	...lang(vars),
-	...cssPlugins(vars),
-	...iconsSpritePlugins(vars),
+const unwrap = (vars, ...modules) => modules.flatMap(module => module(vars))
+
+module.exports = ({ mode, paths, ...vars }) => [
+  new ForkTsCheckerWebpackPlugin(),
+
+  new WebpackCopyPlugin({
+    patterns: [
+      { from: paths.public },
+    ],
+  }),
+
+  new HtmlWebpackPlugin({
+    title: config.pageTitle,
+    template: paths.main.html,
+    scriptLoading: 'defer',
+    inject: 'head',
+    minify: isPROD(mode),
+    reactRootId: config.reactRootId,
+    defaultLang: config.defaultLang,
+  }),
+
+  ...unwrap(
+    { mode, paths, ...vars },
+    lang,
+    cssPlugins,
+    iconsSpritePlugins,
+  ),
 ]

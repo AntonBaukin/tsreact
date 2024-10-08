@@ -1,10 +1,8 @@
-const useFontsLoader = (paths) => [{
-	loader: 'file-loader',
-	options: {
-		name: '[name].[ext]',
-		outputPath: paths.fonts.output,
-		publicPath: paths.fonts.public
-	}
-}]
+const useFontsAsset = (paths) => ({
+  type: 'asset/resource',
+  generator: {
+    filename: `${paths.fonts.output}/[hash][ext]`
+  }
+})
 
-module.exports = { useFontsLoader }
+module.exports = { useFontsAsset }

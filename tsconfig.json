@@ -1,29 +1,36 @@
 {
   "compilerOptions": {
-    "noEmit": true,
-    "module": "es6",
     "target": "es5",
-    "jsx": "react-jsxdev",
+    "module": "esnext",
+    "noEmit": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "strict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "jsx": "react-jsxdev",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "importHelpers": true,
+    "isolatedModules": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
     "downlevelIteration": true,
-    "experimentalDecorators": true,
     "typeRoots": ["./styles", "./node_modules/@types"],
     "paths": {
-      "src/*": ["src/*"],
-      "styles/*": ["styles/*"],
+      "sources/*": ["sources/*"],
+      "styles/*": ["styles/*"]
     }
   },
+  "include": [
+    "sources/**/*"
+  ],
   "exclude": [
-    "src/**/*.test.ts"
+    "*.test.js"
   ]
 }
