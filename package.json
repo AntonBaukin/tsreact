@@ -2,22 +2,28 @@
   "name": "tsreact",
   "version": "0.0.2",
   "description": "Bootstrap React with TypeScript application",
-  "author": "Anton Baukin <anton.baukin@gmail.com>",
+  "author": {
+    "name": "Anton Baukin",
+    "email": "anton.baukin@gmail.com"
+  },
   "private": true,
   "dependencies": {
-    "@types/react": "^18.3.10",
-    "@types/react-dom": "^18.3.0",
+    "@types/lodash": "^4.17.10",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-transform-runtime": "^7.25.4",
-    "@babel/preset-env": "^7.25.4",
-    "@babel/preset-react": "^7.24.7",
+    "@babel/core": "^7.25.8",
+    "@babel/plugin-transform-runtime": "^7.25.7",
+    "@babel/preset-env": "^7.25.8",
+    "@babel/preset-react": "^7.25.7",
     "@babel/preset-typescript": "^7.25.7",
+    "@types/jest": "^29.5.13",
     "autoprefixer": "^10.4.20",
     "babel-loader": "^9.2.1",
     "browserslist": "^4.24.0",
@@ -26,18 +32,20 @@
     "css-minimizer-webpack-plugin": "^7.0.0",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
-    "html-webpack-plugin": "^5.6.0",
+    "html-webpack-plugin": "^5.6.2",
+    "jest": "^29.7.0",
     "mini-css-extract-plugin": "^2.9.1",
     "postcss": "^8.4.47",
     "postcss-loader": "^8.1.1",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.79.4",
+    "sass": "^1.80.1",
     "sass-loader": "^16.0.2",
     "source-map-loader": "^5.0.0",
     "svg-spritemap-webpack-plugin": "^4.6.0",
     "terser-webpack-plugin": "^5.3.10",
+    "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.6.2",
+    "typescript": "^5.6.3",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.1.0"
@@ -45,6 +53,6 @@
   "scripts": {
     "build": "webpack --mode=production",
     "dev": "webpack serve --env=development",
-    "test": "jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest"
   }
 }

@@ -10,14 +10,21 @@ module.exports = {
         runtime: 'automatic',
       }
     ],
-    '@babel/preset-typescript'
+    '@babel/preset-typescript',
   ],
   plugins: [
-    '@babel/plugin-transform-runtime'
+    '@babel/plugin-transform-runtime',
   ],
   generatorOpts: {
     compact: isPROD(mode),
     comments: isDEV(mode),
     minified: isPROD(mode),
+  },
+  env: {
+    test: {
+      plugins: [
+        '@babel/plugin-transform-modules-commonjs'
+      ],
+    },
   },
 }

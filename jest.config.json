@@ -1,0 +1,9 @@
+{
+  "verbose": true,
+  "moduleFileExtensions": ["ts", "js", "mjs"],
+  "testRegex": ".*\\.test\\.(ts|mjs)$",
+  "transform": {
+    "\\.ts$": "ts-jest",
+    "\\.mjs$": ["ts-jest", { "useESM": true }]
+  }
+}
