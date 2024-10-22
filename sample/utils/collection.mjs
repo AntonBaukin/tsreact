@@ -1,7 +1,8 @@
 import assert from 'node:assert'
+import isFunction from 'lodash/isFunction.js'
 import isString from 'lodash/isString.js'
 import isNil from 'lodash/isNil.js'
-import { UuidBased } from './indexes.mjs'
+import { UuidBased, Index } from './indexes.mjs'
 
 /**
  * Additive, indexed collection of entities.
@@ -27,9 +28,11 @@ export class Collection extends UuidBased
       `Entity with same uuid ${uuid} already exists`
     )
 
+    this.indexes.forEach(i => i.checkAddAllowed(index, entity))
+    this.indexes.forEach(i => i.add(index, entity))
+
     this.ids.set(uuid, index)
     this.data.push(entity)
-    this.indexes.forEach(i => i.add(index, entity))
 
     return index
   }
@@ -47,13 +50,64 @@ export class Collection extends UuidBased
     )
   }
 
-  getByIndex(index, onNotFound) {
-    if (!Number.isInteger(index) || index < 0) {
-      return onNotFound ? onNotFound() : null
+  /**
+   * @param index — number index of data record,
+   *   or string id of the unique index reqistered.
+   *
+   * @param second — optional onNotFound for a number index,
+   *   or value to find for a string id of the index.
+   *
+   * @param third — optional onNotFound for a string id of the index.
+   */
+  getByIndex(index, second, third) {
+    if (isNil(index) || Number.isInteger(index)) {
+      if (isNil(index) || index < 0 || index >= this.data.length) {
+        if (isNil(second)) {
+          return null
+        } else {
+          assert (isFunction(second))
+          return second(index)
+        }
+      } else {
+        return this.data[index]
+      }
     }
 
-    assert (index < this.data.length)
-    return this.data[index]
+    assert (isString(index))
+    const indexObj = this.getIndex(index)
+
+    function onNotFound() {
+      if (isNil(third)) {
+        return null
+      } else {
+        assert (isFunction(third))
+        return third(index, second)
+      }
+    }
+
+    if (isNil(second)) {
+      return onNotFound()
+    }
+
+    const indexInt = indexObj.uniqueOrNull(second)
+    assert (isNil(indexInt) || Number.isInteger(indexInt))
+
+    return this.getByIndex(indexInt, onNotFound)
+  }
+
+  /**
+   * @param index — string id of index to search in.
+   *
+   * @param value — value used as the search argument.
+   *
+   * @param hint — optional hint to pass to the search.
+   */
+  select(index, value, hint) {
+    assert (isString(index))
+    const indexObj = this.getIndex(index)
+
+    const inds = indexObj.select(value, hint)
+    return inds.map(i => this.getByIndex(i))
   }
 
   merge(delta) {
@@ -103,6 +157,7 @@ export class Collection extends UuidBased
   /**
    * Returns previously registered Index by it's id,
    * or registers a new one instance of Index class.
+   * Indexes must be added before the data.
    */
   index(idOrIndex)
   {
@@ -114,12 +169,13 @@ export class Collection extends UuidBased
 
     const indexFound = this.findIndex(index.id)
     if (indexFound === index) {
+      assert (idOrIndex.collection === this)
       return this
+    } else if (indexFound) {
+      throw new Error(`Index-[${idOrIndex.id}] already exists`)
     }
 
     assert (isNil(idOrIndex.collection))
-    assert (isNil(index), `Index-[${idOrIndex.id}] already exists`)
-
     this.indexes.push(idOrIndex)
     idOrIndex.attach(this)
 
