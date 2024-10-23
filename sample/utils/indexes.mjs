@@ -1,8 +1,9 @@
 import assert from 'node:assert'
-import sortedIndex from 'lodash/sortedIndex.js'
-import isString from 'lodash/isString.js'
-import isObject from 'lodash/isObject.js'
-import isNil from 'lodash/isNil.js'
+import sortedIndex from 'lodash/sortedIndex'
+import isString from 'lodash/isString'
+import isObject from 'lodash/isObject'
+import isNil from 'lodash/isNil'
+import get from 'lodash/get'
 
 export class UuidBased
 {
@@ -120,39 +121,153 @@ export class Index extends UuidBased
   }
 }
 
+export class AttributeAccess
+{
+  constructor(path) {
+    assert(isString(path) && path.length)
+    this.path = path
+    this.items = this.split(path)
+  }
+
+  access(entity) {
+    return get(entity, this.path)
+  }
+
+  /**
+   * If the path is plain, returns null — to use lodash#get() directly.
+   * Else, return an array of AttributeAccess instances to chain the access.
+   */
+  split() {
+    return null
+  }
+}
+
 /**
- * Abstract class of indexes by a single attribute.
+ * Constructed with a single attribute path — in terms of lodash.get().
+ * Or with
+ */
+export class AttributeCollector
+{
+  constructor(attribute) {
+    if (isString(attribute)) {
+      assert(attribute.length)
+    } else {
+      assert(Array.isArray(attribute) && attribute.length)
+      attribute.forEach((a) => {
+        assert(isString(a) && a.length)
+      })
+    }
+
+    this.attribute = attribute
+  }
+
+  get isMulti() {
+    return Array.isArray(this.attribute)
+  }
+
+  collect(entity) {
+    if (isNil(entity)) {
+      return null
+    }
+
+    if (isString(this.attribute)) {
+      return this.collectOne(entity, this.attribute)
+    }
+
+    const result = []
+    this.attribute.forEach(a => {
+      const v = this.collectOne(entity, a)
+
+      if (Array.isArray(v)) {
+        v.forEach(x => !isNil(x) && result.push(x))
+      } else if (!isNil(v)) {
+        result.push(v)
+      }
+    })
+
+    return result.length ? result : null
+  }
+
+  collectOne(entity, path) {
+    return this.$accessor(path).access(entity)
+  }
+
+  $accessors = new Map()
+
+  $accessor(path) {
+    let accessor = this.$accessors.get(path)
+
+    if (!accessor) {
+      accessor = this.$createAccessor(path)
+      this.$accessors.set(path, accessor)
+    }
+
+    return accessor
+  }
+
+  $createAccessor(path) {
+    return new AttributeAccess(path)
+  }
+
+  toString() {
+    return this.isMulti ? this.attribute.join(', ') : this.attribute
+  }
+}
+
+/**
+ * Abstract class of indexes by a single attribute,
+ * or an array of attributes (for multi-indexes).
  */
 export class AttributeIndex extends Index
 {
   constructor(id, attribute, required) {
     super(id)
-
-    assert(isString(attribute) && attribute.length)
-    this.attribute = attribute
     this.required = !!required
+    this.attributeCollector = this.createAttributeCollector(attribute)
+  }
+
+  get isMulti() {
+    return this.attributeCollector.isMulti
   }
 
   isAddAllowed(index, entity) {
-    const value = entity[this.attribute]
+    const value = this.attributeCollector.collect(entity)
 
     if (isNil(value)) {
       if (this.required) {
         return this.$requiredErrorText(entity)
       } else {
-        return true // allowed
+        return true // allowed (to skip)
       }
     }
 
-    return this.isAddValueAllowed(index, value, entity)
+    if (this.isMulti) {
+      assert(Array.isArray(value))
+
+      for (const v of value) {
+        if (this.isAddValueAllowed(index, v, entity)) {
+          // At least one attribute value is allowed to index:
+          return true
+        }
+      }
+
+      return false
+    } else {
+      return this.isAddValueAllowed(index, value, entity)
+    }
+  }
+
+  createAttributeCollector(attribute) {
+    return new AttributeCollector(attribute)
   }
 
   $requiredErrorText(entity) {
-    return `Entity-[${this.uuid(entity)}] has no attribute "${this.attribute}"`
+    return `Entity-[${this.uuid(entity)}] has no attribute: ` +
+      this.attributeCollector
   }
 
   add(index, entity) {
-    const value = entity[this.attribute]
+    const value = this.attributeCollector.collect(entity)
 
     if (isNil(value)) {
       if (this.required) {
@@ -162,19 +277,25 @@ export class AttributeIndex extends Index
       }
     }
 
-    this.addValue(index, value, entity)
+    if (this.isMulti) {
+      assert(Array.isArray(value))
+      value.forEach(v => this.addValue(index, v, entity))
+    } else {
+      this.addValue(index, value, entity)
+    }
   }
 
-  select(valueOrObject, hint) {
-    let value = valueOrObject
+  select(valueOrEntity, hint) {
+    let value = valueOrEntity
 
     if (isObject(value)) {
-      value = value[this.attribute]
+      value = this.attributeCollector.collect(value)
 
       if (isNil(value)) {
         throw new Error(
-          `Index-[${this.id}] has no select value "${this.attribute}" in: ` +
-          JSON.stringify(valueOrObject)
+          `Index-[${this.id}] found no value by attribute "` +
+          this.attributeCollector + '" to select in: ' +
+          JSON.stringify(valueOrEntity)
         )
       }
     }
@@ -200,6 +321,11 @@ export const uniqueIndex = (attribute, required = true) =>
 
 export class UniqueIndex extends AttributeIndex
 {
+  constructor(id, attribute, required) {
+    assert(isString(attribute)) // no multi attributed
+    super(id, attribute, required)
+  }
+
   /**
    * Maps indexed values to entities data positions (indexes).
    */
@@ -215,7 +341,7 @@ export class UniqueIndex extends AttributeIndex
 
   $notUniqueErrorText(entity, value) {
     return (
-      `Entity-[${this.uuid(entity)}]-[${this.attribute}] ` +
+      `Entity-[${this.uuid(entity)}]-[${this.attributeCollector}] ` +
       `is not unique in Index-[${this.id}]: ${value}`
     )
   }
@@ -231,6 +357,27 @@ export class UniqueIndex extends AttributeIndex
   selectValue(value) {
     const index = this.map.get(value)
     return isNil(index) ? [] : [index]
+  }
+}
+
+export class AttributeMultiCollector extends AttributeCollector
+{
+  constructor(attribute) {
+    super(isString(attribute) ? [attribute] : attribute)
+  }
+
+  get isMulti() {
+    return true
+  }
+
+  /**
+   * Transforms a value to the index map keys.
+   * The same keys are created when collecting entity attributes.
+   *
+   * @returns an array of value split items, or null.
+   */
+  transformValue(value) {
+    return isNil(value) ? null : Array.isArray(value) ? value : [value]
   }
 }
 
@@ -253,65 +400,69 @@ export class MultiIndex extends AttributeIndex
    */
   map = new Map()
 
-  /**
-   * Transforms a value to the index map key.
-   * May return an array of value split items.
-   */
-  transformValue(value) {
-    return value
+  get isMulti() {
+    return true
+  }
+
+  createAttributeCollector(attribute) {
+    return new AttributeMultiCollector(attribute)
   }
 
   isAddValueAllowed(_index, value, _entity) {
-    const tValue = this.transformValue(value)
-    return Array.isArray(tValue) ? tValue.length !== 0 : !isNil(tValue)
+    const tValue = this.attributeCollector.transformValue(value)
+
+    if (isNil(tValue)) {
+      return false
+    } else {
+      assert(Array.isArray(tValue))
+      return tValue.length !== 0
+    }
   }
 
   addValue(index, value, entity) {
-    const tValue = this.transformValue(value)
+    const tValue = this.attributeCollector.transformValue(value)
 
-    const addOne = (tItem) => {
-      assert (!isNil(tItem))
-      const entry = this.map.get(tItem)
-
-      if (entry) {
-        const i = sortedIndex(entry, index)
-        if (entry[i] !== index) {
-          entry.splice(index, 0, index)
-        }
-      } else {
-        this.map.set(tItem, [index])
-      }
+    if (!isNil(tValue)) {
+      assert(Array.isArray(tValue))
+      tValue.forEach(this.addOne.bind(this, index))
     }
+  }
 
-    if (Array.isArray(tValue)) {
-      assert (tValue.length !== 0)
-      tValue.forEach(addOne)
+  addOne(index, tItem) {
+    assert (!isNil(tItem))
+    const entry = this.map.get(tItem)
+
+    if (entry) {
+      const i = sortedIndex(entry, index)
+      if (entry[i] !== index) {
+        entry.splice(index, 0, index)
+      }
     } else {
-      addOne(tValue)
+      this.map.set(tItem, [index])
     }
   }
 
   selectValue(value, hint = MultiIndex.OR) {
-    const tValue = this.transformValue(value)
+    const tValue = this.attributeCollector.transformValue(value)
 
-    if (Array.isArray(tValue)) {
-      if (tValue.length === 0) {
-        return []
-      }
-
-      const tInds = new Map()
-
-      tValue.forEach(tItem => {
-        if (!tInds.has(tItem)) {
-          tInds.set(tItem, this.map.get(tItem) ?? [])
-        }
-      })
-
-      return this.$mergeIndexes(tInds, hint)
-    } else {
-      const result = isNil(tValue) ? null : this.map.get(tValue)
-      return isNil(result) ? [] : Array.from(tValue)
+    if (isNil(tValue)) {
+      return []
     }
+
+    assert (Array.isArray(tValue))
+    if (tValue.length === 0) {
+      return []
+    }
+
+    const tInds = new Map()
+
+    tValue.forEach(tItem => {
+      if (!tInds.has(tItem)) {
+        tInds.set(tItem, this.map.get(tItem) ?? [])
+      }
+    })
+
+    return this.$mergeIndexes(tInds, hint)
   }
 
   $mergeIndexes(tInds, hint) {
@@ -366,7 +517,7 @@ export class MultiIndex extends AttributeIndex
   }
 }
 
-export class StringsIndex extends MultiIndex
+export class StringsMultiCollector extends AttributeMultiCollector
 {
   transformValue(value)
   {
@@ -399,5 +550,16 @@ export class StringsIndex extends MultiIndex
   }
 }
 
-export const stringsIndex = (attribute, required = true) =>
+export class StringsIndex extends MultiIndex {
+  createAttributeCollector(attribute) {
+    return new StringsMultiCollector(attribute)
+  }
+}
+
+export const stringsSingleIndex = (attribute, required = true) =>
   new StringsIndex(attribute, attribute, required)
+
+export const stringsMultiIndex = (id, attribute, required = true) => {
+  assert(Array.isArray(attribute))
+  return new StringsIndex(id, attribute, required)
+}

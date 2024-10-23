@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals'
 import { Collection } from './collection.mjs'
-import { uniqueIndex, stringsIndex } from './indexes.mjs'
+import { uniqueIndex, stringsSingleIndex } from './indexes.mjs'
 
 describe('collection.basics', () => {
   test('addEntities', () => {
@@ -42,9 +42,9 @@ describe('collection.basics', () => {
     expect(c.getByIndex('name', 'e')).toBeNull()
   })
 
-  test('stringsIndex', () => {
+  test('stringsSingleIndex', () => {
     const c = new Collection()
-    c.index(stringsIndex('name'))
+    c.index(stringsSingleIndex('name'))
 
     c.add({ uuid: '1', name: 'Amari Cortéz Ben Ali' })
     c.add({ uuid: '2', name: 'Ali ben-Abdiel' })
