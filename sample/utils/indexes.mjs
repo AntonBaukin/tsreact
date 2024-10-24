@@ -1,9 +1,9 @@
 import assert from 'node:assert'
 import sortedIndex from 'lodash/sortedIndex'
+import isArrayLike from 'lodash/isArrayLike'
 import isString from 'lodash/isString'
 import isObject from 'lodash/isObject'
 import isNil from 'lodash/isNil'
-import get from 'lodash/get'
 
 export class UuidBased
 {
@@ -121,30 +121,111 @@ export class Index extends UuidBased
   }
 }
 
+/**
+ * Strategy to collect one or multiple attributes from object entities.
+ * The path is a string attributes joined with '.' — like for lodash.get().
+ *
+ * If intermediate value is array-like, and the following path element
+ * is not an integer index — the traverse is spawn for each element,
+ * and the access result is always an array.
+ *
+ * Examples: 'some'. 'some.nested', and
+ *  'some.array.0.name' — returns the name of zero entity, but
+ *  'some.array.name' — returns all the names (array).
+ *
+ * Note, that negative index takes items from the tail, i.e. '.-1' —
+ * takes the last item of the array-like.
+ */
 export class AttributeAccess
 {
   constructor(path) {
     assert(isString(path) && path.length)
-    this.path = path
-    this.items = this.split(path)
+    this.items = this.$split(path)
   }
 
   access(entity) {
-    return get(entity, this.path)
+    return this.$collect(entity, 0)
   }
 
   /**
    * If the path is plain, returns null — to use lodash#get() directly.
    * Else, return an array of AttributeAccess instances to chain the access.
    */
-  split() {
-    return null
+  $split(path) {
+    return path.split('.').filter(s => s.length).map(s => this.$parse(s))
+  }
+
+  $parse(item) {
+    const i = Number(item)
+
+    if (Number.isInteger(i)) {
+      return { i }
+    } else {
+      return item
+    }
+  }
+
+  // Depends on parsed format (except string keys).
+  $accessBy(target, item) {
+    const { i } = item
+    assert(Number.isInteger(i))
+
+    if (!isAnArray(target)) {
+      return null
+    }
+
+    if (i >= 0) {
+      return i < target.length ? target[i] : null
+    } else {
+      const j = target.length + i
+      return j >= 0 ? target[j] : null
+    }
+  }
+
+  // Recursive traverser & collector by the path items:
+  $collect(target, index) {
+    if (isNil(target) || index >= this.items.length) {
+      return target
+    }
+
+    const item = this.items[index]
+
+    if (!isString(item)) {
+      return this.$collect(this.$accessBy(target, item), index + 1)
+    }
+
+    if (isAnArray(target)) {
+      const entries = Array.isArray(target) ? target : Array.from(target)
+      if (!Array.isArray(entries)) {
+        return null
+      }
+
+      const result = []
+
+      for (const e of entries) {
+        const nested = this.$collect(e, index)
+        if (!isNil(nested)) {
+          result.push(nested)
+        }
+      }
+
+      return result
+    } else if (isObject(target)) {
+      return this.$collect(target[item], index + 1)
+    } else {
+      return null
+    }
+  }
+
+  toString() {
+    return this.items.join('.')
   }
 }
 
+const isAnArray = (x) => Array.isArray(x) || (isArrayLike(x) && !isString(x))
+
 /**
- * Constructed with a single attribute path — in terms of lodash.get().
- * Or with
+ * Constructed with a single attribute path — see AttributeAccess.
  */
 export class AttributeCollector
 {
