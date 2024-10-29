@@ -1,7 +1,5 @@
 import assert from 'node:assert'
-import isFunction from 'lodash/isFunction.js'
-import isString from 'lodash/isString.js'
-import isNil from 'lodash/isNil.js'
+import { isFunction, isString, isNil } from './lodash.mjs'
 import { UuidBased, Index } from './indexes.mjs'
 
 /**
@@ -180,9 +178,5 @@ export class Collection extends UuidBased
     idOrIndex.attach(this)
 
     return this
-  }
-
-  toJson(pretty) {
-    return JSON.stringify(this.data, undefined, pretty ? 2 : undefined)
   }
 }

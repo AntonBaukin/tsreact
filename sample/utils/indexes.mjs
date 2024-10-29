@@ -1,9 +1,11 @@
 import assert from 'node:assert'
-import sortedIndex from 'lodash/sortedIndex'
-import isArrayLike from 'lodash/isArrayLike'
-import isString from 'lodash/isString'
-import isObject from 'lodash/isObject'
-import isNil from 'lodash/isNil'
+import {
+  sortedIndex,
+  isArrayLike,
+  isString,
+  isObject,
+  isNil,
+} from './lodash.mjs'
 
 export class UuidBased
 {
@@ -12,7 +14,10 @@ export class UuidBased
 
     if (isNil(uuid)) {
       if (required) {
-        throw new Error(`Entity has no unique id attribute: ${entity}`)
+        throw new Error(
+          'Entity has no unique id attribute: ' +
+          JSON.stringify(entity)
+        )
       }
 
       return null
