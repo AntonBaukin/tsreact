@@ -103,8 +103,17 @@ export class Collection extends UuidBased
   select(index, value, hint) {
     assert (isString(index))
     const indexObj = this.getIndex(index)
-
     const inds = indexObj.select(value, hint)
+    return inds.map(i => this.getByIndex(i))
+  }
+
+  /**
+   * @see Index.range()
+   */
+  range(index, left, right) {
+    assert (isString(index))
+    const indexObj = this.getIndex(index)
+    const inds = indexObj.range(left, right)
     return inds.map(i => this.getByIndex(i))
   }
 
@@ -178,5 +187,17 @@ export class Collection extends UuidBased
     idOrIndex.attach(this)
 
     return this
+  }
+}
+
+export class DataView
+{
+  constructor(collection) {
+    assert(collection instanceof Collection)
+    this.collection = collection
+  }
+
+  find(uuid) {
+    return this.collection.getByUuidOrNull(uuid)
   }
 }

@@ -1,10 +1,13 @@
 import assert from 'node:assert'
+import dayjs from 'dayjs'
 import {
-  sortedIndex,
   isArrayLike,
   isString,
   isObject,
   isNil,
+  sortedIndex,
+  sortedIndexBy,
+  sortedLastIndexBy,
 } from './lodash.mjs'
 
 export class UuidBased
@@ -88,9 +91,20 @@ export class Index extends UuidBased
    *
    * @param hint — additional parameter dependend on the index type.
    *
-   * @returns array of integer indexes of the entities found
+   * @returns array of integer indexes of the entities found.
    */
   select(value, hint) {
+    throw new Error()
+  }
+
+  /**
+   * Variant of select() for indexes with order that support
+   * ranged selection: [left; right], right — inclusive.
+   *
+   * Left, right, or even both, may be null: in this case
+   * left means the leading, right means the last element.
+   */
+  range(left, right) {
     throw new Error()
   }
 
@@ -308,8 +322,8 @@ export class AttributeIndex extends Index
 {
   constructor(id, attribute, required) {
     super(id)
+    this.attribute = attribute
     this.required = !!required
-    this.attributeCollector = this.createAttributeCollector(attribute)
   }
 
   get isMulti() {
@@ -343,6 +357,13 @@ export class AttributeIndex extends Index
     }
   }
 
+  get attributeCollector() {
+    if (!this.$attributeCollector) {
+      this.$attributeCollector = this.createAttributeCollector(this.attribute)
+    }
+    return this.$attributeCollector
+  }
+
   createAttributeCollector(attribute) {
     return new AttributeCollector(attribute)
   }
@@ -371,24 +392,6 @@ export class AttributeIndex extends Index
     }
   }
 
-  select(valueOrEntity, hint) {
-    let value = valueOrEntity
-
-    if (isObject(value)) {
-      value = this.attributeCollector.collect(value)
-
-      if (isNil(value)) {
-        throw new Error(
-          `Index-[${this.id}] found no value by attribute "` +
-          this.attributeCollector + '" to select in: ' +
-          JSON.stringify(valueOrEntity)
-        )
-      }
-    }
-
-    return this.selectValue(value, hint)
-  }
-
   isAddValueAllowed(index, value, entity) {
     return true
   }
@@ -396,22 +399,25 @@ export class AttributeIndex extends Index
   addValue(index, value, entity) {
     throw new Error()
   }
-
-  selectValue(value, hint) {
-    throw new Error()
-  }
 }
 
-export const uniqueIndex = (attribute, required = true) =>
-  new UniqueIndex(attribute, attribute, required)
-
-export class UniqueIndex extends AttributeIndex
+export class SingleIndex extends AttributeIndex
 {
   constructor(id, attribute, required) {
     assert(isString(attribute)) // no multi attributed
     super(id, attribute, required)
   }
 
+  get isMulti() {
+    return false
+  }
+}
+
+export const uniqueIndex = (attribute, required = true) =>
+  new UniqueIndex(attribute, attribute, required)
+
+export class UniqueIndex extends SingleIndex
+{
   /**
    * Maps indexed values to entities data positions (indexes).
    */
@@ -440,7 +446,7 @@ export class UniqueIndex extends AttributeIndex
     }
   }
 
-  selectValue(value) {
+  select(value) {
     const index = this.map.get(value)
     return isNil(index) ? [] : [index]
   }
@@ -481,11 +487,6 @@ export class MultiIndex extends AttributeIndex
    */
   static OR = 'or'
 
-  /**
-   * Maps transformed values to arrays of entities data positions (indexes).
-   */
-  map = new Map()
-
   get isMulti() {
     return true
   }
@@ -515,61 +516,122 @@ export class MultiIndex extends AttributeIndex
   }
 
   addOne(index, tItem) {
-    assert (!isNil(tItem))
-    const entry = this.map.get(tItem)
-
-    if (entry) {
-      const i = sortedIndex(entry, index)
-      if (entry[i] !== index) {
-        entry.splice(index, 0, index)
-      }
-    } else {
-      this.map.set(tItem, [index])
-    }
+    throw new Error()
   }
 
-  selectValue(value, hint = MultiIndex.OR) {
-    const tValue = this.attributeCollector.transformValue(value)
-
+  select(value, hint = MultiIndex.OR) {
+    const tValue = this.$tValue(value)
     if (isNil(tValue)) {
       return []
     }
 
-    assert (Array.isArray(tValue))
-    if (tValue.length === 0) {
-      return []
-    }
-
     const tInds = new Map()
-
     tValue.forEach(tItem => {
       if (!tInds.has(tItem)) {
-        tInds.set(tItem, this.map.get(tItem) ?? [])
+        tInds.set(tItem,  this.getOne(tItem) ?? [])
       }
     })
 
-    return this.$mergeIndexes(tInds, hint)
+    return this.$mergeIndexes(Array.from(tInds.values()), hint)
   }
 
+  /**
+   * Returns
+   */
+  $tValue(value) {
+    if (isNil(value)) {
+      return null
+    }
+
+    const tValue = this.attributeCollector.transformValue(value)
+    if (isNil(tValue)) {
+      return null
+    }
+
+    assert(Array.isArray(tValue))
+    return tValue.length ? tValue : null
+  }
+
+  range(left, right) {
+    const tLeft = this.$tValue(left)
+    const tRight = this.$tValue(right)
+    let tInds = null
+
+    if (isNil(tLeft) && isNil(tRight)) {
+      tInds = this.$rangeFull()
+    } else if (isNil(tLeft)) {
+      assert(Array.isArray(tRight) && tRight.length)
+      tInds = this.$rangeTo(tRight)
+    } else if (isNil(tRight)) {
+      assert(Array.isArray(tLeft) && tLeft.length)
+      tInds = this.$rangeFrom(tLeft)
+    } else {
+      assert(Array.isArray(tLeft) && tLeft.length)
+      assert(Array.isArray(tRight) && tRight.length)
+      tInds = this.$rangeFromTo(tLeft, tRight)
+    }
+
+    return this.$mergeRangeIndexes(tInds)
+  }
+
+  /**
+   * @param tLeft — array of values to search from — take the smallest.
+   *
+   * @param tRight — array of values to search to — take the largest.
+   *
+   * @returns array of arrays of collection indexes to OR-merge them.
+   */
+  $rangeFromTo(tLeft, tRight) {
+    throw new Error()
+  }
+
+  $rangeFrom(tLeft) {
+    throw new Error()
+  }
+
+  $rangeTo(tRight) {
+    throw new Error()
+  }
+
+  $rangeFull() {
+    throw new Error()
+  }
+
+  /**
+   * @returns entity index array by the given item
+   *   of the transformed query value.
+   */
+  getOne(tItem) {
+    throw new Error()
+  }
+
+  /**
+   * @param tInds — array of arrays of collection position indexes
+   *  to merge into single array by the hint method.
+   *
+   * @param hint — how to merge: OR, AND, etc.
+   */
   $mergeIndexes(tInds, hint) {
-    if (tInds.size === 0) {
+    if (!tInds?.length) {
       return []
-    } else if (tInds.size === 1) {
-      return tInds.get(tInds.keys().next().value)
+    } else if (tInds.length === 1) {
+      return tInds[0]
     } else {
       return this.$mergeByHint(tInds, hint)
     }
   }
 
-  $mergeByHint(tInds, hint) {
-    const manyInds = Array.from(tInds.values())
+  $mergeRangeIndexes(tInds) {
+    return this.$mergeIndexes(tInds, MultiIndex.OR)
+  }
 
+  $mergeByHint(tInds, hint) {
     if (hint === MultiIndex.OR) {
-      return this.$mergeOr(manyInds)
+      return this.$mergeOr(tInds)
     } else if (hint === MultiIndex.AND) {
-      return this.$mergeAnd(manyInds)
+      return this.$mergeAnd(tInds)
     } else {
-      return this.$mergeElseHint(manyInds, hint)
+      return this.$mergeElseHint(tInds, hint)
     }
   }
 
@@ -603,17 +665,43 @@ export class MultiIndex extends AttributeIndex
   }
 }
 
-export class StringsMultiCollector extends AttributeMultiCollector
+export class MultiMapIndex extends MultiIndex
+{
+  /**
+   * Maps transformed values to arrays of entities data positions (indexes).
+   */
+  map = new Map()
+
+  addOne(index, tItem) {
+    assert (!isNil(tItem))
+    const entry = this.map.get(tItem)
+
+    if (entry) {
+      const i = sortedIndex(entry, index)
+      if (entry[i] !== index) {
+        entry.splice(index, 0, index)
+      }
+    } else {
+      this.map.set(tItem, [index])
+    }
+  }
+
+  getOne(tItem) {
+    return this.map.get(tItem)
+  }
+}
+
+export class StringsCollector extends AttributeMultiCollector
 {
   transformValue(value)
   {
     if (!isString(value)) {
-      return []
+      return null
     }
 
     const trimmedValue = value.trim()
     if (!trimmedValue.length) {
-      return []
+      return null
     }
 
     const normalValue = trimmedValue
@@ -621,8 +709,10 @@ export class StringsMultiCollector extends AttributeMultiCollector
       .replace(/[\u0300-\u036f]/g, '')
       .toLocaleLowerCase()
 
-    return this.splitValue(normalValue)
+    const result = this.splitValue(normalValue)
       .filter(splitItem => this.isItemValid(splitItem))
+
+    return result.length ? result : null
   }
 
   $splitPattern = /[\s.,\/#!$%^&*;:{}=\-_`~()]+/
@@ -636,16 +726,251 @@ export class StringsMultiCollector extends AttributeMultiCollector
   }
 }
 
-export class StringsIndex extends MultiIndex {
+export class StringsIndex extends MultiMapIndex {
   createAttributeCollector(attribute) {
-    return new StringsMultiCollector(attribute)
+    return new StringsCollector(attribute)
   }
 }
 
-export const stringsSingleIndex = (attribute, required = true) =>
-  new StringsIndex(attribute, attribute, required)
+export const stringsSingleIndex = (attribute, required = false) => {
+  assert(isString(attribute))
+  return new StringsIndex(attribute, attribute, required)
+}
 
-export const stringsMultiIndex = (id, attribute, required = true) => {
+export const stringsMultiIndex = (id, attribute, required = false) => {
   assert(Array.isArray(attribute))
   return new StringsIndex(id, attribute, required)
 }
+
+/**
+ * Attribute value is somehow transformed to a comparable value
+ * that is associated with one or more collection indexes.
+ */
+export class SortedIndex extends MultiIndex
+{
+  /**
+   * Each items of this array is an array of the following format:
+   * [ value, ... index entries ] — leading value is mapped
+   * with this sparse collection.
+   */
+  entries = []
+
+  addOne(index, tItem) {
+    const entry = this.$entry(tItem, true)
+
+    // Note that $index — is integer value of the collection insert
+    // position, thus it may be equal to $tItem located as 0-item
+    // of index entry: [ tItem, ... collection indexes ... ].
+    if (entry.lastIndexOf(index) > 0) {
+      return // duplicate
+    }
+
+    entry.push(index)
+  }
+
+  getOne(tItem) {
+    const entry = this.$entry(tItem, true)
+    return entry ? entry.slice(1) : null
+  }
+
+  $entry(tItem, insert) {
+    const e = [tItem]
+    const i = this.$sortedIndexBy(e)
+    const l = this.entries.length
+
+    assert(i >= 0)
+    assert(i <= l)
+
+    if (i === l || (!i && !l)) {
+      if (insert) {
+        this.entries.push(e)
+        return e
+      } else {
+        return null
+      }
+    } else {
+      const x = this.entries[i]
+
+      if (this.$equal(tItem, x[0])) {
+        return x
+      } else if (insert) {
+        this.entries.splice(i, 0, e)
+        return e
+      } else {
+        return null
+      }
+    }
+  }
+
+  $equal(aItem, bItem) {
+    return aItem === bItem
+  }
+
+  $rangeFromTo(tLeft, tRight) {
+    const left = this.$tMin(tLeft)
+    const iLeft = this.$iRangeLeft(left)
+    const right = this.$tMax(tRight)
+    const iRight = this.$iRangeRight(right)
+    return this.$rangeCollectInds(iLeft, iRight)
+  }
+
+  $tMin(tValue) {
+    assert(Array.isArray(tValue) && tValue.length)
+    return tValue.sort()[0]
+  }
+
+  $iRangeLeft(left) {
+    return this.$sortedIndexBy([left])
+  }
+
+  $tMax(tValue) {
+    assert(Array.isArray(tValue) && tValue.length)
+    return tValue.sort()[tValue.length - 1]
+  }
+
+  $iRangeRight(right) {
+    return this.$sortedLastIndexBy([right]) - 1
+  }
+
+  $rangeCollectInds(iLeft, iRight) {
+    const l = this.entries.length
+    assert(iLeft >= 0 && iLeft <= l)
+    assert(iRight >= -1 && iRight <= l) // note -1
+
+    if (iLeft === l || iLeft > iRight) {
+      return null
+    }
+
+    const result = new Array(iRight - iLeft + 1)
+    for (let i = iLeft; i <= iRight; i++) {
+      result.push(this.entries[i].slice(1))
+    }
+
+    return result
+  }
+
+  $rangeFrom(tLeft) {
+    const left = this.$tMin(tLeft)
+    const iLeft = this.$iRangeLeft(left)
+    return this.$rangeCollectInds(iLeft, this.entries.length - 1)
+  }
+
+  $rangeTo(tRight) {
+    const right = this.$tMax(tRight)
+    const iRight = this.$iRangeRight(right)
+    return this.$rangeCollectInds(0, iRight)
+  }
+
+  $rangeFull() {
+    return this.$rangeCollectInds(0, this.entries.length - 1)
+  }
+
+  $sortedIndexBy(entryCandidate) {
+    return sortedIndexBy(this.entries, entryCandidate, (x) => x[0])
+  }
+
+  $sortedLastIndexBy(entryCandidate) {
+    return sortedLastIndexBy(this.entries, entryCandidate, (x) => x[0])
+  }
+}
+
+export class NumbersCollector extends AttributeMultiCollector
+{
+  /**
+   * Tells whether this collector allows integer numbers only
+   * (default), or also a float point numbers.
+   */
+  get isIntegerOnly() {
+    return true
+  }
+
+  transformValue(value) {
+    const n = this.transformValueToNumber(value)
+
+    if (this.isIntegerOnly) {
+      return Number.isInteger(n) ? [n] : null
+    } else {
+      return Number.isFinite(n) ? [n] : null
+    }
+  }
+
+  transformValueToNumber(value) {
+    return value
+  }
+}
+
+export class NumbersIndex extends SortedIndex {
+  createAttributeCollector(attribute) {
+    return new NumbersCollector(attribute)
+  }
+}
+
+/**
+ * Converts date or time strings according to Day.js format.
+ * Format may be given as a string, array of strings to match the first.
+ */
+export class DatesCollector extends NumbersCollector
+{
+  constructor(attribute, format) {
+    super(attribute)
+
+    if (Array.isArray(format)) {
+      format.forEach(f => assert(isString(f)))
+    } else {
+      assert(isString(format))
+    }
+
+    this.format = format
+  }
+
+  transformValueToNumber(value) {
+    if (!isString(value)) {
+      return null
+    }
+
+    if (Array.isArray(this.format)) {
+      for (const f of this.format) {
+        const d = this.parseDate(f, value)
+        if (d) {
+          return d
+        }
+      }
+
+      return null
+    } else {
+      return this.parseDate(this.format, value)
+    }
+  }
+
+  /**
+   * @returns Unix timestamp (milliseconds), or null.
+   */
+  parseDate(format, value) {
+    const d = dayjs(value, format)
+    return d.isValid() ? d.valueOf() : null
+  }
+}
+
+/**
+ * @param format — see DatesCollector.
+ */
+export const DatesIndexClass = (format) => {
+  class DatesIndex extends SortedIndex {
+    createAttributeCollector(attribute) {
+      return new DatesCollector(attribute, format)
+    }
+  }
+
+  DatesIndex.createSingle = (attribute, required = false) => {
+    assert(isString(attribute))
+    return new DatesIndex(attribute, attribute, required)
+  }
+
+  DatesIndex.createMulti = (id, attribute, required = false) => {
+    assert(Array.isArray(attribute))
+    return new DatesIndex(id, attribute, required)
+  }
+
+  return DatesIndex
+}
+
