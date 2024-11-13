@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="dbUsers" type="JavaScriptTestRunnerJest">
+    <node-interpreter value="project" />
+    <node-options value="--experimental-vm-modules" />
+    <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+    <working-dir value="$PROJECT_DIR$" />
+    <envs>
+      <env name="NODE_NO_WARNINGS" value="1" />
+    </envs>
+    <scope-kind value="SUITE" />
+    <test-file value="$PROJECT_DIR$/sample/db_users.test.mjs" />
+    <test-names>
+      <test-name value="dbUsers.persons" />
+    </test-names>
+    <method v="2" />
+  </configuration>
+</component>

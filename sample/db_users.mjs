@@ -1,9 +1,11 @@
 import url from 'node:url'
 import path from 'node:path'
 import assert from 'node:assert'
-import { stringsMultiIndex } from './utils/indexes.mjs'
+import { DatesIndexClass, stringsMultiIndex } from './utils/indexes.mjs'
 import { Collection, DataView } from './utils/collection.mjs'
 import { readJsonFile } from './utils/json.mjs'
+import { orderBy, orderByDate, orderByString } from './utils/orderBy.mjs'
+import { trPick } from './utils/transform.mjs'
 
 const dbFile = path.format({
   ...path.parse(url.parse(import.meta.url).pathname),
@@ -15,6 +17,7 @@ const dbFile = path.format({
  * @returns Promise<Collection> with the users data.
  */
 export const readDbUsers = async () => {
+  const YearIndex = DatesIndexClass('YYYY-MM-DD')
   const dbUsers = new Collection()
 
   dbUsers.index(
@@ -32,13 +35,77 @@ export const readDbUsers = async () => {
     ])
   )
 
+  dbUsers.index(YearIndex.createSingle('dob'))
+
   await readJsonFile(dbUsers, dbFile, { gz: true })
   assert(dbUsers.size === 100)
 
   return dbUsers
 }
 
-export class UsersView extends DataView
+export class PersonsView extends DataView
 {
+  buildIndexes() {
+  }
 
+  buildOrders() {
+    const orderByLastFirstName = orderBy('lastName', orderByString())
+      .with(orderBy('firstName', orderByString()))
+
+    const orderByDobYearName =
+      orderBy('dob', orderByDate('YYYY-MM-DD', d => d.year()))
+        .with(orderByLastFirstName)
+
+    this.orderCmp('lastFirstName', orderByLastFirstName)
+    this.orderBy('dobYearName', orderByDobYearName)
+  }
+
+  buildTransforms() {
+    return trPick([
+      'uuid',
+      'firstName',
+      'lastName',
+      'dob',
+      'email',
+      'phone',
+      'gender',
+      'country',
+    ])
+  }
+
+  selectByName(name) {
+    return name?.trim().length
+      ? this.select('name', name, 'lastFirstName', 'and')
+      : this.all('name', 'lastFirstName')
+  }
+
+  selectByDob(name, years) {
+    const isName = name?.trim().length
+    const isYears = years?.length
+
+    if (!isName && !isYears) {
+      return this.all('dob', 'dobYearName')
+    }
+
+    let rInds = []
+    let nInds = []
+
+    if (isName) {
+      nInds = this.selectIndex('name', name, 'and')
+      if (!isYears) {
+        rInds = nInds
+      }
+    }
+
+    if (isYears) {
+      years.forEach(year => {
+        const yInds = this.rangeIndex('dob', `${year}-01-01`, `${year}-12-31`)
+        const nyInds = isName ? this.andIndex(nInds, yInds) : yInds
+        rInds = this.orIndex(rInds, nyInds)
+      })
+    }
+
+    const result = this.mapIndex(rInds)
+    return this.sort('dobYearName', result)
+  }
 }

@@ -1,5 +1,6 @@
 import { describe, expect, test } from '@jest/globals'
-import { Collection } from './collection.mjs'
+import { Collection, DataView } from './collection.mjs'
+import { orderBy, orderByString, orderByDate } from './orderBy.mjs'
 import {
   AttributeAccess,
   uniqueIndex,
@@ -240,30 +241,45 @@ describe('collection.basics', () => {
     const c = new Collection()
 
     const DatesIndex = DatesIndexClass([
-      'YYYY-MM-DDTHH:mm:ssZ[Z]',
+      'YYYY-MM-DDTHH:mm:ss.SSSZ',
       'YYYY-MM-DD',
     ])
 
-    c.index(DatesIndex.createMulti('dates', ['dob']))
+    c.index(DatesIndex.createMulti('dates', [
+      'dob',
+      'registration.createdAt',
+    ]))
 
     c.add({
       uuid: '1',
       dob: '2006-01-12',
+      registration: {
+        createdAt: '2024-10-01T22:25:120.749Z',
+      }
     })
 
     c.add({
       uuid: '2',
       dob: '1997-07-07',
+      registration: {
+        createdAt: '2024-10-04T12:16:11.210Z',
+      }
     })
 
     c.add({
       uuid: '3',
       dob: '1987-09-21',
+      registration: {
+        createdAt: '2024-10-03T05:21:30.358Z',
+      }
     })
 
     c.add({
       uuid: '4',
       dob: '2000-02-14',
+      registration: {
+        createdAt: '2024-10-02T10:52:10.768Z',
+      }
     })
 
     const select = (value) =>
@@ -277,6 +293,228 @@ describe('collection.basics', () => {
 
     expect(range('1995-01-01', '2000-12-31')).toStrictEqual(['2', '4'])
     expect(range(null, '2000-12-31')).toStrictEqual(['2', '3', '4'])
-    expect(range('1999-01-01')).toStrictEqual(['1', '4'])
+    expect(range('2024-10-03')).toStrictEqual(['2', '3'])
+
+    expect(
+      range(
+        '2024-10-01T23:30:00.00Z',
+        '2024-10-03T01:15:00.000Z',
+      ),
+    ).toStrictEqual(['4'])
+  })
+})
+
+describe('collection.dataViews', () => {
+  const c = new Collection()
+
+  c.add({
+    uuid: '1',
+    lastName: 'Miles',
+    firstName: 'Jaiden',
+    dob: '1998-10-24',
+    address: {
+      city: 'Los Compton',
+    },
+  })
+
+  c.add({
+    uuid: '2',
+    lastName: 'Burns',
+    firstName: 'Esteban',
+    dob: '1987-09-21',
+    address: {
+      city: 'Los Angeles',
+    },
+  })
+
+  c.add({
+    uuid: '3',
+    lastName: 'Smith',
+    firstName: 'Leona',
+    dob: '2006-02-22',
+    address: {
+      city: 'Los Angeles',
+    },
+  })
+
+  c.add({
+    uuid: '4',
+    lastName: 'Solomon',
+    firstName: 'Joe',
+    dob: '2006-02-14',
+    address: {
+      city: 'Santa Clara',
+    },
+  })
+
+  c.add({
+    uuid: '5',
+    lastName: 'Solomon',
+    firstName: 'Jazmine',
+    dob: '1995-02-22',
+    address: {
+      city: 'Los Angeles',
+    },
+  })
+
+  class PersonsView extends DataView
+  {
+    buildIndexes() {
+      const DatesIndex = DatesIndexClass('YYYY-MM-DD')
+
+      this.collection.index(
+        stringsMultiIndex('name', ['lastName', 'firstName'])
+      )
+
+      this.collection.index(
+        stringsMultiIndex('address', ['address.city'])
+      )
+
+      this.collection.index(
+        DatesIndex.createSingle('dob')
+      )
+    }
+
+    buildOrders() {
+      const orderByLastFirstName = orderBy('lastName', orderByString())
+        .with(orderBy('firstName', orderByString()))
+
+      const orderByAddressName = orderBy('address.city', orderByString())
+        .with(orderByLastFirstName)
+
+      const orderByDobYearName = orderBy('dob', orderByDate('YYYY'))
+        .with(orderByLastFirstName)
+
+      this.orderCmp('lastFirstName', orderByLastFirstName)
+      this.orderCmp('addressName', orderByAddressName)
+      this.orderBy('dob', orderByDate())
+      this.orderBy('dobYearName', orderByDobYearName)
+    }
+
+    selectAllPersons() {
+      return this.all('name', 'lastFirstName')
+    }
+
+    selectAllPersonDobs() {
+      return this.all('dob', 'dob')
+    }
+
+    findByAddress(address) {
+      return this.select('address', address, 'addressName')
+    }
+
+    findByAddressExact(address) {
+      return this.select('address', address, 'addressName', 'and')
+    }
+
+    rangeByDob(first, last) {
+      return this.range('dob', first, last, 'lastFirstName')
+    }
+
+    findPersonsWithAddress(name, address) {
+      const pInds = this.selectIndex('name', name)
+      const aInds = this.selectIndex('address', address)
+      const xInds = this.andIndex(pInds, aInds)
+      const result = this.mapIndex(xInds, true)
+      return this.sort('addressName', result)
+    }
+
+    findPersonsByDobYears(name, years) {
+      let ysInds = []
+
+      years.forEach(year => {
+        const yInds = this.rangeIndex('dob', `${year}-01-01`, `${year}-12-31`)
+        ysInds = this.orIndex(ysInds, yInds)
+      })
+
+      const pInds = this.selectIndex('name', name)
+      const xInds = this.andIndex(pInds, ysInds)
+      const result = this.mapIndex(xInds, true)
+      return this.sort('dobYearName', result)
+    }
+  }
+
+  const v = new PersonsView(c)
+
+  test('orderByString', () => {
+    expect(
+      v.selectAllPersons()
+        .map(e => `${e.uuid}: ${e.lastName} ${e.firstName}`)
+    ).toStrictEqual([
+      '2: Burns Esteban',
+      '1: Miles Jaiden',
+      '3: Smith Leona',
+      '5: Solomon Jazmine',
+      '4: Solomon Joe',
+    ])
+  })
+
+  test('orderByDate', () => {
+    expect(
+      v.selectAllPersonDobs()
+        .map(e => `${e.uuid}: ${e.dob} ${e.firstName}, ${e.lastName}`)
+    ).toStrictEqual([
+      '2: 1987-09-21 Esteban, Burns',
+      '5: 1995-02-22 Jazmine, Solomon',
+      '1: 1998-10-24 Jaiden, Miles',
+      '4: 2006-02-14 Joe, Solomon',
+      '3: 2006-02-22 Leona, Smith',
+    ])
+  })
+
+  test('select', () => {
+    expect(
+      v.findByAddress('los').map(
+        e => `${e.uuid}: ${e.address.city} — ${e.firstName}, ${e.lastName}`
+      )
+    ).toStrictEqual([
+      '2: Los Angeles — Esteban, Burns',
+      '3: Los Angeles — Leona, Smith',
+      '5: Los Angeles — Jazmine, Solomon',
+      '1: Los Compton — Jaiden, Miles',
+    ])
+  })
+
+  test('selectAnd', () => {
+    expect(
+      v.findByAddressExact('los angeles').map(
+        e => `${e.uuid}: ${e.address.city} — ${e.lastName} ${e.firstName}`
+      )
+    ).toStrictEqual([
+      '2: Los Angeles — Burns Esteban',
+      '3: Los Angeles — Smith Leona',
+      '5: Los Angeles — Solomon Jazmine',
+    ])
+  })
+
+  test('rangeOne', () => {
+    expect(
+      v.rangeByDob('2006-02-01', '2006-03-01')
+        .map(e => `${e.uuid}: ${e.lastName} ${e.firstName}: ${e.dob}`)
+    ).toStrictEqual([
+      '3: Smith Leona: 2006-02-22',
+      '4: Solomon Joe: 2006-02-14',
+    ])
+  })
+
+  test('andSearch', () => {
+    expect(
+      v.findPersonsWithAddress('Solomon', 'Santa Clara').map(
+        e => `${e.uuid}: ${e.address.city} — ${e.lastName} ${e.firstName}`
+      )
+    ).toStrictEqual([
+      '4: Santa Clara — Solomon Joe',
+    ])
+  })
+
+  test('orSearch', () => {
+    expect(
+      v.findPersonsByDobYears('Solomon', [1995, 2006]).map(e =>
+        `${e.dob.substring(0, 4)}: ${e.uuid} — ${e.lastName} ${e.firstName}`
+      )
+    ).toStrictEqual([
+      '1995: 5 — Solomon Jazmine',
+      '2006: 4 — Solomon Joe',
+    ])
   })
 })

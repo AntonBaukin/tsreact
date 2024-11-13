@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import dayjs from 'dayjs'
+import dayjs from './dayjs.mjs'
 import {
   isArrayLike,
   isString,
@@ -688,6 +688,10 @@ export class MultiMapIndex extends MultiIndex
 
   getOne(tItem) {
     return this.map.get(tItem)
+  }
+
+  $rangeFull() {
+    return Array.from(this.map.values())
   }
 }
 
