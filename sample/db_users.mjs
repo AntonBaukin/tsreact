@@ -63,8 +63,8 @@ export class PersonsView extends DataView
   buildTransforms() {
     return trPick([
       'uuid',
-      'firstName',
       'lastName',
+      'firstName',
       'dob',
       'email',
       'phone',
@@ -73,18 +73,27 @@ export class PersonsView extends DataView
     ])
   }
 
-  selectByName(name) {
+  /**
+   * @param sort = 'dob' | (* =) 'name'
+   */
+  selectByName(name, sort) {
+    sort = sort === 'dob' ? 'dobYearName' : 'lastFirstName'
     return name?.trim().length
-      ? this.select('name', name, 'lastFirstName', 'and')
-      : this.all('name', 'lastFirstName')
+      ? this.select('name', name, sort, 'and')
+      : this.all('name', sort)
   }
 
-  selectByDob(name, years) {
+  /**
+   * @param sort = (* =) 'dob' | 'name'
+   */
+  selectByDob(name, years, sort) {
+    sort = sort === 'name' ? 'lastFirstName' : 'dobYearName'
+
     const isName = name?.trim().length
     const isYears = years?.length
 
     if (!isName && !isYears) {
-      return this.all('dob', 'dobYearName')
+      return this.all('dob', sort)
     }
 
     let rInds = []
@@ -106,6 +115,6 @@ export class PersonsView extends DataView
     }
 
     const result = this.mapIndex(rInds)
-    return this.sort('dobYearName', result)
+    return this.sort(sort, result)
   }
 }

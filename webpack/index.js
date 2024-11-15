@@ -1,12 +1,12 @@
 const { isPROD } = require('./utils')
 
-module.exports = (env, args) => {
+module.exports = async (env, args) => {
   const mode = require('./mode')({ env, args })
   const paths = require('./paths')({ mode })
   const rules = require('./rules')({ paths })
   const plugins = require('./plugins')({ mode, paths })
   const optimization = require('./opts')({ mode })
-  const devServer = require('./devserver')({ paths })
+  const devServer = await require('./devserver')({ paths })
 
   return {
     mode,
