@@ -134,19 +134,35 @@ const jsonImporter = (paths) => {
         throw e
       }
 
-      const sassLines = Object.keys(json).map(key => {
-        const value = json[key] // expected string or number
-        return `\$${key}: ${value};`;
-      })
+      const sass = jsonToSass(json)
 
       await fsPromises.mkdir(path.dirname(targetFile), { recursive: true })
-      await fsPromises.writeFile(targetFile, sassLines.join('\n'))
+      await fsPromises.writeFile(targetFile, sass)
 
       return pathToFileURL(targetFile)
     })())
   }
 
   return { findFileUrl }
+}
+
+const jsonToSass = (json) => {
+  const sassLines = []
+
+  function addKeys(prefix, obj) {
+    Object.keys(obj).forEach(key => {
+      const value = obj[key]
+
+      if (typeof value === 'object') {
+        addKeys(`${prefix}${key}-`, value)
+      } else {
+        sassLines.push(`\$${prefix}${key}: ${value};`)
+      }
+    })
+  }
+
+  addKeys('', json)
+  return sassLines.join('\n')
 }
 
 module.exports = { cssPlugins, useGlobalCss, useModuleCss }

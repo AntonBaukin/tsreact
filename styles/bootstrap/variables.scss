@@ -2,18 +2,15 @@
 // Fonts
 //
 
-$font-family-sans-serif: $fontFamilyBase;
-$font-family-base: $fontFamilyBase;
-$headings-font-family: $fontFamilyHeadings;
+$font-family-sans-serif: $font-base-family;
+$font-family-base: $font-family-sans-serif;
+$headings-font-family: $font-headings-family;
 
-$font-size-base: $fontSizeBase;
-$font-weight-base: $fontWeightNormal;
+$font-size-base: $font-base-size;
 
-// $font-weight-lighter: $fontWeightThin;
-$font-weight-light: $fontWeightLight;
-$font-weight-normal: $fontWeightNormal;
-// $font-weight-bolder: $fontWeightBolder;
-// $font-weight-bold: $fontWeightBold;
+$font-weight-base: $font-base-weight-normal;
+$font-weight-light: $font-base-weight-light;
+$font-weight-normal: $font-weight-base;
 
 $headings-font-weight: $font-weight-light;
 $display-font-weight: $font-weight-normal;

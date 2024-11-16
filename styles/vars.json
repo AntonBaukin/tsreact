@@ -1,12 +1,24 @@
 {
-  "fontFamilyBase": "\"Open Sans\", sans-serif",
-  "fontFamilyHeadings": "\"Open Sans Condensed\", sans-serif",
-  "fontSizeBase": "1rem",
-  "fontWeightLight": 300,
-  "fontWeightNormal": 400,
-  "screenWidthPhone": "400px",
-  "screenWidthTablet": "738px",
-  "screenWidthDesktop": "980px",
-  "screenWidthWideDesktop": "1200px",
-  "screenWidthHugeDesktop": "1400px"
+  "font": {
+    "base": {
+      "family": "\"Open Sans\", sans-serif",
+      "size": "1rem",
+      "weight": {
+        "light": 300,
+        "normal": 400
+      }
+    },
+    "headings": {
+      "family": "\"Open Sans Condensed\", sans-serif"
+    }
+  },
+  "screen": {
+    "width": {
+      "phone": "400px",
+      "tablet": "738px",
+      "desktop": "980px",
+      "wide": "1200px",
+      "huge": "1400px"
+    }
+  }
 }
