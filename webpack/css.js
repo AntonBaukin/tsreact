@@ -15,11 +15,11 @@ const defaultScssImports = (content, loaderContext) => {
   const { resourcePath } = loaderContext
 
   return resourcePath.endsWith('.module.scss')
-    ? DEFAULT_MODULE_IMPORT.concat(content)
-    : content
+         ? DEFAULT_MODULE_IMPORT.concat(content)
+         : content
 }
 
-const useCss = (paths) => [
+const baseCssLoaders = () => [
   {
     loader: MiniCssExtractPlugin.loader
   },
@@ -48,21 +48,43 @@ const useCss = (paths) => [
       sourceMap: true,
     }
   },
-  {
-    loader: 'sass-loader',
-    options: {
-      sourceMap: true,
-      additionalData: defaultScssImports,
-      sassOptions: {
-        importers: [jsonImporter(paths)],
-        quietDeps: true,
-        includePaths: [
-          paths.styles.sources,
-        ],
-      }
-    }
-  },
 ]
+
+const sassLoader = (paths, silenceDeprecations) => ({
+  loader: 'sass-loader',
+  options: {
+    sourceMap: true,
+    additionalData: defaultScssImports,
+    sassOptions: {
+      importers: [jsonImporter(paths)],
+      includePaths: [
+        paths.styles.sources,
+      ],
+      silenceDeprecations,
+    },
+  }
+})
+
+
+const useGlobalCss = (paths) => [
+  ...baseCssLoaders(),
+  sassLoader(
+    paths,
+    [
+      'import',
+      // These deprecations come from Bootstrap 5.x:
+      'global-builtin',
+      'color-functions',
+      'mixed-decls',
+    ]
+  ),
+]
+
+const useModuleCss = (paths) => [
+  ...baseCssLoaders(),
+  sassLoader(paths),
+]
+
 
 const jsonImporter = (paths) => {
   const { base, output } = paths
@@ -127,4 +149,4 @@ const jsonImporter = (paths) => {
   return { findFileUrl }
 }
 
-module.exports = { cssPlugins, useCss }
+module.exports = { cssPlugins, useGlobalCss, useModuleCss }

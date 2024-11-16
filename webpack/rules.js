@@ -1,4 +1,4 @@
-const { useCss } = require('./css')
+const { useGlobalCss, useModuleCss } = require('./css')
 const { useFontsAsset } = require('./fonts')
 
 module.exports = ({ paths }) => [
@@ -14,7 +14,12 @@ module.exports = ({ paths }) => [
   },
   {
     test: /\.(scss|css)$/,
-    use: useCss(paths)
+    exclude: /\.module.scss$/,
+    use: useGlobalCss(paths)
+  },
+  {
+    test: /\.module.scss$/,
+    use: useModuleCss(paths)
   },
   {
     test: /\.woff2$/,
