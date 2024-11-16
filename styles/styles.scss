@@ -1,3 +1,18 @@
+//
+// Entry point for global styles generation.
+//
+
+// Custom fonts:
 @import "fonts";
-@import "variables";
-@import "bootstrap";
+
+// Basic variables used to define the derivatives:
+@import "vars.json";
+
+// Global definitions for Bootstrap:
+@import "bootstrap/variables";
+
+// Globally defined Bootstrap items:
+@import "bootstrap/imports";
+
+// Global definitions for the application:
+@import "application";

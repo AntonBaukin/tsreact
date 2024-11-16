@@ -6,7 +6,7 @@ export default () => {
   const reactNode = document.body.querySelector(`#${config.reactRootId}`)
 
   if (!reactNode) {
-    throw Error('React application root node is not found')
+    throw Error(`React application root node #${config.reactRootId} is not found`)
   }
 
   const reactRoot = createRoot(reactNode)

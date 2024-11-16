@@ -1,0 +1,26 @@
+//
+// Fonts
+//
+
+$font-family-sans-serif: $fontFamilyBase;
+$font-family-base: $fontFamilyBase;
+$headings-font-family: $fontFamilyHeadings;
+
+$font-size-base: $fontSizeBase;
+$font-weight-base: $fontWeightNormal;
+
+// $font-weight-lighter: $fontWeightThin;
+$font-weight-light: $fontWeightLight;
+$font-weight-normal: $fontWeightNormal;
+// $font-weight-bolder: $fontWeightBolder;
+// $font-weight-bold: $fontWeightBold;
+
+$headings-font-weight: $font-weight-light;
+$display-font-weight: $font-weight-normal;
+$lead-font-weight: $font-weight-light;
+
+//
+// Colors
+//
+
+$enable-dark-mode: false;
