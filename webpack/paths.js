@@ -28,7 +28,8 @@ module.exports = () => ({
   },
   icons: {
     bootstrap: path.resolve(modules, 'bootstrap-icons', 'icons'),
-    spriteFile: path.join('images', 'icons.svg')
+    spriteFile: config.iconsSpriteFile,
+    bootstrapTs: path.resolve(base, 'sources/co/Icon/bootstrap.ts'),
   },
   lang: {
     items: ['en'],

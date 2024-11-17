@@ -6,6 +6,7 @@ export interface Config {
   pageTitle: string;
   defaultLang: string;
   globalLangVariable: string;
+  iconsSpriteFile: string;
   endpoints: Record<string, string>;
 }
 
