@@ -1,6 +1,6 @@
-import React, { FC, memo } from 'react'
+import { FC, memo } from 'react'
 import config from 'sources/config'
-import { IconProps } from './props'
+import { IconProps } from './types'
 
 const Icon: FC<IconProps> = ({ name, className, style }) => (
   <svg fill="currentColor" width="1em" height="1lh" className={className} style={style}>
