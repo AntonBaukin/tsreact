@@ -1,6 +1,6 @@
-@import "../fonts/open-sans/open-sans-300rc-greek.css";
-@import "../fonts/open-sans/open-sans-300rc-latin.css";
-@import "../fonts/open-sans/open-sans-300rc-sym.css";
+//
+// Mixins defining the imported web fonts.
+//
 
 @mixin font-open-sans-300rc {
   font-family: "Open Sans Condensed";
@@ -9,10 +9,6 @@
   font-style: normal;
   font-variation-settings: "wdth" 87.5;
 }
-
-@import "../fonts/open-sans/open-sans-400r-greek.css";
-@import "../fonts/open-sans/open-sans-400r-latin.css";
-@import "../fonts/open-sans/open-sans-400r-sym.css";
 
 @mixin font-open-sans-400r {
   font-family: "Open Sans";
