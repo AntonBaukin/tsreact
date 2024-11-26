@@ -1,4 +1,3 @@
-import { CSSProperties } from 'react'
 import bootstrapIcons from "./bootstrap";
 
 export type BootstrapIcons = typeof bootstrapIcons[number]
@@ -10,5 +9,4 @@ export type BootstrapIcons = typeof bootstrapIcons[number]
 export interface IconProps {
   name: BootstrapIcons,
   className?: string,
-  style?: object,
 }

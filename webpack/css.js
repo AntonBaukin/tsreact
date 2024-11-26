@@ -9,16 +9,6 @@ const cssPlugins = ({ paths }) => [
   })
 ]
 
-const DEFAULT_MODULE_IMPORT = '@import "default.module.scss"; \n'
-
-const defaultScssImports = (content, loaderContext) => {
-  const { resourcePath } = loaderContext
-
-  return resourcePath.endsWith('.module.scss')
-         ? DEFAULT_MODULE_IMPORT.concat(content)
-         : content
-}
-
 const baseCssLoaders = () => [
   {
     loader: MiniCssExtractPlugin.loader
@@ -29,7 +19,9 @@ const baseCssLoaders = () => [
       sourceMap: true,
       importLoaders: 1,
       modules: {
-        localIdentName: '[name]-[local]-[hash:base64:4]',
+        namedExport: false,
+        exportLocalsConvention: 'as-is',
+        localIdentName: '[local]-[hash:base64:8]',
         auto: (resourcePath) => resourcePath.endsWith('.module.scss'),
       }
     }
@@ -54,10 +46,10 @@ const sassLoader = (paths, silenceDeprecations) => ({
   loader: 'sass-loader',
   options: {
     sourceMap: true,
-    additionalData: defaultScssImports,
+    // additionalData: defaultScssImports, — @see Git history
     sassOptions: {
       importers: [
-        nodeModulesImporter(paths),
+        tildaImporter(paths),
         jsonImporter(paths),
       ],
       includePaths: [
@@ -79,16 +71,24 @@ const useModuleCss = (paths) => [
   sassLoader(paths),
 ]
 
-const nodeModulesImporter = (paths) => {
-  const { modules } = paths
+/**
+ * Suports 'styles/' and '~' (for node modules) prefixes.
+ */
+const tildaImporter = (paths) => {
+  const { modules, styles } = paths
 
   const findFileUrl = (file) => {
-    if (!file.startsWith('~')) {
-      return null
+    let targetFile = null
+
+    if (file.startsWith('styles/')) {
+      targetFile = path.join(styles.sources, file.substring('styles/'.length))
     }
 
-    const targetFile = path.join(modules, file.substring(1))
-    return pathToFileURL(targetFile)
+    if (file.startsWith('~')) {
+      targetFile = path.join(modules, file.substring('~'.length))
+    }
+
+    return targetFile ? pathToFileURL(targetFile) : null
   }
 
   return { findFileUrl }

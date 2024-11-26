@@ -21,7 +21,6 @@
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "downlevelIteration": true,
-    "typeRoots": ["./styles", "./node_modules/@types"],
     "paths": {
       "sources/*": ["sources/*"],
       "styles/*": ["styles/*"]
