@@ -1,13 +1,21 @@
 //
 // Entry point for global styles generation.
 //
+@use 'sass:meta';
+
+@layer reset, global, module;
+
+// CSS normalization framework:
+@layer reset {
+  @include meta.load-css("~modern-normalize/modern-normalize.css");
+}
 
 // Custom fonts (imports) :
-@use "fonts.imports";
+@import "../fonts/imports";
 
 // Basic variables used to define the derivatives.
 // Nested objects produce names separated with '-'.
-@use "vars.json";
+@import "vars.json";
 
 // Global definitions for the application:
-@use "application";
+@import "application";

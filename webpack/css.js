@@ -56,7 +56,10 @@ const sassLoader = (paths, silenceDeprecations) => ({
     sourceMap: true,
     additionalData: defaultScssImports,
     sassOptions: {
-      importers: [jsonImporter(paths)],
+      importers: [
+        nodeModulesImporter(paths),
+        jsonImporter(paths),
+      ],
       includePaths: [
         paths.styles.sources,
       ],
@@ -68,16 +71,7 @@ const sassLoader = (paths, silenceDeprecations) => ({
 
 const useGlobalCss = (paths) => [
   ...baseCssLoaders(),
-  sassLoader(
-    paths,
-    [
-      'import',
-      // These deprecations come from Bootstrap 5.x:
-      'global-builtin',
-      'color-functions',
-      'mixed-decls',
-    ]
-  ),
+  sassLoader(paths, [ 'import' ]),
 ]
 
 const useModuleCss = (paths) => [
@@ -85,6 +79,20 @@ const useModuleCss = (paths) => [
   sassLoader(paths),
 ]
 
+const nodeModulesImporter = (paths) => {
+  const { modules } = paths
+
+  const findFileUrl = (file) => {
+    if (!file.startsWith('~')) {
+      return null
+    }
+
+    const targetFile = path.join(modules, file.substring(1))
+    return pathToFileURL(targetFile)
+  }
+
+  return { findFileUrl }
+}
 
 const jsonImporter = (paths) => {
   const { base, output } = paths
@@ -156,13 +164,21 @@ const jsonToSass = (json) => {
       if (typeof value === 'object') {
         addKeys(`${prefix}${key}-`, value)
       } else {
-        sassLines.push(`\$${prefix}${key}: ${value};`)
+        sassLines.push(`\$${prefix}${key}: ${encodeScssValue(value)};`)
       }
     })
   }
 
   addKeys('', json)
   return sassLines.join('\n')
+}
+
+const encodeScssValue = (value) => {
+  const escaped = String(value)
+    .replace(/[\\]/g, '\\\\')
+    .replace(/["]/g, '\\"')
+
+  return `#{"${escaped}"}`
 }
 
 module.exports = { cssPlugins, useGlobalCss, useModuleCss }

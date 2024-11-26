@@ -1,0 +1,5 @@
+@use "typo";
+
+@mixin define-variables {
+  @include typo.define-headers;
+}

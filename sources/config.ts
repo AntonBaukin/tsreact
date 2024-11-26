@@ -2,7 +2,7 @@ import config from '../config.json'
 
 export interface Config {
   publicPath: string;
-  reactRootId: string;
+  webNodeName: string;
   pageTitle: string;
   defaultLang: string;
   globalLangVariable: string;

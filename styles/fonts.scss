@@ -1,0 +1,13 @@
+@use "../fonts/variants";
+
+@mixin font-body {
+  @include variants.font-open-sans-400r;
+}
+
+@mixin font-headers {
+  @include variants.font-open-sans-300rc;
+}
+
+@mixin font-controls {
+  @include variants.font-open-sans-300rc;
+}

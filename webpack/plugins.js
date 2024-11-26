@@ -25,7 +25,7 @@ module.exports = ({ mode, paths, ...vars }) => [
     scriptLoading: 'defer',
     inject: 'head',
     minify: isPROD(mode),
-    reactRootId: config.reactRootId,
+    webNodeName: config.webNodeName,
     defaultLang: config.defaultLang,
   }),
 

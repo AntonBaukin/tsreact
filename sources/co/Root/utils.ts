@@ -3,13 +3,13 @@ import { createRoot, Root } from 'react-dom/client'
 import config from 'sources/config'
 
 export const getReactDomNode = () =>
-  document.body.querySelector(`#${config.reactRootId}`)
+  document.body.querySelector(`.${config.webNodeName}`)
 
 export const getReactDomNodeEx = () => {
   const reactNode = getReactDomNode()
 
   if (!reactNode) {
-    throw Error(`React application root node #${config.reactRootId} is not found`)
+    throw Error(`React application root node #${config.webNodeName} is not found`)
   }
 
   return reactNode

@@ -2,10 +2,22 @@
 // Global definitions for the application.
 //
 
-:root {
-  min-height: 100vh;
+@use "fonts";
+@use "theme/root";
+@use "../config.json";
 
-  body {
+@layer global {
+  :root {
     min-height: 100vh;
+
+    body {
+      min-height: 100vh;
+    }
+  }
+
+  .#{config.$webNodeName} {
+    @include root.define-variables;
+    @include fonts.font-body;
+    font-size: 1rem;
   }
 }
