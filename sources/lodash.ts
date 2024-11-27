@@ -4,6 +4,7 @@ import isString from 'lodash/isString'
 import isNil from 'lodash/isNil'
 import get from 'lodash/get'
 import noop from 'lodash/noop'
+import template from 'lodash/template'
 import throttle from 'lodash/throttle'
 
 export {
@@ -13,5 +14,6 @@ export {
   isNil,
   get,
   noop,
+  template,
   throttle,
 }

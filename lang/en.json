@@ -1,5 +1,6 @@
 {
-  "ROOT_TITLE": "Clinical Table Search",
-  "SEARCH_TOTAL": "Total results: ${total}",
-  "RECORD_BACK": "Back"
+  "Main": {
+    "title": "Sample application!",
+    "content": "The quick brown <%= name %> jumps over the lazy dog"
+  }
 }

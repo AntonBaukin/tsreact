@@ -1,12 +1,17 @@
 import { VFC } from 'react'
-import Icon from 'sources/co/Icon'
-import Header from 'sources/co/typo/Header'
+import { Icon, Text } from 'sources/co'
+import { Header } from 'sources/co/typo'
 
 const Main: VFC = () => {
   return (
     <>
-      <Header size="2">Sample application!</Header>
-      <div>The quick brown fox jumps over the lazy dog <Icon name="search" /></div>
+      <Header size="2">
+        <Text>Main.title</Text>
+      </Header>
+      <div>
+        <Text name="fox">Main.content</Text>
+        <Icon name="search" />
+      </div>
     </>
   )
 }
