@@ -1,0 +1,13 @@
+@layer module {
+  .background {
+    position: fixed;
+    inset: 0;
+    min-width: 100vw;
+    min-height: 100vh;
+    z-index: -1;
+
+    --grC: hsl;
+    --gr0: hsl(0 0% 96%);
+    --gr1: hsl(0 0% 99%);
+  }
+}
