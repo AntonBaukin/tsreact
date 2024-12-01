@@ -1,5 +1,8 @@
 @use "typo";
+@use "color";
 
 @mixin define-variables {
   @include typo.define-headers;
+  @include color.define-base;
+  @include color.define-text;
 }

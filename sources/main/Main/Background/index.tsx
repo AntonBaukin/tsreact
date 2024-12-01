@@ -2,7 +2,7 @@ import { VFC } from 'react'
 import Gradient from './gradient'
 import styles from './styles.module.scss'
 
-const Background: VFC=() => {
+const Background: VFC = () => {
   return (
     <svg
       className={styles.background}
@@ -12,9 +12,11 @@ const Background: VFC=() => {
       <defs>
         <Gradient id='gradient' />
       </defs>
+
       <filter id='blur'>
         <feGaussianBlur in='SourceGraphic' stdDeviation='0.25'/>
       </filter>
+
       <circle
         transform='rotate(-45 50 50)'
         fill='url(#gradient)'
@@ -26,7 +28,5 @@ const Background: VFC=() => {
     </svg>
   );
 }
-
-Background.displayName='Background'
 
 export default Background

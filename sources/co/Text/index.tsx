@@ -10,6 +10,4 @@ const Text: FC<TextProps> = ({ children, lang, ...params}) => {
   return value || null
 }
 
-Text.displayName = 'Text'
-
 export default memo(Text)

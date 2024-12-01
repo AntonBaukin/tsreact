@@ -8,6 +8,4 @@ const Icon: FC<IconProps> = ({ name, className }) => (
   </svg>
 )
 
-Icon.displayName = 'Icon'
-
 export default memo(Icon)

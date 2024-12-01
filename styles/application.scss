@@ -16,9 +16,10 @@
   }
 
   .#{config.$webNodeName} {
+    min-height: 100vh;
     @include root.define-variables;
     @include fonts.font-body;
     font-size: 1rem;
-    min-height: 100vh;
+    color: var(--color-text);
   }
 }

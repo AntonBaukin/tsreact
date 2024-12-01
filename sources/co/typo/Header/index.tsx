@@ -12,6 +12,4 @@ const Header: FC<HeaderProps> = ({ size, className, children }) =>
     children,
   )
 
-Header.displayName = 'Header'
-
 export default Header
