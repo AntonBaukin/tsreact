@@ -1,11 +1,13 @@
+@use "styles/fonts";
+
 @layer global {
   .pagemenu {
     padding: 1em 0;
 
     button {
+      @include fonts.font-controls;
       border: none;
       outline: none;
-      padding: 0.25em 0.5em;
     }
   }
 }

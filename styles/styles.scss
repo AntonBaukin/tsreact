@@ -3,19 +3,13 @@
 //
 @use 'sass:meta';
 
-@layer reset, global, module;
+// Custom fonts (imports) :
+@import "../fonts/imports";
 
 // CSS normalization framework:
 @layer reset {
   @include meta.load-css("~modern-normalize/modern-normalize.css");
 }
-
-// Custom fonts (imports) :
-@import "../fonts/imports";
-
-// Basic variables used to define the derivatives.
-// Nested objects produce names separated with '-'.
-@import "vars.json";
 
 // Global definitions for the application:
 @import "application";

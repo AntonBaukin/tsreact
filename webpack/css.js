@@ -170,10 +170,18 @@ const jsonToSass = (json) => {
   }
 
   addKeys('', json)
+  sassLines.push('')
+
   return sassLines.join('\n')
 }
 
+const encodeRequired = (value) => value.includes('/')
+
 const encodeScssValue = (value) => {
+  if (!encodeRequired(value)) {
+    return value
+  }
+
   const escaped = String(value)
     .replace(/[\\]/g, '\\\\')
     .replace(/["]/g, '\\"')

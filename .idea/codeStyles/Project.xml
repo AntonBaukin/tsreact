@@ -30,6 +30,7 @@
     <option name="INNER_CLASSES_ORDER_WEIGHT" value="3" />
     <option name="RIGHT_MARGIN" value="92" />
     <option name="ENABLE_JAVADOC_FORMATTING" value="false" />
+    <option name="FORMATTER_TAGS_ENABLED" value="false" />
     <option name="BLANK_LINES_AROUND_CLASS" value="0" />
     <option name="SPACE_AROUND_MULTIPLICATIVE_OPERATORS" value="false" />
     <option name="SPACE_AFTER_TYPE_CAST" value="false" />
@@ -75,9 +76,6 @@
     <option name="PARAMETER_ANNOTATION_WRAP" value="1" />
     <option name="VARIABLE_ANNOTATION_WRAP" value="2" />
     <option name="ENUM_CONSTANTS_WRAP" value="2" />
-    <HTMLCodeStyleSettings>
-      <option name="HTML_SPACE_AROUND_EQUALITY_IN_ATTRIBUTE" value="true" />
-    </HTMLCodeStyleSettings>
     <JSCodeStyleSettings version="0">
       <option name="USE_SEMICOLON_AFTER_STATEMENT" value="false" />
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
@@ -177,6 +175,13 @@
       <option name="PARAMETER_ANNOTATION_WRAP" value="1" />
       <option name="VARIABLE_ANNOTATION_WRAP" value="2" />
       <option name="ENUM_CONSTANTS_WRAP" value="2" />
+    </codeStyleSettings>
+    <codeStyleSettings language="HTML">
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="JAVA">
       <option name="KEEP_CONTROL_STATEMENT_IN_ONE_LINE" value="false" />

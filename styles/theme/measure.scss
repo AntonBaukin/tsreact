@@ -1,0 +1,9 @@
+@use "../vars.json";
+
+@mixin define {
+  --screen-phone: #{vars.$screen-phone};
+  --screen-tablet: #{vars.$screen-tablet};
+  --screen-desktop: #{vars.$screen-desktop};
+  --screen-wide: #{vars.$screen-wide};
+  --screen-huge: #{vars.$screen-huge};
+}

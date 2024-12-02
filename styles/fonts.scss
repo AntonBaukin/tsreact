@@ -1,7 +1,13 @@
+@use "vars.json";
 @use "../fonts/variants";
+
+@mixin font-size-reset {
+  font-size: vars.$font-size;
+}
 
 @mixin font-body {
   @include variants.font-open-sans-400r;
+  @include font-size-reset;
 }
 
 @mixin font-headers {

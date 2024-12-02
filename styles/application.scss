@@ -19,7 +19,6 @@
     min-height: 100vh;
     @include root.define-variables;
     @include fonts.font-body;
-    font-size: 1rem;
     color: var(--color-text);
   }
 }

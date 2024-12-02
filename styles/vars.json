@@ -1,24 +1,18 @@
 {
   "font": {
-    "base": {
-      "family": "\"Open Sans\", sans-serif",
-      "size": "1rem",
-      "weight": {
-        "light": 300,
-        "normal": 400
-      }
-    },
-    "headings": {
-      "family": "\"Open Sans Condensed\", sans-serif"
-    }
+    "size": "16px"
+  },
+  "size": {
+    "s": "4px",
+    "m": "8px",
+    "l": "16px",
+    "x": "32px"
   },
   "screen": {
-    "width": {
-      "phone": "400px",
-      "tablet": "738px",
-      "desktop": "980px",
-      "wide": "1200px",
-      "huge": "1400px"
-    }
+    "phone": "400px",
+    "tablet": "738px",
+    "desktop": "980px",
+    "wide": "1200px",
+    "huge": "1400px"
   }
 }

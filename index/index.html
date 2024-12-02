@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title><%= htmlWebpackPlugin.options.title %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      @layer reset, global, module;
+    </style>
     <script defer="defer" src="/lang/<%= htmlWebpackPlugin.options.defaultLang %>.js"></script>
   </head>
   <body>

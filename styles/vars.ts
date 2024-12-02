@@ -6,26 +6,20 @@ export default stylesVars
 
 export interface StylesVars {
   font: {
-    base: {
-      family: string,
-      size: string,
-      weight: {
-        light: number,
-        normal: number,
-      },
-    },
-    headings: {
-      family: string,
-    },
-  },
+    size: string,
+  }
+  size: {
+    s: string,
+    m: string,
+    l: string,
+    x: string,
+  }
   screen: {
-    width: {
-      phone: string,
-      tablet: string,
-      desktop: string,
-      wide: string,
-      huge: string,
-    },
+    phone: string,
+    tablet: string,
+    desktop: string,
+    wide: string,
+    huge: string,
   },
 }
 
@@ -39,7 +33,7 @@ export const screenWidths = () => {
     desktop,
     wide,
     huge,
-  } = stylesVars.screen.width
+  } = stylesVars.screen
 
   const px = (s: string): number | null => {
     const m = s.match(/(\d+)px/)

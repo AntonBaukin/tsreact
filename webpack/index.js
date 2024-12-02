@@ -23,8 +23,9 @@ module.exports = async (env, args) => {
       filename: paths.main.outputTemplate,
     },
     entry: {
-      main: paths.main.entry,
+      // Global styles are loaded the first:
       styles: paths.styles.entry,
+      main: paths.main.entry,
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json'],
