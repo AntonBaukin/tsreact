@@ -63,7 +63,7 @@ const sassLoader = (paths, silenceDeprecations) => ({
 
 const useGlobalCss = (paths) => [
   ...baseCssLoaders(),
-  sassLoader(paths, [ 'import' ]),
+  sassLoader(paths, [ 'import', 'mixed-decls' ]),
 ]
 
 const useModuleCss = (paths) => [

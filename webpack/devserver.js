@@ -17,7 +17,7 @@ module.exports = async ({ paths }) => {
 
   return ({
     port: 8080,
-    host: '127.0.0.1',
+    host: '0.0.0.0', // '127.0.0.1',
     compress: true,
     historyApiFallback: true,
     liveReload: false,

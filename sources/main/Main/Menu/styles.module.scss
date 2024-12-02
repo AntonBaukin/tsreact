@@ -1,0 +1,11 @@
+@layer global {
+  .pagemenu {
+    padding: 1em 0;
+
+    button {
+      border: none;
+      outline: none;
+      padding: 0.25em 0.5em;
+    }
+  }
+}

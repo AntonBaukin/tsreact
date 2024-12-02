@@ -1,0 +1,64 @@
+@layer module {
+  .frame {
+    position: relative;
+    display: inline-block;
+    padding: 0 4px;
+  }
+
+  .framefill {
+    position: relative;
+    display: inline-block;
+    flex: 1;
+  }
+
+  .frameline {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .framedecor {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+  }
+
+  svg.sprite {
+    position: absolute;
+    overflow: visible;
+    pointer-events: none;
+
+    path {
+      vector-effect: non-scaling-stroke;
+      stroke: currentColor;
+      fill: currentColor;
+    }
+
+    &.tl {
+      left: 6px;
+      top: 0;
+      height: 2px;
+      width: calc(100% - 8px);
+    }
+
+    &.bl {
+      right: 6px;
+      bottom: 0;
+      height: 2px;
+      width: calc(100% - 8px);
+    }
+
+    &.rs, &.dr {
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
+    }
+
+    &.ls, &.dl {
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 100%;
+    }
+  }
+}
