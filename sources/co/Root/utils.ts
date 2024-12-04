@@ -38,17 +38,13 @@ export const makeReactBoot = (Component: VFC) => {
 }
 
 const raceDocumentLoader = (callback: () => void) => () => {
-  const docPromise = new Promise<void>(resolve => {
-    if (document.readyState === 'loading') {
-      const onLoad = () => {
-        document.removeEventListener('DOMContentLoaded', onLoad)
-        resolve()
-      }
-
-      document.addEventListener('DOMContentLoaded', onLoad)
-    } else {
+  const loadPromise = new Promise<void>(resolve => {
+    const onLoad = () => {
+      window.removeEventListener('DOMContentLoaded', onLoad)
       resolve()
     }
+
+    window.addEventListener('load', onLoad)
   })
 
   const fontsPromise = Promise.any([
@@ -56,7 +52,7 @@ const raceDocumentLoader = (callback: () => void) => () => {
     new Promise<void>(resolve => setTimeout(resolve, 500)),
   ])
 
-  Promise.all([docPromise, fontsPromise]).then(callback)
+  Promise.all([loadPromise, fontsPromise]).then(callback)
 }
 
 
