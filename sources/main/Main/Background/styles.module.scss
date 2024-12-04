@@ -1,11 +1,5 @@
 @layer global {
   .background {
-    position: fixed;
-    inset: 0;
-    min-width: 100vw;
-    min-height: 100vh;
-    z-index: -1;
-
     --grC: var(--color-space);
     --gr0: var(--color-bg-alpha);
     --gr1: var(--color-bg-omega);
