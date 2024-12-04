@@ -34,16 +34,29 @@ export const makeReactBoot = (Component: VFC) => {
     reactRoot.render(rootComponent)
   }
 
-  return () => {
+  return raceDocumentLoader(bootLoader)
+}
+
+const raceDocumentLoader = (callback: () => void) => () => {
+  const docPromise = new Promise<void>(resolve => {
     if (document.readyState === 'loading') {
       const onLoad = () => {
         document.removeEventListener('DOMContentLoaded', onLoad)
-        bootLoader()
+        resolve()
       }
 
       document.addEventListener('DOMContentLoaded', onLoad)
     } else {
-      bootLoader()
+      resolve()
     }
-  }
+  })
+
+  const fontsPromise = Promise.any([
+    document.fonts.ready,
+    new Promise<void>(resolve => setTimeout(resolve, 500)),
+  ])
+
+  Promise.all([docPromise, fontsPromise]).then(callback)
 }
+
+
