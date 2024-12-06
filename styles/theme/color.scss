@@ -1,15 +1,13 @@
 @use "styles/mixins";
 
 @mixin define {
-  --color-space: hsl;
-  --color-bg-alpha: hsl(0 0% 99%);
-  --color-bg-omega: hsl(0 0% 96%);
+  --color-bg-alpha: hsl(30 33.3% 98.8%);
+  --color-bg-omega: hsl(27 34.8% 82.5%);
   --color-text: hsl(224 0% 4%);
 
   @include mixins.supports-oklch {
-    --color-space: oklch;
-    --color-bg-alpha: oklch(99% 0 0);
-    --color-bg-omega: oklch(97% 0 0);
+    --color-bg-alpha: oklch(99.16% 0.0017 67.8);
+    --color-bg-omega: oklch(91.25% 0.0269 61.96);
     --color-text: oklch(15% 0.00 285);
   }
 }

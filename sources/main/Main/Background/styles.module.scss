@@ -1,7 +1,6 @@
 @layer global {
   .background {
-    --grC: var(--color-space);
-    --gr0: var(--color-bg-alpha);
-    --gr1: var(--color-bg-omega);
+    --a: var(--color-bg-alpha);
+    --b: var(--color-bg-omega);
   }
 }

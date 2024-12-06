@@ -1,6 +1,6 @@
 import { VFC } from 'react'
-import Gradient from './gradient'
 import { Render } from 'sources/co/utils'
+import Gradient from './gradient'
 import styles from './styles.module.scss'
 
 const Background: VFC = () => (
@@ -12,21 +12,9 @@ const Background: VFC = () => (
     >
       <style></style>
       <defs>
-        <Gradient id="gradient" />
+        <Gradient />
       </defs>
-
-      <filter id="blur">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="0.25"/>
-      </filter>
-
-      <circle
-        transform="rotate(-45 50 50)"
-        fill="url(#gradient)"
-        filter="url(#blur)"
-        cx="50"
-        cy="50"
-        r="71"
-      />
+      <rect fill="url(#g)" x="0" y="0" width="100" height="100" />
     </svg>
   </Render>
 );
@@ -36,9 +24,9 @@ const onSvgText = (root: HTMLDivElement) => {
   const svs = svg.firstChild as SVGStyleElement
   const css = window.getComputedStyle(svg)
 
-  const vars = 'C 0 1'
+  const vars = 'a b'
     .split(' ')
-    .map(x => `--gr${x}`)
+    .map(x => `--${x}`)
     .map(p => [p, css.getPropertyValue(p)])
     .map(pv => pv.join(':'))
     .join(';')
@@ -46,7 +34,6 @@ const onSvgText = (root: HTMLDivElement) => {
   svs.innerHTML = `*{${vars};}`
   svg.classList.remove(...Array.from(svg.classList))
 
-  const image = 'url(data:image/svg+xml;base64,'.concat(window.btoa(root.innerHTML),')')
   const style = document.createElement('style')
 
   style.innerHTML = '@layer global { '.concat(

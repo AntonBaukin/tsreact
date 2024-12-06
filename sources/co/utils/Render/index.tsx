@@ -18,7 +18,7 @@ const Render: FC<RenderProps> = ({ onReady, children }) => {
     [],
   )
 
-  return ready ? null : (
+  return (
     <div ref={setRef} style={style}>
       {children}
     </div>
