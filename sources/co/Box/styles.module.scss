@@ -1,3 +1,5 @@
+@use "styles/mixins";
+
 @layer module {
   .frame {
     position: relative;
@@ -5,21 +7,26 @@
     padding: 0 4px;
   }
 
-  .framefill {
-    position: relative;
-    display: inline-block;
-    flex: 1;
-  }
-
-  .frameline {
+  .container {
     display: flex;
     align-items: stretch;
-  }
 
-  .framedecor {
-    position: relative;
-    display: inline-block;
-    width: 8px;
+    .decor {
+      position: relative;
+      display: inline-block;
+      width: 8px;
+    }
+
+    .fill {
+      position: relative;
+      display: inline-block;
+      flex: 1;
+    }
+
+    @include mixins.narrow {
+      flex-direction: column;
+      gap: var(--m);
+    }
   }
 
   svg.sprite {
@@ -31,6 +38,20 @@
       vector-effect: non-scaling-stroke;
       stroke: currentColor;
       fill: currentColor;
+    }
+
+    &.begin {
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 100%;
+    }
+
+    &.end {
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
     }
 
     &.tl {
@@ -47,14 +68,14 @@
       width: calc(100% - 8px);
     }
 
-    &.rs, &.dr {
+    &.rs {
       top: 0;
       right: 0;
       width: 8px;
       height: 100%;
     }
 
-    &.ls, &.dl {
+    &.ls {
       top: 0;
       left: 0;
       width: 8px;

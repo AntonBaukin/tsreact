@@ -30,7 +30,13 @@ const baseCssLoaders = () => [
     loader: 'postcss-loader',
     options: {
       postcssOptions: {
-        plugins: ['autoprefixer']
+        plugins: [
+          'autoprefixer',
+          [
+            'postcss-discard-comments',
+            { removeAll: true },
+          ],
+        ]
       }
     }
   },
@@ -42,11 +48,17 @@ const baseCssLoaders = () => [
   },
 ]
 
-const sassLoader = (paths, silenceDeprecations) => ({
+const sassLoader = (
+  paths,
+  {
+    additionalData,
+    silenceDeprecations,
+  } = {},
+) => ({
   loader: 'sass-loader',
   options: {
     sourceMap: true,
-    // additionalData: defaultScssImports, — @see Git history
+    additionalData,
     sassOptions: {
       importers: [
         tildaImporter(paths),
@@ -63,13 +75,34 @@ const sassLoader = (paths, silenceDeprecations) => ({
 
 const useGlobalCss = (paths) => [
   ...baseCssLoaders(),
-  sassLoader(paths, [ 'import', 'mixed-decls' ]),
+  sassLoader(paths, {
+    silenceDeprecations: ['import', 'mixed-decls'],
+  }),
 ]
+
+const DEFAULT_MODULE_IMPORTS = `
+  @use "styles/vars.json";
+`
+
+const defaultModuleImports = (content, loaderContext) => {
+  const { resourcePath } = loaderContext
+
+  if (!resourcePath.endsWith('.module.scss')) {
+    return content
+  }
+
+  return DEFAULT_MODULE_IMPORTS.concat('\n', content)
+}
+
 
 const useModuleCss = (paths) => [
   ...baseCssLoaders(),
-  sassLoader(paths),
+  sassLoader(paths, {
+    additionalData: defaultModuleImports,
+  }),
 ]
+
+const STYLES = 'styles/'
 
 /**
  * Suports 'styles/' and '~' (for node modules) prefixes.
@@ -80,8 +113,8 @@ const tildaImporter = (paths) => {
   const findFileUrl = (file) => {
     let targetFile = null
 
-    if (file.startsWith('styles/')) {
-      targetFile = path.join(styles.sources, file.substring('styles/'.length))
+    if (file.startsWith(STYLES)) {
+      targetFile = path.join(styles.sources, file.substring(STYLES.length))
     }
 
     if (file.startsWith('~')) {
@@ -95,7 +128,7 @@ const tildaImporter = (paths) => {
 }
 
 const jsonImporter = (paths) => {
-  const { base, output } = paths
+  const { base, output, styles } = paths
 
   const findFileUrl = (file, { containingUrl }) => {
     if (!/\.json$/.test(file)) {
@@ -111,8 +144,14 @@ const jsonImporter = (paths) => {
       return null
     }
 
-    const containingDir = path.dirname(containingFile)
-    const sourceFile = path.resolve(containingDir, file)
+    const sourceFile = (() => {
+      if (file.startsWith(STYLES)) {
+        return path.join(styles.sources, file.substring(STYLES.length))
+      }
+
+      const containingDir = path.dirname(containingFile)
+      return path.resolve(containingDir, file)
+    })()
 
     if (!sourceFile.startsWith(base)) {
       return null

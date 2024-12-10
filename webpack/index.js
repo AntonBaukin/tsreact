@@ -21,6 +21,7 @@ module.exports = async (env, args) => {
       path: paths.output,
       publicPath: paths.publicPath,
       filename: paths.main.outputTemplate,
+      pathinfo: false,
     },
     entry: {
       // Global styles are loaded the first:

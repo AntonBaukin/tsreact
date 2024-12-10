@@ -2,27 +2,36 @@
 // Global definitions for the application.
 //
 
-@use "fonts";
-@use "theme/root";
 @use "../config.json";
+@use "styles/fonts";
+@use "styles/theme/root";
+@use "styles/mixins";
 
 @layer global {
   :root {
-    min-height: 100vh;
+    @include mixins.desktop {
+      min-height: 100vh;
+    }
 
     body {
-      min-height: 100vh;
       background-attachment: fixed;
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
+
+      @include mixins.desktop {
+        min-height: 100vh;
+      }
     }
   }
 
   .#{config.$webNodeName} {
-    min-height: 100vh;
     @include root.define-variables;
     @include fonts.font-body;
     color: var(--color-text);
+
+    @include mixins.desktop {
+      min-height: 100vh;
+    }
   }
 }

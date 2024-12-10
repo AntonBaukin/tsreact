@@ -1,9 +1,8 @@
-@use "../vars.json";
+@use "styles/vars.json";
 
 @mixin define {
-  --screen-phone: #{vars.$screen-phone};
-  --screen-tablet: #{vars.$screen-tablet};
-  --screen-desktop: #{vars.$screen-desktop};
-  --screen-wide: #{vars.$screen-wide};
-  --screen-huge: #{vars.$screen-huge};
+  --s: #{vars.$size-s};
+  --m: #{vars.$size-m};
+  --l: #{vars.$size-l};
+  --x: #{vars.$size-x};
 }

@@ -8,24 +8,20 @@ const Menu: VFC = () => {
     <div className={styles.pagemenu}>
       <div style={{height: '50px'}}/>
 
-      <Box v="L">
-        <Box v="fl" />
-
-        <Box v="f">
+      <Box v="C">
+        <Box>
           <button>Some text</button>
         </Box>
 
-        <Box v="f">
+        <Box>
           <button>More info of a long long content</button>
         </Box>
 
-        <Box v="ff" />
+        <Box v="f" />
 
-        <Box v="f">
+        <Box>
           <button>About</button>
         </Box>
-
-        <Box v="fr" />
       </Box>
 
     </div>

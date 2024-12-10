@@ -1,6 +1,6 @@
-@use "typo";
-@use "color";
-@use "measure";
+@use "./typo";
+@use "./color";
+@use "./measure";
 
 @mixin define-variables {
   @include typo.define;

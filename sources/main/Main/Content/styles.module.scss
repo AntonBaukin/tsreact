@@ -1,27 +1,52 @@
+@use "styles/mixins";
+
 @layer global {
-  .pagelayout {
-    display: grid;
-    min-height: 100vh;
-    width: 100%;
-
-    grid-template-columns: 1fr minmax(800px, 3fr) 1fr;
-
-    &.content {
-      grid-template-rows: 1fr;
-      grid-template-areas: ". c .";
-    }
-
-    &.menu-content {
-      grid-template-rows: max-content 1fr;
-      grid-template-areas: ". m ." ". c .";
+  @include mixins.narrow {
+    .pagelayout {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-height: 100%;
+      width: 100%;
+      padding: 0 var(--m);
     }
 
     .menu {
-      grid-area: m;
+      container-type: inline-size;
     }
 
     .content {
-      grid-area: c;
+      container-type: inline-size;
+    }
+  }
+
+  @include mixins.wide {
+    .pagelayout {
+      display: grid;
+      min-height: 100%;
+      width: 100%;
+
+      grid-template-columns: 1fr minmax(800px, 3fr) 1fr;
+
+      &.content {
+        grid-template-rows: 1fr;
+        grid-template-areas: ". c .";
+      }
+
+      &.menu-content {
+        grid-template-rows: max-content 1fr;
+        grid-template-areas: ". m ." ". c .";
+      }
+
+      .menu {
+        grid-area: m;
+        container-type: inline-size;
+      }
+
+      .content {
+        grid-area: c;
+        container-type: inline-size;
+      }
     }
   }
 }

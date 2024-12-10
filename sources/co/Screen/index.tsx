@@ -3,11 +3,7 @@ import { ScreenProps } from './types';
 import { ScreenDimensionContext, ScreenSizeContext } from './context'
 import { useScreenDimensionImpl, useScreenSizeImpl } from './hooks'
 
-export {
-  useScreenSize,
-  useScreenDimension,
-  useScreenDimensionType,
-} from './hooks'
+export { useScreenSize, useScreenDimension } from './hooks'
 
 const defaultDebounce = 100
 

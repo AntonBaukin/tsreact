@@ -10,14 +10,12 @@ export interface ScreenSize {
 }
 
 export type ScreenDimensionSize =
+  // Narrow layout for phones with portrait orientation:
   | 'phone'
-  | 'phone-large'
+  // Middle layout for phones with album orientation and portrait tablets:
   | 'tablet'
+  // Wide layout for album oriented tablets and desktop screens:
   | 'desktop'
-  | 'desktop-wide'
-  | 'desktop-huge'
-
-export type ScreenDimensionType = 'phone' | 'tablet' | 'desktop'
 
 export type ScreenOrientationType = 'portrait' | 'landscape'
 

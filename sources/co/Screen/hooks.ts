@@ -4,14 +4,12 @@ import { useListeners } from 'sources/co/hooks'
 import { ScreenDimensionContext, ScreenSizeContext } from './context'
 import {
   getScreenDimensionSize,
-  getScreenDimensionType,
   getScreenOrientation,
   getScreenSize,
 } from './utils'
 import {
   ScreenDimension,
   ScreenDimensionListener,
-  ScreenDimensionType,
   ScreenSize,
   ScreenSizeListener,
 } from './types'
@@ -19,11 +17,6 @@ import {
 export const useScreenSize = () => useContext(ScreenSizeContext)
 
 export const useScreenDimension = () => useContext(ScreenDimensionContext)
-
-export const useScreenDimensionType = (): ScreenDimensionType => {
-  const { size } = useScreenDimension()
-  return getScreenDimensionType(size)
-}
 
 export const useScreenSizeImpl = (delay: number): ScreenSize => {
   const {
