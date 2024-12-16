@@ -80,9 +80,7 @@ const useGlobalCss = (paths) => [
   }),
 ]
 
-const DEFAULT_MODULE_IMPORTS = `
-  @use "styles/vars.json";
-`
+const DEFAULT_MODULE_IMPORTS = ''
 
 const defaultModuleImports = (content, loaderContext) => {
   const { resourcePath } = loaderContext

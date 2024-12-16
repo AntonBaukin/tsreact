@@ -14,7 +14,7 @@
 
   @each $size in $sizes {
     .h#{$size} {
-      font-size: var(--font-size-header-#{$size});
+      font-size: var(--fs-header-#{$size});
     }
   }
 }

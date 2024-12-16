@@ -8,6 +8,16 @@
     "l": "16px",
     "x": "32px"
   },
+  "control": {
+    "height": {
+      "phone": "24px",
+      "desktop": "24px"
+    },
+    "icon": {
+      "phone": "16px",
+      "desktop": "16px"
+    }
+  },
   "screen": {
     "phone": "440px",
     "desktop": "980px"

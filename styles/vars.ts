@@ -4,20 +4,26 @@ const stylesVars = stylesVarsJson as StylesVars
 
 export default stylesVars
 
+export interface MediaVariant {
+  phone: string,
+  desktop: string,
+}
+
 export interface StylesVars {
   font: {
     size: string,
-  }
+  },
   size: {
     s: string,
     m: string,
     l: string,
     x: string,
-  }
-  screen: {
-    phone: string,
-    desktop: string,
   },
+  control: {
+    height: MediaVariant,
+    icon: MediaVariant,
+  },
+  screen: MediaVariant,
 }
 
 /**

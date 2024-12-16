@@ -1,11 +1,11 @@
-import { VFC } from 'react'
-import { Icon, Text } from 'sources/co'
+import { FC } from 'react'
+import { Text } from 'sources/co'
 import { Header } from 'sources/co/typo'
 import Background from './Background'
 import Content from './Content'
 import Menu from './Menu'
 
-const Main: VFC = () => (
+const Main: FC = () => (
   <>
     <Background />
     <Content layout="menu content">
@@ -15,7 +15,6 @@ const Main: VFC = () => (
           <Text>Main.title</Text>
         </Header>
         <Text name="fox">Main.content</Text>
-        <Icon name="search" />
       </div>
     </Content>
   </>

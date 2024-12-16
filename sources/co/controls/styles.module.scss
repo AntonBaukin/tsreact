@@ -1,0 +1,44 @@
+@use "styles/vars.json";
+@use "styles/mixins";
+@use "styles/fonts";
+
+.control {
+  white-space: nowrap;
+
+  @include mixins.desktop {
+    height: vars.$control-height-desktop;
+    max-height: vars.$control-height-desktop;
+    padding: 0 var(--m);
+    background: transparent;
+  }
+
+  > div {
+    display: inline-block;
+  }
+
+  .text {
+    @include fonts.font-controls;
+    font-size: var(--fs-control);
+    line-height: vars.$control-height-desktop;
+  }
+
+  .icon {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+
+    @include mixins.desktop {
+      height: vars.$control-height-desktop;
+      line-height: vars.$control-icon-desktop;
+      font-size: vars.$control-icon-desktop;
+
+      & + .text {
+        margin-left: calc(var(--s) + #{vars.$control-icon-desktop});
+      }
+    }
+  }
+}
+
+.clickable {
+
+}

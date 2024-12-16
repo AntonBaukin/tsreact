@@ -1,32 +1,29 @@
 @use "styles/vars.json";
 
-$screen-phone: vars.$screen-phone;
-$screen-desktop: vars.$screen-desktop;
-
 // Narrow layout for phones with portrait orientation.
 @mixin narrow {
-  @media (width <= $screen-phone) {
+  @media (width <= #{vars.$screen-phone}) {
     @content;
   }
 }
 
 // Opposite to phone layout: tablet or desktop.
 @mixin wide {
-  @media (width > $screen-phone) {
+  @media (width > #{vars.$screen-phone}) {
     @content;
   }
 }
 
 // Middle layout for phones with album orientation and portrait tablets.
 @mixin tablet {
-  @media ($screen-phone < width < $screen-desktop) {
+  @media (#{vars.$screen-phone} < width < #{vars.$screen-desktop}) {
     @content;
   }
 }
 
 // Wide layout for album oriented tablets and desktop screens.
 @mixin desktop {
-  @media (width >= $screen-desktop) {
+  @media (width >= #{vars.$screen-desktop}) {
     @content;
   }
 }
