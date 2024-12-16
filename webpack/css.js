@@ -128,14 +128,14 @@ const tildaImporter = (paths) => {
 }
 
 const jsonImporter = (paths) => {
-  const { base, output, styles } = paths
+  const { base, styles } = paths
 
-  const findFileUrl = (file, { containingUrl }) => {
+  const canonicalize = (file, { containingUrl }) => {
     if (!/\.json$/.test(file)) {
       return null
     }
 
-    if (!containingUrl || containingUrl.protocol !== 'file:') {
+    if (containingUrl?.protocol !== 'file:') {
       return null
     }
 
@@ -144,53 +144,40 @@ const jsonImporter = (paths) => {
       return null
     }
 
-    const sourceFile = (() => {
-      if (file.startsWith(STYLES)) {
-        return path.join(styles.sources, file.substring(STYLES.length))
-      }
-
-      const containingDir = path.dirname(containingFile)
-      return path.resolve(containingDir, file)
-    })()
+    const sourceFile = file.startsWith(STYLES)
+      ? path.join(styles.sources, file.substring(STYLES.length))
+      : path.resolve(path.dirname(containingFile), file)
 
     if (!sourceFile.startsWith(base)) {
       return null
     }
 
-    const targetDir = path.dirname(
-      path.join(
-        output,
-        'sass-json-importer',
-        sourceFile.substring(base.length),
-      ),
-    )
+    return pathToFileURL(sourceFile)
+  }
 
-    const targetFile = path.join(
-      targetDir,
-      path.basename(sourceFile).slice(0, -5) + '.scss',
-    )
+  const load = (url) => {
+    const { pathname: file } = url
+    if (url.protocol !== 'file:' || !file.startsWith(base)) {
+      return null
+    }
 
     return Promise.resolve((async () => {
       let json
 
       try {
-        const jsonStr = await fsPromises.readFile(sourceFile, 'utf8')
+        const jsonStr = await fsPromises.readFile(file, 'utf8')
         json = JSON.parse(jsonStr)
       } catch (e) {
-        console.error(`Error parsing JSON file ${sourceFile}\n`, e)
+        console.error(`Error parsing JSON file ${file}\n`, e)
         throw e
       }
 
-      const sass = jsonToSass(json)
-
-      await fsPromises.mkdir(path.dirname(targetFile), { recursive: true })
-      await fsPromises.writeFile(targetFile, sass)
-
-      return pathToFileURL(targetFile)
+      const contents = jsonToSass(json)
+      return { syntax: 'scss', contents }
     })())
   }
 
-  return { findFileUrl }
+  return { canonicalize, load }
 }
 
 const jsonToSass = (json) => {
