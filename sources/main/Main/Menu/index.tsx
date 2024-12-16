@@ -8,7 +8,7 @@ const Menu: VFC = () => {
   return (
     <div className={styles.pagemenu}>
       <Box v="C">
-        <MenuItem icon="search">Search</MenuItem>
+        <MenuItem icon="search" iconVariant="s">Search</MenuItem>
         <MenuItem>More info of a long long content</MenuItem>
         <Box v="f" />
         <MenuItem>About</MenuItem>

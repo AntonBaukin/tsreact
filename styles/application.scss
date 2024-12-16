@@ -28,7 +28,7 @@
   .#{config.$webNodeName} {
     @include root.define-variables;
     @include fonts.font-body;
-    color: var(--color-text);
+    color: var(--c-text);
 
     @include mixins.desktop {
       min-height: 100vh;

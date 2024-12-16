@@ -11,6 +11,25 @@
       height: calc(#{vars.$control-height-desktop} + 4px);
       max-height: calc(#{vars.$control-height-desktop} + 4px);
     }
+
+    svg.sprite {
+      &.tl, &.ls {
+        color: var(--c-ctrl-alpha);
+      }
+
+      &.bl, &.rs {
+        color: oklch(from var(--c-ctrl-alpha) calc(l - 0.1) c h);
+      }
+    }
+
+    .back {
+      background: var(--c-ctrl-beta);
+
+      @include mixins.desktop {
+        height: vars.$control-height-desktop;
+        max-height: vars.$control-height-desktop;
+      }
+    }
   }
 
   .container {
@@ -21,12 +40,24 @@
       position: relative;
       display: inline-block;
       width: var(--m);
+      color: var(--c-ctrl-omega);
     }
 
     .fill {
+      flex: 1;
       position: relative;
       display: inline-block;
-      flex: 1;
+      color: var(--c-ctrl-omega);
+
+      @include mixins.desktop {
+        padding: 0 calc(var(--m) * 0.5);
+        height: calc(#{vars.$control-height-desktop} + 4px);
+      }
+
+      div {
+        height: 100%;
+        background: var(--c-ctrl-omega);
+      }
     }
 
     @include mixins.desktop {

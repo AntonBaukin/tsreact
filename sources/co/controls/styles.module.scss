@@ -35,6 +35,11 @@
       & + .text {
         margin-left: calc(var(--s) + #{vars.$control-icon-desktop});
       }
+
+      &.s {
+        font-size: calc(#{vars.$control-icon-desktop} - 2px);
+        line-height: calc(#{vars.$control-icon-desktop} - 2px);
+      }
     }
   }
 }

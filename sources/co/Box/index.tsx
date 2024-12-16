@@ -29,7 +29,7 @@ const box = (v: Variant, content: ReactNode) => {
     case 'b':
       return frame(content)
     case 'f':
-      return frame(null)
+      return frame(<div/>)
     case 'C':
       return container(content)
     default:
@@ -39,7 +39,9 @@ const box = (v: Variant, content: ReactNode) => {
 
 const frame = (content: ReactNode) => (
   <>
-    {content}
+    <div className={styles.back}>
+      {content}
+    </div>
     {sTopLine}
     {sRightSlant}
     {sBottomLine}

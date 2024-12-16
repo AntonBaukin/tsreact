@@ -1,13 +1,16 @@
 @use "styles/mixins";
 
 @mixin define {
-  --color-bg-alpha: hsl(30 33.3% 98.8%);
-  --color-bg-omega: hsl(27 34.8% 82.5%);
-  --color-text: hsl(224 0% 4%);
+  --c-bg-alpha: hsl(30 33.3% 98.8%);
+  --c-bg-omega: hsl(27 34.8% 82.5%);
+  --c-text: hsl(224 0% 4%);
+
+  --c-ctrl-alpha: hsl(15.29 31.37% 73.08%);
+  --c-ctrl-beta: hsl(15.29 63.09% 92.97%);
+  --c-ctrl-omega: hsl(15.29 40.33% 85.58%);
 
   @include mixins.supports-oklch {
-    --color-bg-alpha: oklch(99.16% 0.0017 67.8);
-    --color-bg-omega: oklch(91.25% 0.0269 61.96);
-    --color-text: oklch(15% 0.00 285);
+    --c-bg-alpha: oklch(99.16% 0.0017 67.8);
+    --c-bg-omega: oklch(91.25% 0.0269 61.96);
   }
 }
