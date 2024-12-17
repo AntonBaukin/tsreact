@@ -2,7 +2,7 @@
   "publicPath": "/",
   "defaultLang": "en",
   "pageTitle": "Sample React Application",
-  "webNodeName": "react-application",
+  "webNodeName": "app",
   "globalLangVariable": "APP_LANG",
   "iconsSpriteFile": "images/icons.svg",
   "endpoints": {

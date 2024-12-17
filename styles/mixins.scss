@@ -33,3 +33,9 @@
     @content;
   }
 }
+
+@mixin supports-mouse {
+  @media (pointer: fine) {
+    @content;
+  }
+}

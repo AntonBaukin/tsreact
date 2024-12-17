@@ -8,6 +8,7 @@
   --c-ctrl-alpha: hsl(15.29 31.37% 73.08%);
   --c-ctrl-beta: hsl(15.29 63.09% 92.97%);
   --c-ctrl-omega: hsl(15.29 40.33% 85.58%);
+  --c-ctrl-text: hsl(35.76 90.64% 24.5%);
 
   @include mixins.supports-oklch {
     --c-bg-alpha: oklch(99.16% 0.0017 67.8);

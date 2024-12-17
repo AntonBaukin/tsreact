@@ -3,18 +3,18 @@ import cn from 'classnames'
 import { BoxProps, Variant } from './types'
 import styles from './styles.module.scss'
 
-const Box: FC<BoxProps> = ({ v = 'b', children, className }) => (
-  <div className={cn(cls(v), className)}>
-    {box(v, children)}
+const Box: FC<BoxProps> = ({ v = 'b', children, className, shadow, focus }) => (
+  <div className={cn(cls(v, focus), className)}>
+    {box(v, children, !!shadow)}
   </div>
 )
 
 export default Box
 
-const cls = (v: Variant) => {
+const cls = (v: Variant, focus: boolean | undefined) => {
   switch (v) {
     case 'b':
-      return styles.frame
+      return cn(styles.frame, focus && styles.focusable)
     case 'C':
       return styles.container
     case 'f':
@@ -24,21 +24,29 @@ const cls = (v: Variant) => {
   }
 }
 
-const box = (v: Variant, content: ReactNode) => {
+const box = (v: Variant, c: ReactNode, s: boolean) => {
   switch (v) {
     case 'b':
-      return frame(content)
+      return frame(c, s)
     case 'f':
-      return frame(<div/>)
+      return frame(<div/>, false)
     case 'C':
-      return container(content)
+      return container(c)
     default:
       return null
   }
 }
 
-const frame = (content: ReactNode) => (
+const frame = (content: ReactNode, shadow: boolean) => (
   <>
+    {shadow && (
+      <div className={styles.shadow}>
+        {sTopLine}
+        {sRightSlant}
+        {sBottomLine}
+        {sLeftSlant}
+      </div>
+    )}
     <div className={styles.back}>
       {content}
     </div>

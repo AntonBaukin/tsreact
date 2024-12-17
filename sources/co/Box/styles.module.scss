@@ -23,11 +23,39 @@
     }
 
     .back {
+      padding: 2px 0;
+      margin-top: -2px;
+      height: calc(100% + 4px);
+      max-height: calc(100% + 4px);;
       background: var(--c-ctrl-beta);
+    }
 
-      @include mixins.desktop {
-        height: vars.$control-height-desktop;
-        max-height: vars.$control-height-desktop;
+    .shadow {
+      display: none;
+      position: absolute;
+      inset: -1px;
+      z-index: -1;
+      filter: grayscale(100%) brightness(90%) blur(1px);
+      transform-origin: center;
+    }
+
+    @include mixins.supports-mouse {
+      &:has(.back:hover) .shadow {
+        display: block;
+      }
+    }
+
+    &.focusable {
+      &:has(:focus, .focus, :active, .active) {
+        filter: brightness(105%);
+
+        &:has(.back:hover) {
+          filter: brightness(110%);
+        }
+
+        .shadow {
+          display: block;
+        }
       }
     }
   }

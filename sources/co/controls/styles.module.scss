@@ -20,12 +20,15 @@
     @include fonts.font-controls;
     font-size: var(--fs-control);
     line-height: vars.$control-height-desktop;
+    color: var(--c-ctrl-text);
+    user-select: none;
   }
 
   .icon {
     position: absolute;
     display: inline-flex;
     align-items: center;
+    color: var(--c-ctrl-text);
 
     @include mixins.desktop {
       height: vars.$control-height-desktop;
@@ -45,5 +48,13 @@
 }
 
 .clickable {
+  @include mixins.supports-mouse {
+    &:disabled {
+      cursor: default;
+    }
 
+    &:not(:disabled) {
+      cursor: pointer;
+    }
+  }
 }

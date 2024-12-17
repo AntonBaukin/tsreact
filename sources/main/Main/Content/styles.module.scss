@@ -26,7 +26,8 @@
       min-height: 100%;
       width: 100%;
 
-      grid-template-columns: 1fr minmax(800px, 3fr) 1fr;
+      $min-width: calc(var(--x) * 25);
+      grid-template-columns: 1fr minmax($min-width, 3fr) 1fr;
 
       &.content {
         grid-template-rows: 1fr;

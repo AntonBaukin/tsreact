@@ -7,7 +7,7 @@ import styles from './styles.module.scss'
 
 const MenuItem: FC<MenuItemProps> = ({ children, icon, iconVariant: iv }) => {
   return (
-    <Box>
+    <Box shadow focus>
       <button className={cn(cstyles.control, cstyles.clickable, styles.item)}>
         {icon && (
           <div className={cn(cstyles.icon, iv && cstyles[iv])}>
