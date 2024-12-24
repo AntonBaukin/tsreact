@@ -1,8 +1,13 @@
 @use "styles/vars.json";
+@use "styles/mixins";
 @use "../fonts/variants";
 
 @mixin font-size-reset {
-  font-size: vars.$font-size;
+  font-size: vars.$font-size-desktop;
+
+  @include mixins.narrow {
+    font-size: vars.$font-size-phone;
+  }
 }
 
 @mixin font-body {

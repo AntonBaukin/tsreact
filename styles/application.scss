@@ -9,29 +9,25 @@
 
 @layer global {
   :root {
-    @include mixins.desktop {
-      min-height: 100vh;
-    }
+    min-height: 100%;
 
     body {
+      inset: 0;
+      position: absolute;
       background-attachment: fixed;
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
-
-      @include mixins.desktop {
-        min-height: 100vh;
-      }
     }
   }
 
   .#{config.$webNodeName} {
-    @include root.define-variables;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 100%;
     @include fonts.font-body;
     color: var(--c-text);
-
-    @include mixins.desktop {
-      min-height: 100vh;
-    }
+    @include root.define-variables;
   }
 }

@@ -4,12 +4,17 @@
 
 .control {
   white-space: nowrap;
+  background: transparent;
+  padding: 0 var(--m);
 
-  @include mixins.desktop {
+  @include mixins.wide {
     height: vars.$control-height-desktop;
     max-height: vars.$control-height-desktop;
-    padding: 0 var(--m);
-    background: transparent;
+  }
+
+  @include mixins.narrow {
+    height: vars.$control-height-phone;
+    max-height: vars.$control-height-phone;
   }
 
   > div {
@@ -24,24 +29,57 @@
     user-select: none;
   }
 
+  &.icon-l {
+    padding-left: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
+
+    @include mixins.narrow {
+      padding-left: calc(var(--m) + var(--s) + #{vars.$control-icon-phone});
+    }
+  }
+
+  &.icon-r {
+    padding-right: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
+
+    @include mixins.narrow {
+      padding-right: calc(var(--m) + var(--s) + #{vars.$control-icon-phone});
+    }
+  }
+
   .icon {
     position: absolute;
     display: inline-flex;
     align-items: center;
     color: var(--c-ctrl-text);
+    margin-left: calc(var(--s)*-1 - #{vars.$control-icon-desktop});
 
-    @include mixins.desktop {
+    @include mixins.wide {
       height: vars.$control-height-desktop;
       line-height: vars.$control-icon-desktop;
       font-size: vars.$control-icon-desktop;
+    }
 
-      & + .text {
-        margin-left: calc(var(--s) + #{vars.$control-icon-desktop});
+    @include mixins.narrow {
+      height: vars.$control-height-phone;
+      line-height: vars.$control-icon-phone;
+      font-size: vars.$control-icon-phone;
+      top: 0;
+    }
+
+    @include mixins.narrow {
+      &:not(.r) {
+        margin-left: calc(var(--s)*-1 - #{vars.$control-icon-phone});
       }
+    }
 
-      &.s {
-        font-size: calc(#{vars.$control-icon-desktop} - 2px);
-        line-height: calc(#{vars.$control-icon-desktop} - 2px);
+    &.r {
+      margin-left: var(--s);
+    }
+
+    svg {
+      position: relative;
+
+      @include mixins.narrow {
+        top: 0.5px;
       }
     }
   }

@@ -1,9 +1,9 @@
 import { Icons } from 'sources/co'
 
 export type IconVariant =
-  | 's' // smaller
+  | 'r' // right position
 
 export interface ControlIcon {
-  icon?: Icons,
-  iconVariant?: IconVariant,
+  i?: Icons,
+  iv?: IconVariant,
 }

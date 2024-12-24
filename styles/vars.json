@@ -1,21 +1,32 @@
 {
   "font": {
-    "size": "16px"
+    "size": {
+      "phone": "18px",
+      "desktop": "16px"
+    }
   },
   "size": {
-    "s": "4px",
-    "m": "8px",
-    "l": "16px",
-    "x": "32px"
+    "desktop": {
+      "s": "4px",
+      "m": "8px",
+      "l": "16px",
+      "x": "32px"
+    },
+    "phone": {
+      "s": "10px",
+      "m": "20px",
+      "l": "30px",
+      "x": "60px"
+    }
   },
   "control": {
     "height": {
-      "phone": "24px",
+      "phone": "44px",
       "desktop": "24px"
     },
     "icon": {
-      "phone": "16px",
-      "desktop": "16px"
+      "phone": "20px",
+      "desktop": "14px"
     }
   },
   "screen": {

@@ -1,8 +1,16 @@
 @use "styles/vars.json";
+@use "styles/mixins";
 
 @mixin define {
-  --s: #{vars.$size-s};
-  --m: #{vars.$size-m};
-  --l: #{vars.$size-l};
-  --x: #{vars.$size-x};
+  --s: #{vars.$size-desktop-s};
+  --m: #{vars.$size-desktop-m};
+  --l: #{vars.$size-desktop-l};
+  --x: #{vars.$size-desktop-x};
+
+  @include mixins.narrow {
+    --s: #{vars.$size-phone-s};
+    --m: #{vars.$size-phone-m};
+    --l: #{vars.$size-phone-l};
+    --x: #{vars.$size-phone-x};
+  }
 }

@@ -9,15 +9,20 @@ export interface MediaVariant {
   desktop: string,
 }
 
+export interface Smlx {
+  s: string,
+  m: string,
+  l: string,
+  x: string,
+}
+
 export interface StylesVars {
   font: {
-    size: string,
+    size: MediaVariant,
   },
   size: {
-    s: string,
-    m: string,
-    l: string,
-    x: string,
+    phone: Smlx,
+    desktop: Smlx,
   },
   control: {
     height: MediaVariant,

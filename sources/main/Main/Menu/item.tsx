@@ -5,18 +5,30 @@ import { Box, Icon, Text } from 'sources/co'
 import { styles as cstyles } from 'sources/co/controls'
 import styles from './styles.module.scss'
 
-const MenuItem: FC<MenuItemProps> = ({ children, icon, iconVariant: iv }) => {
+const MenuItem: FC<MenuItemProps> = ({ children, i, iv }) => {
+  const icon = i && (
+    <div className={cn(cstyles.icon, iv && cstyles[iv])}>
+      <Icon name={i} />
+    </div>
+  );
+
   return (
     <Box shadow focus>
-      <button className={cn(cstyles.control, cstyles.clickable, styles.item)}>
-        {icon && (
-          <div className={cn(cstyles.icon, iv && cstyles[iv])}>
-            <Icon name={icon} />
-          </div>
-        )}
+      <button
+        className={
+          cn(
+            cstyles.control,
+            i && cstyles[`icon-${iv ?? 'l'}`],
+            cstyles.clickable,
+            styles.item,
+          )
+        }
+      >
+        {i && !iv && icon}
         <div className={cstyles.text}>
           <Text>{children}</Text>
         </div>
+        {i && iv === 'r' && icon}
       </button>
     </Box>
   )

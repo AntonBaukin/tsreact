@@ -8,4 +8,8 @@
   --fs-header-5: 0.83em;
   --fs-header-6: 0.67em;
   --fs-control: calc(#{vars.$control-height-desktop} * 0.666666);
+
+  @media (width <= #{vars.$screen-phone}) {
+    --fs-control: calc(#{vars.$control-height-phone} * 0.5);
+  }
 }
