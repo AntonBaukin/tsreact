@@ -29,19 +29,13 @@
     user-select: none;
   }
 
-  &.icon-l {
-    padding-left: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
-
-    @include mixins.narrow {
-      padding-left: calc(var(--m) + var(--s) + #{vars.$control-icon-phone});
+  @include mixins.wide {
+    &.icon-l {
+      padding-left: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
     }
-  }
 
-  &.icon-r {
-    padding-right: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
-
-    @include mixins.narrow {
-      padding-right: calc(var(--m) + var(--s) + #{vars.$control-icon-phone});
+    &.icon-r, &.icon-rm {
+      padding-right: calc(var(--m) + var(--s) + #{vars.$control-icon-desktop});
     }
   }
 
@@ -66,13 +60,23 @@
     }
 
     @include mixins.narrow {
-      &:not(.r) {
+      & {
         margin-left: calc(var(--s)*-1 - #{vars.$control-icon-phone});
       }
     }
 
-    &.r {
+    &.r, &.rm {
       margin-left: var(--s);
+
+      @include mixins.narrow {
+        & {
+          margin-left: var(--s);
+        }
+      }
+    }
+
+    &.rm {
+      transform: scale(-1, 1); // swap
     }
 
     svg {

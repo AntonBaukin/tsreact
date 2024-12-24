@@ -28,7 +28,7 @@ const MenuItem: FC<MenuItemProps> = ({ children, i, iv }) => {
         <div className={cstyles.text}>
           <Text>{children}</Text>
         </div>
-        {i && iv === 'r' && icon}
+        {i && (iv === 'r' || iv === 'rm') && icon}
       </button>
     </Box>
   )
