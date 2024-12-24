@@ -1,9 +1,9 @@
-import { VFC } from 'react'
+import { FC } from 'react'
 import { Render } from 'sources/co/utils'
 import Gradient from './gradient'
 import styles from './styles.module.scss'
 
-const Background: VFC = () => (
+const Background: FC = () => (
   <Render onReady={onSvgText}>
     <svg
       xmlns='http://www.w3.org/2000/svg'

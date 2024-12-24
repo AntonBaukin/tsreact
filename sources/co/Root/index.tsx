@@ -1,4 +1,4 @@
-import { FC, VFC, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import { RootProps } from './types'
 import { useReactRootDomNode } from './utils'
 
@@ -26,8 +26,8 @@ const Root: FC<RootProps> = ({ children, className }) => {
   )
 }
 
-export const withRootClass = (className: string | undefined, Component: VFC) => {
-  const RootComponent: VFC = () => (
+export const withRootClass = (className: string | undefined, Component: FC) => {
+  const RootComponent: FC = () => (
     <Root className={className}>
       <Component />
     </Root>
@@ -38,6 +38,6 @@ export const withRootClass = (className: string | undefined, Component: VFC) => 
   return RootComponent
 }
 
-export const withRoot = (Component: VFC) => withRootClass(undefined, Component)
+export const withRoot = (Component: FC) => withRootClass(undefined, Component)
 
 export default Root

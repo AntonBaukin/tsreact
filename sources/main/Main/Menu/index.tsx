@@ -1,10 +1,9 @@
-import { VFC, FC, ReactNode } from 'react'
+import { FC } from 'react'
 import { Box } from 'sources/co'
 import MenuItem from './item'
 import styles from './styles.module.scss'
 
-const Menu: VFC = () => {
-
+const Menu: FC = () => {
   return (
     <div className={styles.pagemenu}>
       <Box v="C">

@@ -1,4 +1,4 @@
-import { VFC, createContext, createElement, useContext } from 'react'
+import { FC, createContext, createElement, useContext } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import config from 'sources/config'
 
@@ -19,7 +19,7 @@ const ReactRootDomNodeContext = createContext<Element | null>(null)
 
 export const useReactRootDomNode = () => useContext(ReactRootDomNodeContext)
 
-export const makeReactBoot = (Component: VFC) => {
+export const makeReactBoot = (Component: FC) => {
   let reactRoot: Root | null = null
 
   const bootLoader = () => {

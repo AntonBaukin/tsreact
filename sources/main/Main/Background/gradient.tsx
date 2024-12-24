@@ -1,6 +1,6 @@
-import { VFC, memo, ReactNode } from 'react'
+import { FC, memo, ReactNode } from 'react'
 
-const Gradient: VFC = () => {
+const Gradient: FC = () => {
   const [a, b] = ['var(--a)', 'var(--b)']
 
   const r3 = (r: number) => r.toFixed(3)

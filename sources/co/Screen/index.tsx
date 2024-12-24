@@ -1,4 +1,4 @@
-import { FC, VFC } from 'react'
+import { FC } from 'react'
 import { ScreenProps } from './types';
 import { ScreenDimensionContext, ScreenSizeContext } from './context'
 import { useScreenDimensionImpl, useScreenSizeImpl } from './hooks'
@@ -20,8 +20,8 @@ const Screen: FC<ScreenProps> = ({ children, debounce }) => {
   )
 }
 
-export const withScreenDebounce = (debounce: number, Component: VFC) => {
-  const ScreenComponent: VFC = () => (
+export const withScreenDebounce = (debounce: number, Component: FC) => {
+  const ScreenComponent: FC = () => (
     <Screen debounce={debounce}>
       <Component />
     </Screen>
@@ -32,7 +32,7 @@ export const withScreenDebounce = (debounce: number, Component: VFC) => {
   return ScreenComponent
 }
 
-export const withScreen = (Component: VFC) =>
+export const withScreen = (Component: FC) =>
   withScreenDebounce(defaultDebounce, Component)
 
 export default Screen
