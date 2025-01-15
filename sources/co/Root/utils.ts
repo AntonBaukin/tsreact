@@ -1,6 +1,7 @@
 import { FC, createContext, createElement, useContext } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import config from 'sources/config'
+import { composeReactHocs, ReactHoc } from 'sources/co/utils/compose'
 
 export const getReactDomNode = () =>
   document.body.querySelector(`.${config.webNodeName}`)
@@ -37,6 +38,9 @@ export const makeReactBoot = (Component: FC) => {
   return raceDocumentLoader(bootLoader)
 }
 
+export const composeReactBoot = (Component: FC, ...hocs: ReactHoc[]) =>
+  makeReactBoot(composeReactHocs(...hocs.reverse())(Component))
+
 const raceDocumentLoader = (callback: () => void) => () => {
   const loadPromise = new Promise<void>(resolve => {
     const onLoad = () => {
@@ -52,7 +56,7 @@ const raceDocumentLoader = (callback: () => void) => () => {
     new Promise<void>(resolve => setTimeout(resolve, 500)),
   ])
 
-  Promise.all([loadPromise, fontsPromise]).then(callback)
+  return Promise.all([loadPromise, fontsPromise]).then(callback)
 }
 
 

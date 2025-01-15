@@ -2,7 +2,7 @@ import { FC, useEffect } from 'react'
 import { RootProps } from './types'
 import { useReactRootDomNode } from './utils'
 
-export { makeReactBoot } from './utils'
+export { makeReactBoot, composeReactBoot } from './utils'
 
 const Root: FC<RootProps> = ({ children, className }) => {
   const rootNode = useReactRootDomNode()
