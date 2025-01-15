@@ -5,9 +5,10 @@
 .control {
   white-space: nowrap;
   background: transparent;
-  padding: 0 var(--m);
+  padding: 0 var(--s);
 
   @include mixins.wide {
+    padding: 0 var(--m);
     height: vars.$control-height-desktop;
     max-height: vars.$control-height-desktop;
   }

@@ -4,109 +4,52 @@ import { BoxProps, Variant } from './types'
 import styles from './styles.module.scss'
 
 const Box: FC<BoxProps> = ({ v = 'b', children, className, shadow, focus }) => (
-  <div className={cn(cls(v, focus), className)}>
-    {box(v, children, !!shadow)}
-  </div>
+  <>
+    <div className={cn(boxClass(v, !!focus, !!shadow), className)}>
+      {box(v, children)}
+    </div>
+    {withDecor(v) && <div className={decorClass(v)} />}
+  </>
 )
 
 export default Box
 
-const cls = (v: Variant, focus: boolean | undefined) => {
+const withDecor = (v: Variant) => v === 'b'
+
+const decorClass = (v: Variant) => {
   switch (v) {
     case 'b':
-      return cn(styles.frame, focus && styles.focusable)
+      return cn(styles.shared, styles.framedecor)
+    default:
+      return undefined
+  }
+}
+
+const boxClass = (v: Variant, focus: boolean, shadow: boolean) => {
+  switch (v) {
+    case 'b':
+      return cn(
+        styles.shared,
+        styles.frame,
+        focus && styles.focusable,
+        shadow && styles.shadow,
+      )
     case 'C':
-      return styles.container
+      return cn(styles.shared, styles.container)
     case 'f':
       return styles.fill
     default:
-      return null
+      return undefined
   }
 }
 
-const box = (v: Variant, c: ReactNode, s: boolean) => {
+const box = (v: Variant, content: ReactNode) => {
   switch (v) {
     case 'b':
-      return frame(c, s)
-    case 'f':
-      return frame(<div/>, false)
+      return <div className={styles.back}>{content}</div>
     case 'C':
-      return container(c)
+      return content
     default:
       return null
   }
 }
-
-const frame = (content: ReactNode, shadow: boolean) => (
-  <>
-    {shadow && (
-      <div className={styles.shadow}>
-        {sTopLine}
-        {sRightSlant}
-        {sBottomLine}
-        {sLeftSlant}
-      </div>
-    )}
-    <div className={styles.back}>
-      {content}
-    </div>
-    {sTopLine}
-    {sRightSlant}
-    {sBottomLine}
-    {sLeftSlant}
-  </>
-)
-
-const decor = (content: ReactNode) => (
-  <div className={styles.decor}>
-    {content}
-  </div>
-)
-
-const container = (content: ReactNode) => (
-  <>
-    {decor(sDecorBegin)}
-    {content}
-    {decor(sDecorEnd)}
-  </>
-)
-
-const svg = (className: string, content: ReactNode) => (
-  <svg
-    viewBox="0 0 8 8"
-    className={cn(styles.sprite, className)}
-    preserveAspectRatio="none"
-  >
-    {content}
-  </svg>
-)
-
-const sTopLine = svg(
-  styles.tl,
-  <path strokeWidth="2px" d="M 0 0 h 8"/>,
-)
-
-const sBottomLine = svg(
-  styles.bl,
-  <path strokeWidth="2px" d="M 0 8 h 8"/>,
-)
-
-const sRightSlant = svg(
-  styles.rs,
-  <path strokeWidth="2px" d="M 4 0 h 4 l -4 8 h -4"/>,
-)
-
-const sLeftSlant = svg(
-  styles.ls,
-  <path strokeWidth="2px" d="M 4 0 h 4 l -4 8 h -4"/>,
-)
-
-const sDecorBegin = svg(
-  styles.begin,
-  <path strokeWidth="2px" d="M 0 0 h 8 l -4 8 h -4"/>,
-)
-
-const sDecorEnd = svg(
-  styles.end,
-  <path strokeWidth="2px" d="M 4 0 h 4 v 8 h -8"/>,
-)

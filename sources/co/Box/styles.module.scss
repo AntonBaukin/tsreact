@@ -2,63 +2,132 @@
 @use "styles/mixins";
 
 @layer module {
-  .frame {
+  .shared {
     position: relative;
-    display: inline-block;
+    --x: var(--s);
+    --h: #{vars.$control-height-phone};
+    --a: var(--c-ctrl-alpha);
+    --b: oklch(from var(--c-ctrl-alpha) calc(l - 0.1) c h);
 
-    @include mixins.desktop {
-      padding: 2px calc(var(--m) * 0.5);
-      height: calc(#{vars.$control-height-desktop} + 4px);
-      max-height: calc(#{vars.$control-height-desktop} + 4px);
+    @include mixins.wide {
+      --h: #{vars.$control-height-desktop};
+    }
+  }
+
+  .frame {
+    display: inline-block;
+    height: var(--h);
+    max-height: var(--h);
+
+    &::before, &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: var(--a);
+      --d: 0.5px;
+      --p: 2px;
+      --y1: calc(100% - var(--p));
     }
 
-    svg.sprite {
-      &.tl, &.ls {
-        color: var(--c-ctrl-alpha);
-      }
+    &::before {
+      --x1: calc(var(--x) + var(--p));
+      --x2: calc(var(--p) + var(--d));
+      --x3: calc(100% - var(--p) - var(--d));
+      --x4: calc(var(--x) + var(--p));
 
-      &.bl, &.rs {
-        color: oklch(from var(--c-ctrl-alpha) calc(l - 0.1) c h);
-      }
+      clip-path: polygon(
+        var(--x) 0,
+        100% 0,
+        var(--x3) var(--p),
+        var(--x4) var(--p),
+        var(--x2) var(--y1),
+        0 100%
+      );
+    }
+
+    &::after {
+      background: var(--b);
+      z-index: 1;
+
+      --x1: calc(100% - var(--x));
+      --x2: calc(100% - var(--x) - var(--p) + var(--d));
+      --x3: calc(100% - var(--p));
+
+      clip-path: polygon(
+        var(--x1) 100%,
+        0 100%,
+        var(--d) var(--y1),
+        var(--x2) var(--y1),
+        var(--x3) 0,
+        100% 0
+      );
     }
 
     .back {
+      position: relative;
+      height: 100%;
+      max-height: 100%;
+      padding: 0 var(--x);
       background: var(--c-ctrl-beta);
 
-      @include mixins.desktop {
-        padding: 2px 0;
-        margin-top: -2px;
-        height: calc(100% + 4px);
-        max-height: calc(100% + 4px);;
-      }
-    }
-
-    .shadow {
-      display: none;
-      position: absolute;
-      inset: -1px;
-      z-index: -1;
-      filter: grayscale(100%) brightness(90%) blur(1px);
-      transform-origin: center;
+      --x1: calc(100% - var(--x));
+      clip-path: polygon(var(--x) 0, 100% 0, var(--x1) 100%, 0 100%);
     }
 
     @include mixins.supports-mouse {
-      &:has(.back:hover) .shadow {
-        display: block;
+      &.shadow:has(.back:hover) {
+        filter: drop-shadow(0 0 2px var(--b));
       }
     }
 
     &.focusable {
       &:has(:focus, .focus, :active, .active) {
-        filter: brightness(105%);
+        filter: brightness(105%) drop-shadow(0 0 2px var(--b));
 
-        &:has(.back:hover) {
-          filter: brightness(110%);
+        @include mixins.supports-mouse {
+          &:has(.back:hover) {
+            filter: brightness(110%) drop-shadow(0 0 2px var(--b));
+          }
         }
+      }
+    }
+  }
 
-        .shadow {
-          display: block;
-        }
+  .framedecor {
+    pointer-events: none;
+    height: var(--h);
+    max-height: var(--h);
+    margin: calc(var(--h) * -1 - var(--m)) calc(var(--x) * -2) 0;
+
+    &::before, &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      pointer-events: none;
+      background: var(--c-ctrl-omega);
+      width: calc(var(--x) * 3);
+      height: 100%;
+
+      --x1: calc(var(--x) * 2.5);
+      --x2: calc(var(--x) * 1.5);
+      clip-path: polygon(0 0, var(--x1) 0, var(--x2) 100%, 0 100%);
+    }
+
+    &::before {
+      left: 0;
+    }
+
+    &::after {
+      right: 0;
+      transform: scale(-1, -1);
+    }
+
+    @include mixins.wide {
+      & {
+        display: none;
       }
     }
   }
@@ -67,104 +136,59 @@
     display: flex;
     align-items: stretch;
 
-    .decor {
-      position: relative;
-      display: inline-block;
-      width: var(--m);
-      color: var(--c-ctrl-omega);
-
-      @include mixins.narrow {
-        display: none;
-      }
-    }
-
-    .fill {
-      flex: 1;
-      position: relative;
-      display: inline-block;
-      color: var(--c-ctrl-omega);
-
-      @include mixins.desktop {
-        padding: 0 calc(var(--m) * 0.5);
-        height: calc(#{vars.$control-height-desktop} + 4px);
-      }
-
-      @include mixins.narrow {
-        display: none;
-      }
-
-      div {
-        height: 100%;
-        background: var(--c-ctrl-omega);
-      }
-    }
-
-    @include mixins.desktop {
-      height: calc(#{vars.$control-height-desktop} + 4px);
-      max-height: calc(#{vars.$control-height-desktop} + 4px);
-    }
-
     @include mixins.narrow {
       flex-direction: column;
       gap: var(--m);
-    }
-  }
+      padding: 0 calc(var(--x) * 2);
 
-  svg.sprite {
-    position: absolute;
-    overflow: visible;
-    pointer-events: none;
-
-    @include mixins.narrow {
-      display: none;
+      .fill {
+        display: none;
+      }
     }
 
-    path {
-      vector-effect: non-scaling-stroke;
-      stroke: currentColor;
-      fill: currentColor;
-    }
+    @include mixins.wide {
+      height: var(--h);
+      max-height: var(--h);
+      padding: 0 calc(var(--x) * 3);
 
-    &.begin {
-      top: 1px;
-      left: 0;
-      width: var(--m);
-      height: calc(100% - 2px);
-    }
+      &::before, &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        pointer-events: none;
+        background: var(--c-ctrl-omega);
+        width: calc(var(--x) * 4);
+        height: 100%;
 
-    &.end {
-      top: 1px;
-      right: 0;
-      width: var(--m);
-      height: calc(100% - 2px);
-    }
+        --x1: calc(var(--x) * 3);
+        --x2: calc(var(--x) * 2);
+        clip-path: polygon(0 0, var(--x1) 0, var(--x2) 100%, 0 100%);
+      }
 
-    &.tl {
-      left: 6px;
-      top: 1px;
-      height: 2px;
-      width: calc(100% - var(--m));
-    }
+      &::before {
+        left: 0;
+      }
 
-    &.bl {
-      right: 6px;
-      bottom: 1px;
-      height: 2px;
-      width: calc(100% - var(--m));
-    }
+      &::after {
+        right: 0;
+        transform: scale(-1, -1);
+      }
 
-    &.rs {
-      top: 1px;
-      right: 0;
-      width: var(--m);
-      height: calc(100% - 2px);
-    }
+      .fill {
+        flex: 1;
+        position: relative;
+        display: inline-block;
+        padding: 0 var(--x);
+        height: var(--h);
+        background: var(--c-ctrl-omega);
 
-    &.ls {
-      top: 1px;
-      left: 0;
-      width: var(--m);
-      height: calc(100% - 2px);
+        --x1: calc(100% - var(--x));
+        clip-path: polygon(var(--x) 0, 100% 0, var(--x1) 100%, 0 100%);
+
+        &::before, &::after {
+          background: var(--c-ctrl-omega);
+        }
+      }
     }
   }
 }
