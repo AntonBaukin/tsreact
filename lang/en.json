@@ -1,4 +1,8 @@
 {
+  "pages": {
+    "about": "About",
+    "search": "Search"
+  },
   "Main": {
     "title": "Sample application!",
     "content": "The quick brown <%= name %> jumps over the lazy dog"

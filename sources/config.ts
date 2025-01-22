@@ -10,4 +10,12 @@ export interface Config {
   endpoints: Record<string, string>;
 }
 
+export const IS_DEV = (() => {
+  try {
+    return 'development' === process.env.NODE_ENV
+  } catch {
+    return false
+  }
+})()
+
 export default config as Config
