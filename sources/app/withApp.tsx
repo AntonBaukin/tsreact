@@ -1,5 +1,6 @@
-import { FC, createContext, useContext } from 'react'
+import { FC, createContext, useContext, useEffect } from 'react'
 import { StateBase, DispatchBase, AppContext } from './types'
+import { appInit } from './units'
 
 export const appLinker = <
   S extends StateBase,
@@ -8,11 +9,17 @@ export const appLinker = <
   const Context = createContext(appContext)
 
   const withApp = (Component: FC) => {
-    const AppComponent: FC = () => (
-      <Context.Provider value={appContext}>
-        <Component />
-      </Context.Provider>
-    )
+    const AppComponent: FC = () => {
+      useEffect(() => {
+        appContext.dispatch(appInit)
+      }, [])
+
+      return (
+        <Context.Provider value={appContext}>
+          <Component />
+        </Context.Provider>
+      )
+    }
 
     AppComponent.displayName = `App_${Component.displayName ?? 'Component'}`
 
