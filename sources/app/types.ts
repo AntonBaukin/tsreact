@@ -4,6 +4,8 @@ export type StateBase = Record<string, object>
 
 export type DispatchBase<A extends Action = UnknownAction> = Dispatch<A>
 
+export type InferDispatchAction<D> = D extends Dispatch<infer A> ? A : never
+
 export interface GetStore<S extends StateBase, D extends DispatchBase>
 {
   get state(): S

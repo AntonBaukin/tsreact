@@ -1,9 +1,12 @@
 import { configureStore, combineReducers, createDynamicMiddleware } from '@reduxjs/toolkit'
 import { IS_DEV } from 'sources/config'
 import { GetStore, makeWithStore } from 'sources/app'
+import { dynamicReducer } from 'sources/unit/utils'
 import { AppState, reducers } from './slices'
 
-const reducer = combineReducers(reducers)
+const { reducer, installReducer } = dynamicReducer(combineReducers(reducers))
+
+export { installReducer }
 
 const dynMiddleware = createDynamicMiddleware<AppState>()
 

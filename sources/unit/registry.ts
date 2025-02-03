@@ -1,15 +1,14 @@
-import { Middleware } from 'redux'
+import { Middleware, Reducer } from 'redux'
 import { isObject } from 'sources/lodash'
 import { expectString, expectTrue, expectNever } from 'sources/asserts'
-import { DispatchBase, StateBase, AppContext } from 'sources/app'
+import { DispatchBase, StateBase, AppContext, InferDispatchAction } from 'sources/app'
+import { makeMiddleware, unitsReducer } from './middleware'
 import {
   DataUnit,
   isDataUnit,
   UnitsRegister,
   isParentUnit,
   isInitUnit,
-  isOnlyUnit,
-  isPayloadUnit,
 } from './types'
 
 export interface UnitsRegistry <
@@ -22,6 +21,8 @@ export interface UnitsRegistry <
   init(): void,
 
   readonly middleware: Middleware<any, S, D>,
+
+  readonly reducer: Reducer<S, InferDispatchAction<D>, Partial<S>>,
 
   readonly appContext: AppContext<S, D>,
 }
@@ -80,40 +81,11 @@ export const makeUnitsRegistry = <
     all.filter(isInitUnit).forEach(iu => iu.init(appContext))
   }
 
-  const middleware: Middleware<any, S, D> = () => (next) => (action) => {
-    if (!isDataUnit(action)) {
-      return next(action)
-    }
-
-    if (isOnlyUnit(action) && action.isOnlyUnit?.() !== false) {
-      return
-    }
-
-    const { type } = action
-    if (isPayloadUnit(action)) {
-      const { payload } = action
-      return next({ type, payload })
-    } else {
-      return next({ type })
-    }
-  }
-
   return {
     register,
     init,
-    middleware,
+    middleware: makeMiddleware(appContext, registry),
+    reducer: unitsReducer(registry),
     appContext,
   }
-}
-
-export const initUnitsRegistry = <
-  S extends StateBase,
-  D extends DispatchBase,
-> (
-  appContext: AppContext<S, D>,
-  ...units: UnitsRegister[]
-): UnitsRegistry<S, D> => {
-  const registry = makeUnitsRegistry(appContext)
-  registry.register(units)
-  return registry
 }

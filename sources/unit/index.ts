@@ -1,4 +1,4 @@
-export { makeUnitsRegistry, initUnitsRegistry } from './registry'
+export { makeUnitsRegistry } from './registry'
 
 export type {
   DataUnit,
@@ -21,8 +21,5 @@ export {
 export {
   initDataUnit,
   makeDataUnit,
-  initParentUnit,
-  markInitUnit,
-  markOnlyUnit,
-  markPayloadUnit,
+  unitMakers,
 } from './utils'
