@@ -4,6 +4,7 @@ import { Header } from 'sources/co/typo'
 import Background from './Background'
 import Content from './Content'
 import Menu from './Menu'
+import Test from './temp/Test'
 
 const Main: FC = () => (
   <>
@@ -15,6 +16,7 @@ const Main: FC = () => (
           <Text>Main.title</Text>
         </Header>
         <Text name="fox">Main.content</Text>
+        <Test />
       </div>
     </Content>
   </>

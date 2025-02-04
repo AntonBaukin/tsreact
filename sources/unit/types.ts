@@ -165,7 +165,7 @@ export interface ReduceUnit <
 export const isReduceUnit = <S extends any = StateBase, U extends any = S> (
   some: unknown,
 ): some is ReduceUnit<S, U> =>
-  isReduceUnit(some) && (some as any).reduceUnit === symReduceUnit
+  isDataUnit(some) && (some as any).reduceUnit === symReduceUnit
 
 /**
  * Composite structure to define various Data Units types for the application.

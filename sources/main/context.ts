@@ -1,6 +1,7 @@
 import { appLinker, makeAppContext } from 'sources/app'
 import { makeUnitsRegistry, unitMakers } from 'sources/unit'
-import { getStore, AppState, AppDispatch, addMiddleware, installReducer } from './store'
+import { AppState, AppDispatch } from './store'
+import { getStore, addMiddleware, installReducer } from './store/create'
 import * as units from 'sources/main/units'
 
 const appContext = makeAppContext(getStore)
