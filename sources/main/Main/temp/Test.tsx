@@ -1,19 +1,15 @@
-import { FC, useCallback } from 'react'
-import { useAppState, useAppDispatch, selectTestIndex } from 'sources/main/store'
-import { incUiIndex, decUiIndex } from './units'
+import { FC } from 'react'
+import { useAppState, selectTestIndex } from 'sources/main/store'
+import { updateUiIndex } from './units'
 
 const Test: FC = () => {
-  const dispatch = useAppDispatch()
   const index = useAppState(selectTestIndex)
-
-  const onInc = useCallback(() => dispatch(incUiIndex), [])
-  const onDec = useCallback(() => dispatch(decUiIndex), [])
 
   return (
     <div>
       <span>Test global counter: {index}</span>
-      <button onClick={onInc}>Increment</button>
-      <button onClick={onDec}>Decrement</button>
+      <button onClick={updateUiIndex.onInc}>Increment</button>
+      <button onClick={updateUiIndex.onDec}>Decrement</button>
     </div>
   )
 }

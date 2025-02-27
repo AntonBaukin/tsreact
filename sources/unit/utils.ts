@@ -1,37 +1,34 @@
 import { Action, Reducer, UnknownAction } from 'redux'
 import { expectTrue, expectNever } from 'sources/asserts'
-import { isFunction, isString, cloneDeep } from 'sources/lodash'
+import { isFunction, isString, isNil, cloneDeep } from 'sources/lodash'
 import {
+  AppContext,
   DispatchBase,
   InferDispatchAction,
   StateBase,
 } from 'sources/app'
 import {
-  DataUnit,
   symDataUnit,
   symInitUnit,
   symOnlyUnit,
   symPayloadUnit,
   symReduceUnit,
+  symCloneUnit,
+  symDispatchSelf,
+  DataUnit,
+  isDataUnit,
   Payload,
   DefineUnit,
+  DispatchSelf,
+  isDispatchSelf,
+  CloneUnit,
+  PayloadUnit,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
   Object.assign(unit, { dataUnit: symDataUnit, type: name }) as (U & DataUnit)
 
 export const makeDataUnit = (name: string): DataUnit => initDataUnit(name, {})
-
-// export const initParentUnit = <U extends DataUnit> (
-//   unit: U,
-//   children: UnitsRegister,
-// ): U & ParentUnit =>
-//   Object.assign(unit, {
-//     parentUnit: symParentUnit,
-//     get children(): UnitsRegister {
-//       return children
-//     },
-//   }) as (U & ParentUnit)
 
 export const dynamicReducer = <
   S = any,
@@ -51,41 +48,51 @@ export const dynamicReducer = <
   return { installReducer, reducer: wrappingReducer }
 }
 
-export const unitMakers = <
+export const unitUtilities = <
   S extends StateBase,
   D extends DispatchBase = DispatchBase,
   A extends Action = InferDispatchAction<D>,
-> () => {
+> (
+  appContext: AppContext<S, D>,
+) => {
   const defineUnit = <
     P extends Payload = Payload,
     U extends any = unknown,
     K extends keyof S = keyof S,
-  > (definition: DefineUnit<S, D, A, P, U, K>): DataUnit => {
+    E extends object = {},
+  > (definition: DefineUnit<S, D, A, P, U, K> & E):
+    & DataUnit
+    & Omit<typeof definition, keyof DefineUnit<S, D, A, P, U, K>> =>
+  {
     const {
       name,
       init,
       isOnlyUnit,
       payload,
-      slice,
-      reduce,
     } = definition
 
     const unit = makeDataUnit(name)
+    const fields = new Set(['name']) // to exclude
 
     if (init) {
+      fields.add('init')
       Object.assign(unit, {
         initUnit: symInitUnit,
         init,
       })
     }
 
-    if (isOnlyUnit === true) {
-      Object.assign(unit, { onlyUnit: symOnlyUnit })
-    } else if (isFunction(isOnlyUnit)) {
-      Object.assign(unit, { onlyUnit: symOnlyUnit, isOnlyUnit })
+    if (isOnlyUnit ) {
+      fields.add('isOnlyUnit')
+      if (isOnlyUnit === true) {
+        Object.assign(unit, { onlyUnit: symOnlyUnit })
+      } else if (isFunction(isOnlyUnit)) {
+        Object.assign(unit, { onlyUnit: symOnlyUnit, isOnlyUnit })
+      }
     }
 
     if (payload) {
+      fields.add('payload')
       Object.assign(unit, {
         payloadUnit: symPayloadUnit,
         get payload() {
@@ -94,19 +101,122 @@ export const unitMakers = <
       })
     }
 
-    if (isFunction(reduce)) {
-      if (slice === undefined) {
-        Object.assign(unit, { reduceUnit: symReduceUnit, reduce })
-      } else if (slice) {
-        expectTrue(slice === true || isString(slice))
-        Object.assign(unit, { reduceUnit: symReduceUnit, slice, reduce })
+    if ('reduceGlobal' in definition) {
+      const { reduceGlobal } = definition
+      expectTrue(isFunction(reduceGlobal))
+      fields.add('reduceGlobal')
+
+      Object.assign (
+        unit,
+        {
+          slice: undefined,
+          reduce: reduceGlobal,
+          reduceUnit: symReduceUnit,
+        },
+      )
+    } else if ('reduceOwn' in definition) {
+      const { initialState, reduceOwn } = definition
+      expectTrue(initialState === undefined || isFunction(initialState))
+      expectTrue(isFunction(reduceOwn))
+      fields.add('initialState')
+      fields.add('reduceOwn')
+
+      Object.assign (
+        unit,
+        {
+          slice: true,
+          reduce: reduceOwn,
+          reduceUnit: symReduceUnit,
+        },
+      )
+    } else if ('reduceSlice' in definition) {
+      const { slice, reduceSlice } = definition
+      expectTrue(isString(slice))
+      expectTrue(isFunction(reduceSlice))
+      fields.add('slice')
+      fields.add('reduceSlice')
+
+      Object.assign (
+        unit,
+        {
+          slice,
+          reduce: reduceSlice,
+          reduceUnit: symReduceUnit,
+        },
+      )
+    }
+
+    // Copy or extend all other fields of the definition:
+    Object.getOwnPropertyNames(definition).forEach(key => {
+      if (!fields.has(key)) {
+        (unit as any)[key] = extendProperty(unit, (definition as any)[key])
+      }
+    })
+
+    return unit as any
+  }
+
+  const dispatchSelf = <A extends any[], P extends Payload = Payload> (
+    getPayload: (this: DataUnit, ...args: A) => P | Promise<P>,
+  ): DispatchSelf<A, P> => {
+    const dispatchSelf = (...args: A) => {
+      const unit = ( dispatchSelf as any).unit
+
+      if (isDataUnit(unit)) {
+        expectTrue(isNil(this) || this === unit)
+        const payload = getPayload.call(unit, ...args)
+
+        if (payload instanceof Promise || isFunction((payload as any).then)) {
+          Promise.resolve(payload).then(resolvedPayload => {
+            const clone = cloneUnitPayload(unit, resolvedPayload)
+            appContext.dispatch(clone)
+          })
+        } else {
+          const clone = cloneUnitPayload(unit, payload)
+          appContext.dispatch(clone)
+        }
       } else {
         expectNever()
       }
     }
 
-    return unit
+    Object.assign(dispatchSelf, { dispatchSelf: symDispatchSelf })
+    return dispatchSelf as any
   }
 
-  return { defineUnit }
+  return { defineUnit, dispatchSelf }
+}
+
+const extendProperty = (unit: DataUnit, value: unknown): any => {
+  if (isDispatchSelf(value)) {
+    value.unit = unit
+  }
+
+  return value as any
+}
+
+const cloneUnit = (original: DataUnit): CloneUnit =>
+  Object.assign(
+    {},
+    original,
+    {
+      original,
+      cloneUnit: symCloneUnit,
+    },
+  ) as CloneUnit
+
+const cloneUnitPayload = (
+  original: DataUnit,
+  payload: Payload,
+): CloneUnit & PayloadUnit => {
+  const clone = cloneUnit(original)
+
+  Object.assign(clone, {
+    payloadUnit: symPayloadUnit,
+    get payload() {
+      return payload
+    },
+  })
+
+  return clone as (CloneUnit & PayloadUnit)
 }

@@ -1,6 +1,6 @@
 import { Draft } from 'immer'
 import { Action, UnknownAction } from 'redux'
-import { isObject } from 'sources/lodash'
+import { isFunction, isObject } from 'sources/lodash'
 import { AppContext, DispatchBase, InferDispatchAction, StateBase } from 'sources/app'
 
 export const symDataUnit = Symbol.for('DataUnit')
@@ -96,14 +96,16 @@ export type Payload =
   | Payload[]
   | { [key: number | string]: Payload }
 
-export interface PayloadUnit extends DataUnit
+export interface PayloadUnit<P extends Payload = Payload> extends DataUnit
 {
   payloadUnit: typeof symPayloadUnit,
 
-  get payload(): Payload,
+  get payload(): P,
 }
 
-export const isPayloadUnit = (some: unknown): some is PayloadUnit =>
+export const isPayloadUnit = <P extends Payload = Payload>(
+  some: unknown,
+): some is PayloadUnit<P> =>
   isDataUnit(some) && (some as any).payloadUnit === symPayloadUnit
 
 export const symReduceUnit = Symbol.for('DataUnit.Reduce')
@@ -186,16 +188,42 @@ export type DefineUnit <
 } & {
   payload?: (() => P) | P,
 } & ({
-  slice?: undefined,
   // This reducer updates the global state via Immer draft:
-  reduce: (draft: S, payload: P | null) => void,
+  reduceGlobal: (draft: S, payload: P | null) => void,
 } | {
-  slice: true,
   initialState?: () => U
   // This reducer updates Immer draft of the private slice
   // (stored in Redux by the name of this unit treated as a Lodash path):
-  reduce: <U>(draft: U, payload: P | null) => U | void,
+  reduceOwn: <U>(draft: U, payload: P | null) => U | void,
 } | {
   slice: K,
-  reduce: (draft: S[K], payload: P | null) => S[K] | void,
+  reduceSlice: (draft: S[K], payload: P | null) => S[K] | void,
 })
+
+export const symDispatchSelf = Symbol.for('DataUnit.dispatchSelf')
+
+export interface DispatchSelf<A extends any[] = any[], P extends Payload = Payload>
+{
+  (...args: A): void,
+
+  dispatchSelf: typeof symDispatchSelf,
+
+  unit: DataUnit | undefined,
+}
+
+export const isDispatchSelf = <A extends any[] = any[], P extends Payload = Payload> (
+  some: unknown,
+): some is DispatchSelf<A, P> =>
+  isFunction(some) && (some as any).dispatchSelf === symDispatchSelf
+
+export const symCloneUnit = Symbol.for('DataUnit.Clone')
+
+export interface CloneUnit extends DataUnit
+{
+  cloneUnit: typeof symCloneUnit,
+
+  original: DataUnit,
+}
+
+export const isCloneUnit = (some: unknown): some is CloneUnit =>
+  isDataUnit(some) && (some as any).cloneUnit === symCloneUnit

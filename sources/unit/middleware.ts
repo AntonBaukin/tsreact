@@ -23,7 +23,7 @@ export const unitsReducer = (registry: Map<String, DataUnit>) =>
     const { slice, initialState } = unit
 
     let payload: Payload | null = (action as any).payload
-    if (isNil(payload) || !isObject(payload) || isEmpty(payload)) {
+    if (isNil(payload) || isEmpty(payload)) {
       payload = null
     }
 

@@ -1,5 +1,4 @@
 export { makeUnitsRegistry } from './registry'
-
 export type {
   DataUnit,
   UnitsRegister,
@@ -9,7 +8,6 @@ export type {
   Payload,
   PayloadUnit,
 } from './types'
-
 export {
   isDataUnit,
   isParentUnit,
@@ -17,9 +15,8 @@ export {
   isOnlyUnit,
   isPayloadUnit,
 } from './types'
-
 export {
   initDataUnit,
   makeDataUnit,
-  unitMakers,
+  unitUtilities,
 } from './utils'

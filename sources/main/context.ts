@@ -1,12 +1,12 @@
 import { appLinker, makeAppContext } from 'sources/app'
-import { makeUnitsRegistry, unitMakers } from 'sources/unit'
+import { makeUnitsRegistry, unitUtilities } from 'sources/unit'
 import { AppState, AppDispatch } from './store'
 import { getStore, addMiddleware, installReducer } from './store/create'
 import * as units from 'sources/main/units'
 
 const appContext = makeAppContext(getStore)
 const registry = makeUnitsRegistry(appContext)
-const { defineUnit } = unitMakers<AppState, AppDispatch>()
+const { defineUnit, dispatchSelf } = unitUtilities(appContext)
 const { withApp, useAppContext } = appLinker(appContext)
 const registerUnits = registry.register.bind(registry)
 
@@ -18,4 +18,5 @@ export {
   useAppContext,
   registerUnits,
   defineUnit,
+  dispatchSelf,
 }
