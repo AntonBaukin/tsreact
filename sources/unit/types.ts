@@ -1,7 +1,7 @@
 import { Draft } from 'immer'
-import { Action, UnknownAction } from 'redux'
-import { isFunction, isObject } from 'sources/lodash'
-import { AppContext, DispatchBase, InferDispatchAction, StateBase } from 'sources/app'
+import { UnknownAction } from 'redux'
+import { isArrayLike, isFunction, isObject, isString, isFinite } from 'sources/lodash'
+import { AppContext, DispatchBase, StateBase } from 'sources/app'
 
 export const symDataUnit = Symbol.for('DataUnit')
 
@@ -96,6 +96,30 @@ export type Payload =
   | Payload[]
   | { [key: number | string]: Payload }
 
+export const isPayload = (x: unknown): x is Payload => {
+  if (x === null || isString(x) || isFinite(x) || x === true || x === false) {
+    return true
+  }
+
+  if (isObject(x) && !isArrayLike(x)) {
+    x = Object.values(x)
+  }
+
+  if (isArrayLike(x)) {
+    const a = Array.isArray(x) ? x : Array.from(x)
+
+    for (const i of a) {
+      if (!(isPayload(i))) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  return false
+}
+
 export interface PayloadUnit<P extends Payload = Payload> extends DataUnit
 {
   payloadUnit: typeof symPayloadUnit,
@@ -169,53 +193,6 @@ export const isReduceUnit = <S extends any = StateBase, U extends any = S> (
 ): some is ReduceUnit<S, U> =>
   isDataUnit(some) && (some as any).reduceUnit === symReduceUnit
 
-/**
- * Composite structure to define various Data Units types for the application.
- */
-export type DefineUnit <
-  S extends StateBase,
-  D extends DispatchBase = DispatchBase,
-  A extends Action = InferDispatchAction<D>,
-  P extends Payload = Payload,
-  U extends any = unknown,
-  K extends keyof S = keyof S,
-> = {
-  name: string, // i.e. type of Redux action
-} & {
-  init?: (appContext: AppContext<S, D>) => void,
-} & {
-  isOnlyUnit?: true | (() => boolean),
-} & {
-  payload?: (() => P) | P,
-} & ({
-  // This reducer updates the global state via Immer draft:
-  reduceGlobal: (draft: S, payload: P | null) => void,
-} | {
-  initialState?: () => U
-  // This reducer updates Immer draft of the private slice
-  // (stored in Redux by the name of this unit treated as a Lodash path):
-  reduceOwn: <U>(draft: U, payload: P | null) => U | void,
-} | {
-  slice: K,
-  reduceSlice: (draft: S[K], payload: P | null) => S[K] | void,
-})
-
-export const symDispatchSelf = Symbol.for('DataUnit.dispatchSelf')
-
-export interface DispatchSelf<A extends any[] = any[], P extends Payload = Payload>
-{
-  (...args: A): void,
-
-  dispatchSelf: typeof symDispatchSelf,
-
-  unit: DataUnit | undefined,
-}
-
-export const isDispatchSelf = <A extends any[] = any[], P extends Payload = Payload> (
-  some: unknown,
-): some is DispatchSelf<A, P> =>
-  isFunction(some) && (some as any).dispatchSelf === symDispatchSelf
-
 export const symCloneUnit = Symbol.for('DataUnit.Clone')
 
 export interface CloneUnit extends DataUnit
@@ -227,3 +204,126 @@ export interface CloneUnit extends DataUnit
 
 export const isCloneUnit = (some: unknown): some is CloneUnit =>
   isDataUnit(some) && (some as any).cloneUnit === symCloneUnit
+
+export const symDispatchSelf = Symbol.for('DataUnit.dispatchSelf')
+
+export interface DispatchSelf<A extends any[] = any[], P extends Payload = Payload>
+{
+  (...args: A): void,
+
+  dispatchSelf: typeof symDispatchSelf,
+
+  unit: DataUnit,
+}
+
+export const isDispatchSelf = <A extends any[] = any[], P extends Payload = Payload> (
+  some: unknown,
+): some is DispatchSelf<A, P> =>
+  isFunction(some) && (some as any).dispatchSelf === symDispatchSelf
+
+/**
+ * Extension object to data unit builder with builders of payloads to dispatch.
+ * The limitation is that each builder must have the same function signature:
+ * thus, commonly such an object have only one key.
+ */
+export type DataUnitDispatchers <
+  U extends DataUnit,
+  A extends any[] = any[],
+  P extends Payload = Payload,
+> = Record<string, (this: U, ...args: A) => P | Promise<P>>
+
+/**
+ * Extension of a Data Unit with (self) dispatchers.
+ */
+export type ExtendDataUnitDispatchers <
+  U extends DataUnit,
+  A extends any[],
+  P extends Payload,
+  D extends DataUnitDispatchers<U, A, P>,
+> = U & Record<keyof D, DispatchSelf<A, P>>
+
+/**
+ * Root for structures that define various Data Unit intsnces of the application.
+ */
+export interface DefineUnit <
+  // Application global state:
+  S extends StateBase,
+  // Application dispatcher type:
+  D extends DispatchBase = DispatchBase,
+  // Extension fields:
+  E extends object = {},
+> {
+  name: string, // i.e. type of Redux action
+
+  init?: (appContext: AppContext<S, D>) => void,
+}
+
+export interface UnitBuilder <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+  U extends DataUnit = DataUnit,
+> {
+  // Terminal operation of the build sequence:
+  get dataUnit(): U,
+}
+
+export interface DefineOnlyUnit <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+  E extends object = {},
+> extends DefineUnit<S, D, E> {
+  isOnlyUnit?: () => boolean,
+}
+
+export interface OnlyUnitBuilder <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+  U extends OnlyUnit = OnlyUnit,
+> extends UnitBuilder<S, D, U> {
+  get dataUnit(): U,
+}
+
+/**
+ * Definition of a Data Unit that reduces flobal Redux state.
+ */
+export interface DefineGlobalUnit <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+  // Type of payload that receives the reducer:
+  P extends Payload = Payload,
+  E extends object = {},
+> extends DefineUnit<S, D> {
+  // This reducer updates the global state via Immer draft:
+  reduceGlobal: (draft: S, payload: P | null) => void,
+
+  // Optional payload of the reduce action, or payload provider,
+  // that can't be deferred (Promise) as reduce is synchronous:
+  payload?: (() => P) | P,
+}
+
+export interface GlobalUnitBuilder <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+  P extends Payload = Payload,
+  U extends ReduceUnit<S, S, P> = ReduceUnit<S, S, P>,
+> extends UnitBuilder<S, D, U> {
+  get dataUnit(): U,
+
+  // Adds self-dispatchers to the Unit, extending it's final type:
+  dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
+    GlobalUnitBuilder<S, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+}
+
+/*
+
+} | {
+  initialState?: () => U
+  // This reducer updates Immer draft of the private slice
+  // (stored in Redux by the name of this unit treated as a Lodash path):
+  reduceOwn: <U>(draft: U, payload: P | null) => U | void,
+} | {
+  slice: K,
+  reduceSlice: (draft: S[K], payload: P | null) => S[K] | void,
+})
+
+ */

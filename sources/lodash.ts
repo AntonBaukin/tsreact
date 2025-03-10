@@ -2,6 +2,7 @@ import isArrayLike from 'lodash/isArrayLike'
 import isFunction from 'lodash/isFunction'
 import isObject from 'lodash/isObject'
 import isString from 'lodash/isString'
+import isFinite from 'lodash/isFinite'
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
 import get from 'lodash/get'
@@ -16,6 +17,7 @@ export {
   isFunction,
   isObject,
   isString,
+  isFinite,
   isEmpty,
   isNil,
   get,

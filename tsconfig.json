@@ -22,8 +22,8 @@
     "importHelpers": true,
     "downlevelIteration": true,
     "paths": {
-      "sources/*": ["sources/*"],
-      "styles/*": ["styles/*"]
+      "sources/*": ["./sources/*"],
+      "styles/*": ["./styles/*"]
     }
   },
   "include": [
