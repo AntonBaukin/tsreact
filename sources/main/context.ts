@@ -15,6 +15,7 @@ const {
   defineOnlyUnit,
   defineGlobalUnit,
   defineSliceUnit,
+  defineOwnUnit,
 } = unitUtilities(appContext)
 
 export {
@@ -25,4 +26,5 @@ export {
   defineOnlyUnit,
   defineGlobalUnit,
   defineSliceUnit,
+  defineOwnUnit,
 }

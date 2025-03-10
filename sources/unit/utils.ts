@@ -1,6 +1,6 @@
 import { Action, Reducer, UnknownAction } from 'redux'
 import { expectTrue, expectNever } from 'sources/asserts'
-import { isFunction, isString, isNil, cloneDeep } from 'sources/lodash'
+import { isFunction, isString, isNil, get, cloneDeep } from 'sources/lodash'
 import {
   AppContext,
   DispatchBase,
@@ -30,7 +30,11 @@ import {
   GlobalUnitBuilder,
   ReduceUnit,
   DataUnitDispatchers,
-  ExtendDataUnitDispatchers, DefineSliceUnit, SliceUnitBuilder,
+  ExtendDataUnitDispatchers,
+  DefineSliceUnit,
+  SliceUnitBuilder,
+  DefineOwnUnit,
+  OwnUnitBuilder,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
@@ -50,8 +54,19 @@ export const dynamicReducer = <
     dynReducer = dr
   }
 
-  const wrappingReducer: typeof reducer = (state, action) =>
-    dynReducer ? reducer(dynReducer(state, action), action) : reducer(state, action)
+  const wrappingReducer: typeof reducer = (state, action) => {
+    if (!dynReducer) {
+      return reducer(state, action)
+    }
+
+    const dynState = dynReducer(state, action)
+
+    if (get(action, 'privateUnit') === true) {
+      return dynState
+    } else {
+      return reducer(dynState, action)
+    }
+  }
 
   return { installReducer, reducer: wrappingReducer }
 }
@@ -240,28 +255,47 @@ export const unitUtilities = <
     return builder as SliceUnitBuilder<S, K, D, P, ReduceUnit<S, S[K], P> & E>
   }
 
-  //
- //   } else if ('reduceOwn' in definition) {
-  //     const { initialState, reduceOwn } = definition
-  //     expectTrue(initialState === undefined || isFunction(initialState))
-  //     expectTrue(isFunction(reduceOwn))
-  //     fields.add('initialState')
-  //     fields.add('reduceOwn')
-  //
-  //     Object.assign (
-  //       unit,
-  //       {
-  //         slice: true,
-  //         reduce: reduceOwn,
-  //         reduceUnit: symReduceUnit,
-  //       },
-  //     )
+  const defineOwnUnit = <
+    X extends Payload,
+    P extends Payload = Payload,
+    E extends object = {},
+  > (
+    definition: DefineOwnUnit<S, X, D, P, E>,
+  ): OwnUnitBuilder<S, X, D, P, ReduceUnit<S, X, P> & E> => {
+    const fields: string[] = []
+    const unit = initDataUnit<ReduceUnit<S, X, P> & E>(definition, fields)
+
+    const { reduceOwn: reduce, initialState, payload } = definition
+    Object.assign(unit, { reduceUnit: symReduceUnit, slice: true, initialState, reduce })
+    initPayloadUnit(unit, fields, payload)
+
+    fields.push (
+      'reduceUnit',
+      'slice',
+      'initialState',
+      'reduce',
+      'reduceOwn',
+      'payload',
+    )
+
+    const builder = {
+      get dataUnit() {
+        return unit
+      }
+    }
+
+    assignExt(unit, definition, fields)
+    initDispatchSelf<typeof unit, P>(unit, builder)
+
+    return builder as OwnUnitBuilder<S, X, D, P, ReduceUnit<S, X, P> & E>
+  }
 
   return {
     defineUnit,
     defineOnlyUnit,
     defineGlobalUnit,
     defineSliceUnit,
+    defineOwnUnit,
   }
 }
 

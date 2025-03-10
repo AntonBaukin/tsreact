@@ -1,6 +1,6 @@
 import { produce } from 'immer'
 import { Action, Middleware } from 'redux'
-import { isObject, isString, isEmpty, isNil, get, set } from 'sources/lodash'
+import { isFunction, isObject, isString, isEmpty, isNil, get, set } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
 import {
   DataUnit,
@@ -32,7 +32,7 @@ export const unitsReducer = (registry: Map<String, DataUnit>) =>
         let sliceState = get(draft, type)
 
         if (isNil(sliceState)) {
-          sliceState = initialState?.() ?? {}
+          sliceState = isFunction(initialState) ? initialState() : (initialState ?? {})
           set(draft as object, type, sliceState)
         }
 
@@ -75,13 +75,18 @@ export const makeMiddleware = <
 
   const reduceAsAction = (unit: DataUnit) => {
     const { type } = unit
+    const message: any = { type }
+
+    if (isReduceUnit(unit) && unit.slice === true) {
+      message.privateUnit = true
+    }
 
     if (isPayloadUnit(unit)) {
       const { payload } = unit
-      return next({ type, payload })
-    } else {
-      return next({ type })
+      message.payload = payload
     }
+
+    return next(message)
   }
 
   return (unit) => {

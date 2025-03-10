@@ -24,7 +24,7 @@ export const makeAppContext = <
 > (
   getStore: GetStore<S, D>
 ): AppContext<S, D> => {
-  const appContext: AppContext<S, D> = {
+  return {
     get state() {
       return getStore.state
     },
@@ -33,6 +33,4 @@ export const makeAppContext = <
       return getStore.dispatch
     }
   }
-
-  return appContext
 }

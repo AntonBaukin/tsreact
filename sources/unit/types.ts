@@ -89,12 +89,7 @@ export const isOnlyUnit = (some: unknown): some is OnlyUnit =>
 export const symPayloadUnit = Symbol.for('DataUnit.Payload')
 
 export type Payload =
-  | null
-  | string
-  | number
-  | boolean
-  | Payload[]
-  | { [key: number | string]: Payload }
+  null | string | number | boolean | Payload[] | { [key: string]: Payload }
 
 export const isPayload = (x: unknown): x is Payload => {
   if (x === null || isString(x) || isFinite(x) || x === true || x === false) {
@@ -142,7 +137,7 @@ export interface ReduceUnit <
   // Type of the application state:
   S extends any = StateBase,
   // Type of the unit slice:
-  U extends any = S,
+  X extends any = S,
   // Type of the payload:
   P extends Payload = Payload,
 > extends DataUnit
@@ -164,7 +159,7 @@ export interface ReduceUnit <
   /**
    * Used for a private slice only (slice === true) to setup the initial state.
    */
-  readonly initialState?: () => U,
+  readonly initialState?: X | (() => X),
 
   /**
    * Pure function (as required by Redux).
@@ -185,7 +180,7 @@ export interface ReduceUnit <
    *
    * @return optional, returns the new state, or updates the state proxy.
    */
-  reduce(draft: Draft<U>, payload: P | null): U | void,
+  reduce(draft: Draft<X>, payload: P | null): X | void,
 }
 
 export const isReduceUnit = <S extends any = StateBase, U extends any = S> (
@@ -347,13 +342,36 @@ export interface SliceUnitBuilder <
     SliceUnitBuilder<S, K, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
 }
 
-/*
+/**
+ * Definition of a Data Unit that reduces own (private) slice of the Redux state
+ * that has the same name as the name of the unit (treated as a Lodash path).
+ */
+export interface DefineOwnUnit <
+  S extends StateBase,
+  X extends Payload,
+  D extends DispatchBase = DispatchBase,
+  P extends Payload = Payload,
+  E extends object = {},
+> extends DefineUnit<S, D> {
+  // The initial state is required:
+  initialState: X | (() => X),
 
-} | {
-  initialState?: () => U
-  // This reducer updates Immer draft of the private slice
-  // (stored in Redux by the name of this unit treated as a Lodash path):
-  reduceOwn: <U>(draft: U, payload: P | null) => U | void,
+  // This reducer updates Immer draft of the private slice:
+  reduceOwn: (draft: X, payload: P | null) => X | void,
+
+  payload?: (() => P) | P,
 }
 
- */
+export interface OwnUnitBuilder <
+  S extends StateBase,
+  X extends Payload,
+  D extends DispatchBase = DispatchBase,
+  P extends Payload = Payload,
+  U extends ReduceUnit<S, X, P> = ReduceUnit<S, X, P>,
+> extends UnitBuilder<S, D, U> {
+  get dataUnit(): U,
+
+  // Adds self-dispatchers to the Unit, extending it's final type:
+  dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
+    OwnUnitBuilder<S, X, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+}
