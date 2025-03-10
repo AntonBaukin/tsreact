@@ -30,7 +30,7 @@ import {
   GlobalUnitBuilder,
   ReduceUnit,
   DataUnitDispatchers,
-  ExtendDataUnitDispatchers,
+  ExtendDataUnitDispatchers, DefineSliceUnit, SliceUnitBuilder,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
@@ -185,7 +185,7 @@ export const unitUtilities = <
     initPayloadUnit(unit, fields, payload)
 
     fields.push (
-      'reduceUnit',
+      'reduceUnit', // also include general fields...
       'slice',
       'initialState',
       'reduce',
@@ -205,7 +205,40 @@ export const unitUtilities = <
     return builder as GlobalUnitBuilder<S, D, P, ReduceUnit<S, S, P> & E>
   }
 
+  const defineSliceUnit = <
+    K extends keyof S,
+    P extends Payload = Payload,
+    E extends object = {},
+  > (
+    definition: DefineSliceUnit<S, K, D, P, E>,
+  ): SliceUnitBuilder<S, K, D, P, ReduceUnit<S, S[K], P> & E> => {
+    const fields: string[] = []
+    const unit = initDataUnit<ReduceUnit<S, S[K], P> & E>(definition, fields)
 
+    const { reduceSlice: reduce, slice, payload } = definition
+    Object.assign(unit, { reduceUnit: symReduceUnit, slice, reduce })
+    initPayloadUnit(unit, fields, payload)
+
+    fields.push (
+      'reduceUnit',
+      'slice',
+      'initialState',
+      'reduce',
+      'reduceSlice',
+      'payload',
+    )
+
+    const builder = {
+      get dataUnit() {
+        return unit
+      }
+    }
+
+    assignExt(unit, definition, fields)
+    initDispatchSelf<typeof unit, P>(unit, builder)
+
+    return builder as SliceUnitBuilder<S, K, D, P, ReduceUnit<S, S[K], P> & E>
+  }
 
   //
  //   } else if ('reduceOwn' in definition) {
@@ -223,35 +256,13 @@ export const unitUtilities = <
   //         reduceUnit: symReduceUnit,
   //       },
   //     )
-  //   } else if ('reduceSlice' in definition) {
-  //     const { slice, reduceSlice } = definition
-  //     expectTrue(isString(slice))
-  //     expectTrue(isFunction(reduceSlice))
-  //     fields.add('slice')
-  //     fields.add('reduceSlice')
-  //
-  //     Object.assign (
-  //       unit,
-  //       {
-  //         slice,
-  //         reduce: reduceSlice,
-  //         reduceUnit: symReduceUnit,
-  //       },
-  //     )
-  //   }
-  //
-  //   // Copy or extend all other fields of the definition:
-  //   Object.getOwnPropertyNames(definition).forEach(key => {
-  //     if (!fields.has(key)) {
-  //       (unit as any)[key] = extendProperty(unit, (definition as any)[key])
-  //     }
-  //   })
-  //
-  //   return unit as any
-  // }
-  //
 
-  return { defineUnit, defineOnlyUnit, defineGlobalUnit }
+  return {
+    defineUnit,
+    defineOnlyUnit,
+    defineGlobalUnit,
+    defineSliceUnit,
+  }
 }
 
 const makeDispatchSelf = <

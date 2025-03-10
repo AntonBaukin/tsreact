@@ -1,17 +1,19 @@
 import { expectNotNil } from 'sources/asserts'
-import { defineGlobalUnit } from 'sources/main/context'
-import { AppState } from 'sources/main/store'
+import { defineSliceUnit } from 'sources/main/context'
+import { UiSlice } from 'sources/main/store/ui/types'
 
 type IncDec = {
   delta: number,
 }
 
-export const updateUiIndex = defineGlobalUnit({
+export const updateUiIndex = defineSliceUnit({
   name: 'incUiIndex',
 
-  reduceGlobal(slices: AppState, payload: IncDec | null) {
+  slice: 'ui',
+
+  reduceSlice(ui: UiSlice, payload: IncDec | null) {
     const { delta } = expectNotNil(payload)
-    slices.ui.testIndex += delta
+    ui.testIndex += delta
   },
 }).dispatchSelf({
   onInc: () => ({ delta: +1 }),

@@ -284,7 +284,7 @@ export interface OnlyUnitBuilder <
 }
 
 /**
- * Definition of a Data Unit that reduces flobal Redux state.
+ * Definition of a Data Unit that reduces the global Redux state.
  */
 export interface DefineGlobalUnit <
   S extends StateBase,
@@ -314,6 +314,39 @@ export interface GlobalUnitBuilder <
     GlobalUnitBuilder<S, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
 }
 
+/**
+ * Definition of a Data Unit that reduces specified slice of the Redux state.
+ */
+export interface DefineSliceUnit <
+  S extends StateBase,
+  K extends keyof S,
+  D extends DispatchBase = DispatchBase,
+  P extends Payload = Payload,
+  E extends object = {},
+> extends DefineUnit<S, D> {
+  // The name of the slice:
+  slice: K,
+
+  // This reducer updates the slice of global state via Immer draft:
+  reduceSlice: (draft: S[K], payload: P | null) => S[K] | void,
+
+  payload?: (() => P) | P,
+}
+
+export interface SliceUnitBuilder <
+  S extends StateBase,
+  K extends keyof S,
+  D extends DispatchBase = DispatchBase,
+  P extends Payload = Payload,
+  U extends ReduceUnit<S, S[K], P> = ReduceUnit<S, S[K], P>,
+> extends UnitBuilder<S, D, U> {
+  get dataUnit(): U,
+
+  // Adds self-dispatchers to the Unit, extending it's final type:
+  dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
+    SliceUnitBuilder<S, K, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+}
+
 /*
 
 } | {
@@ -321,9 +354,6 @@ export interface GlobalUnitBuilder <
   // This reducer updates Immer draft of the private slice
   // (stored in Redux by the name of this unit treated as a Lodash path):
   reduceOwn: <U>(draft: U, payload: P | null) => U | void,
-} | {
-  slice: K,
-  reduceSlice: (draft: S[K], payload: P | null) => S[K] | void,
-})
+}
 
  */
