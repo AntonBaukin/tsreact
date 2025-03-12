@@ -237,6 +237,37 @@ export type ExtendDataUnitDispatchers <
   D extends DataUnitDispatchers<U, A, P>,
 > = U & Record<keyof D, DispatchSelf<A, P>>
 
+export const symUnitSelector = Symbol.for('DataUnit.selector')
+
+/**
+ * State selector bound to a Data Unit.
+ */
+export interface UnitSelector<S, R> {
+  (state: S): R,
+
+  unitSelector: typeof symUnitSelector,
+
+  unit: DataUnit,
+}
+
+export const isUnitSelector = <S extends any = any, R extends any = any> (
+  some: unknown,
+): some is UnitSelector<S, R> =>
+  isFunction(some) && (some as any).unitSelector === symUnitSelector
+
+export type DataUnitSelectors<S extends any, R extends any, U extends DataUnit> =
+  Record<string, (this: U, state: S) => R>
+
+export type ExtendDataUnitSelectors <
+  // Application (global) state:
+  S extends any,
+  // State passed to the defined selectors:
+  X extends any,
+  R extends any,
+  U extends DataUnit,
+  E extends DataUnitSelectors<X, R, U>,
+> = U & Record<keyof E, UnitSelector<S, R>>
+
 /**
  * Root for structures that define various Data Unit intsnces of the application.
  */
@@ -307,6 +338,9 @@ export interface GlobalUnitBuilder <
   // Adds self-dispatchers to the Unit, extending it's final type:
   dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
     GlobalUnitBuilder<S, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+
+  select <R extends any>(ext: DataUnitSelectors<S, R, U>):
+    GlobalUnitBuilder<S, D, P, ExtendDataUnitSelectors<S, S, R, U, typeof ext>>,
 }
 
 /**
@@ -340,6 +374,9 @@ export interface SliceUnitBuilder <
   // Adds self-dispatchers to the Unit, extending it's final type:
   dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
     SliceUnitBuilder<S, K, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+
+  select <R extends any>(ext: DataUnitSelectors<S[K], R, U>):
+    SliceUnitBuilder<S, K, D, P, ExtendDataUnitSelectors<S, S[K], R, U, typeof ext>>,
 }
 
 /**
@@ -374,4 +411,7 @@ export interface OwnUnitBuilder <
   // Adds self-dispatchers to the Unit, extending it's final type:
   dispatchSelf <A extends any[] = any[]>(ext: DataUnitDispatchers<U, A, P>):
     OwnUnitBuilder<S, X, D, P, ExtendDataUnitDispatchers<U, A, P, typeof ext>>,
+
+  select <R extends any>(ext: DataUnitSelectors<X, R, U>):
+    OwnUnitBuilder<S, X, D, P, ExtendDataUnitSelectors<S, X, R, U, typeof ext>>,
 }

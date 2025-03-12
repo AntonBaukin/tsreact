@@ -24,4 +24,6 @@ export const updateUiIndex = defineOwnUnit({
 }).dispatchSelf({
   onInc: () => ({ delta: +1 }),
   onDec: () => ({ delta: -1 }),
+}).select({
+  selectIndex: ({ index }: State) => index,
 }).dataUnit

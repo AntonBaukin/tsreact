@@ -5,8 +5,3 @@ export const selectUiRouteId = createSelector(
   selectUiSlice,
   ({ routeId }) => routeId,
 )
-
-export const selectTestIndex = createSelector(
-  selectUiSlice,
-  ({ testIndex }) => testIndex,
-)

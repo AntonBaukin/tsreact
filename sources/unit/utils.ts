@@ -35,6 +35,8 @@ import {
   SliceUnitBuilder,
   DefineOwnUnit,
   OwnUnitBuilder,
+  DataUnitSelectors,
+  symUnitSelector,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
@@ -169,21 +171,40 @@ export const unitUtilities = <
     U extends DataUnit,
     P extends Payload,
   > (unit: U, builder: any) => {
-    const dispatchSelf = <A extends any[] = any[]> (
+    const dispatchSelf = <A extends any[]> (
       ext: DataUnitDispatchers<U, A, P>,
     ) => {
       for (const k of Object.keys(ext)) {
-        const gp = ext[k]
-        expectTrue(isFunction(gp))
+        const g = ext[k]
+        expectTrue(isFunction(g))
 
-        const ds = makeDispatchSelf<S, D, U, P, A>(appContext, unit, gp);
-        Object.assign(unit, { [k]: ds })
+        const d = makeDispatchSelf<S, D, U, P, A>(appContext, unit, g);
+        Object.assign(unit, { [k]: d })
       }
 
       return builder
     }
 
     Object.assign(builder, { dispatchSelf })
+  }
+
+  const initSelect = <
+    X extends any,
+    U extends ReduceUnit<any, any, any>,
+  > (unit: U, builder: any) => {
+    const select = <R extends any>(ext: DataUnitSelectors<X, R, U>) => {
+      for (const k of Object.keys(ext)) {
+        const l = ext[k]
+        expectTrue(isFunction(l))
+
+        const s = makeSelector<S, X, U, R>(appContext, unit, l);
+        Object.assign(unit, { [k]: s })
+      }
+
+      return builder
+    }
+
+    Object.assign(builder, { select })
   }
 
   const defineGlobalUnit = <
@@ -216,6 +237,7 @@ export const unitUtilities = <
 
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)
+    initSelect<S, typeof unit>(unit, builder)
 
     return builder as GlobalUnitBuilder<S, D, P, ReduceUnit<S, S, P> & E>
   }
@@ -251,6 +273,7 @@ export const unitUtilities = <
 
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)
+    initSelect<S, typeof unit>(unit, builder)
 
     return builder as SliceUnitBuilder<S, K, D, P, ReduceUnit<S, S[K], P> & E>
   }
@@ -286,6 +309,7 @@ export const unitUtilities = <
 
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)
+    initSelect<S, typeof unit>(unit, builder)
 
     return builder as OwnUnitBuilder<S, X, D, P, ReduceUnit<S, X, P> & E>
   }
@@ -333,6 +357,55 @@ const makeDispatchSelf = <
 
   Object.assign(dispatchSelf, { dispatchSelf: symDispatchSelf, unit })
   return dispatchSelf
+}
+
+const makeSelector = <
+  S extends StateBase,
+  X extends any,
+  U extends ReduceUnit,
+  R extends any,
+> (
+  appContext: AppContext<S>,
+  unit: U,
+  localSelector: (this: U, state: X) => R,
+) => {
+  const selector = (global: S): R => {
+    if (unit.slice === undefined) {
+      return localSelector.call(unit, global as any as X)
+    } else if (unit.slice === true) {
+      let sliceState: any = get(global, unit.type)
+
+      if (isNil(sliceState)) {
+        const { initialState } = unit
+
+        if (isNil(initialState)) {
+          expectNever()
+        } else if (isFunction(initialState)) {
+          sliceState = initialState()
+        } else {
+          sliceState = initialState
+        }
+
+        expectTrue(!isNil(sliceState))
+      }
+
+      return localSelector.call(unit, sliceState as X)
+    } else {
+      const { slice } = unit
+
+      if (!isString(slice) || !slice.length) {
+        expectNever()
+      }
+
+      const sliceState: any = get(global, slice)
+      expectTrue(!isNil(sliceState))
+
+      return localSelector.call(unit, sliceState as X)
+    }
+  }
+
+  Object.assign(selector, { unitSelector: symUnitSelector, unit })
+  return selector
 }
 
 const cloneUnit = (original: DataUnit): CloneUnit =>

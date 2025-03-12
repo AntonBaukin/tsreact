@@ -1,9 +1,9 @@
 import { FC } from 'react'
-import { useAppState, selectTestIndex } from 'sources/main/store'
+import { useAppState } from 'sources/main/store'
 import { updateUiIndex } from './units'
 
 const Test: FC = () => {
-  const index = useAppState(selectTestIndex)
+  const index = useAppState(updateUiIndex.selectIndex)
 
   return (
     <div>
