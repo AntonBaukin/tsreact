@@ -4,7 +4,6 @@ import { isFunction, isString, isNil, get, cloneDeep } from 'sources/lodash'
 import {
   AppContext,
   DispatchBase,
-  InferDispatchAction,
   StateBase,
 } from 'sources/app'
 import {
@@ -30,19 +29,23 @@ import {
   GlobalUnitBuilder,
   ReduceUnit,
   DataUnitDispatchers,
-  ExtendDataUnitDispatchers,
   DefineSliceUnit,
   SliceUnitBuilder,
   DefineOwnUnit,
   OwnUnitBuilder,
   DataUnitSelectors,
   symUnitSelector,
+  PlainUnit,
+  symPlainUnit,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
   Object.assign(unit, { dataUnit: symDataUnit, type: name }) as (U & DataUnit)
 
 export const makeDataUnit = (name: string): DataUnit => initDataUnit(name, {})
+
+export const makePlainUnit = (type: string): PlainUnit =>
+  initDataUnit(type, { plainUnit: symPlainUnit })
 
 export const dynamicReducer = <
   S = any,
@@ -83,10 +86,15 @@ export const unitUtilities = <
     definition: DefineUnit<S, D>,
     fields: string[]
   ): DataUnit & E => {
-    const { name, init } = definition
+    const { name, init, actsOn, trigger } = definition
 
     const unit = makeDataUnit(name)
-    fields.push('dataUnit', 'name')
+    fields.push('dataUnit', 'name', 'actsOn', 'trigger', 'dispatch')
+
+    if (actsOn) {
+      expectTrue(isFunction(trigger))
+      Object.assign(unit, { actsOn, trigger })
+    }
 
     if (init) {
       fields.push('initUnit', 'init')
@@ -365,7 +373,7 @@ const makeSelector = <
   U extends ReduceUnit,
   R extends any,
 > (
-  appContext: AppContext<S>,
+  _appContext: AppContext<S>,
   unit: U,
   localSelector: (this: U, state: X) => R,
 ) => {
@@ -408,7 +416,9 @@ const makeSelector = <
   return selector
 }
 
-const cloneUnit = (original: DataUnit): CloneUnit =>
+export const cloneUnit = <U extends DataUnit = DataUnit> (
+  original: DataUnit,
+): U & CloneUnit =>
   Object.assign(
     {},
     original,
@@ -416,12 +426,13 @@ const cloneUnit = (original: DataUnit): CloneUnit =>
       original,
       cloneUnit: symCloneUnit,
     },
-  ) as CloneUnit
+  ) as (U & CloneUnit)
 
-const cloneUnitPayload = (
-  original: DataUnit,
+export const cloneUnitPayload = <U extends DataUnit = DataUnit> (
+  original: U,
   payload: Payload,
-): CloneUnit & PayloadUnit => {
+): U & CloneUnit & PayloadUnit => {
+  expectTrue(isPayload(payload))
   const clone = cloneUnit(original)
 
   Object.assign(clone, {
@@ -431,5 +442,5 @@ const cloneUnitPayload = (
     },
   })
 
-  return clone as (CloneUnit & PayloadUnit)
+  return clone as (U & CloneUnit & PayloadUnit)
 }

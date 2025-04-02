@@ -297,7 +297,7 @@ describe('collection.basics', () => {
 
     expect(
       range(
-        '2024-10-01T23:30:00.00Z',
+        '2024-10-01T23:30:00.000Z',
         '2024-10-03T01:15:00.000Z',
       ),
     ).toStrictEqual(['4'])

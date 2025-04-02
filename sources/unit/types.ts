@@ -3,6 +3,9 @@ import { UnknownAction } from 'redux'
 import { isArrayLike, isFunction, isObject, isString, isFinite } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
 
+export type Payload =
+  null | string | number | boolean | Payload[] | { [key: string]: Payload }
+
 export const symDataUnit = Symbol.for('DataUnit')
 
 /**
@@ -10,13 +13,25 @@ export const symDataUnit = Symbol.for('DataUnit')
  */
 export interface DataUnit extends UnknownAction
 {
-  dataUnit: typeof symDataUnit,
+  readonly dataUnit: typeof symDataUnit,
 
   /**
    * Name of a Data Unit is global name of Redux action
    * this unit (as a singleton) represents.
    */
   readonly type: string,
+
+  readonly actsOn?: () => Array<DataUnit | string>,
+
+  readonly trigger?: (type: string, payload: unknown, unit?: DataUnit) => void,
+
+  /**
+   * Assigned when registering units. The same for all units.
+   *
+   * @param unit — a Data Unit to dispatch into Redux.
+   * @param payload — optional payload, clones the unit as a Payload one.
+   */
+  readonly dispatch: (unit: DataUnit, payload?: Payload) => void;
 }
 
 export const isDataUnit = (some: unknown): some is DataUnit =>
@@ -38,7 +53,7 @@ export const symParentUnit = Symbol.for('DataUnit.Parent')
  */
 export interface ParentUnit extends DataUnit
 {
-  parentUnit: typeof symParentUnit,
+  readonly parentUnit: typeof symParentUnit,
 
   get children(): UnitsRegister | null | undefined,
 }
@@ -56,7 +71,7 @@ export const symInitUnit = Symbol.for('DataUnit.Init')
  */
 export interface InitUnit extends DataUnit
 {
-  initUnit: typeof symInitUnit,
+  readonly initUnit: typeof symInitUnit,
 
   /**
    * Invoked with this-context of the Data Unit.
@@ -75,7 +90,7 @@ export const symOnlyUnit = Symbol.for('DataUnit.Only')
  */
 export interface OnlyUnit extends DataUnit
 {
-  onlyUnit: typeof symOnlyUnit,
+  readonly onlyUnit: typeof symOnlyUnit,
 
   /**
    * Optional predicate. Invoked with this-context of the Data Unit.
@@ -88,44 +103,70 @@ export const isOnlyUnit = (some: unknown): some is OnlyUnit =>
 
 export const symPayloadUnit = Symbol.for('DataUnit.Payload')
 
-export type Payload =
-  null | string | number | boolean | Payload[] | { [key: string]: Payload }
+export const isPayload = (some: unknown): some is Payload => {
+  const objects: any[] = []
 
-export const isPayload = (x: unknown): x is Payload => {
-  if (x === null || isString(x) || isFinite(x) || x === true || x === false) {
-    return true
-  }
+  const check = (x: unknown) => {
+    if (x === null || isString(x) || isFinite(x) || x === true || x === false) {
+      return true
+    }
 
-  if (isObject(x) && !isArrayLike(x)) {
-    x = Object.values(x)
-  }
-
-  if (isArrayLike(x)) {
-    const a = Array.isArray(x) ? x : Array.from(x)
-
-    for (const i of a) {
-      if (!(isPayload(i))) {
+    // Cycled structures are rejected:
+    if (isObject(x) || isArrayLike(x)) {
+      if (objects.includes(x)) {
         return false
+      } else {
+        objects.push(x)
       }
     }
 
-    return true
+    if (isObject(x) && !isArrayLike(x)) {
+      x = Object.values(x)
+    }
+
+    if (isArrayLike(x)) {
+      const a = Array.isArray(x) ? x : Array.from(x)
+
+      for (const i of a) {
+        if (!(isPayload(i))) {
+          return false
+        }
+      }
+
+      return true
+    }
+
+    return false
   }
 
-  return false
+  return check(some)
 }
 
 export interface PayloadUnit<P extends Payload = Payload> extends DataUnit
 {
-  payloadUnit: typeof symPayloadUnit,
+  readonly payloadUnit: typeof symPayloadUnit,
 
-  get payload(): P,
+  get payload(): P | undefined,
 }
 
 export const isPayloadUnit = <P extends Payload = Payload>(
   some: unknown,
 ): some is PayloadUnit<P> =>
   isDataUnit(some) && (some as any).payloadUnit === symPayloadUnit
+
+export const symPlainUnit = Symbol.for('DataUnit.Plain')
+
+/**
+ * Plain Unit represents Redux action with string type and optional
+ * payload — in tis case it's also a Payload Unit.
+ */
+export interface PlainUnit extends DataUnit
+{
+  readonly plainUnit: typeof symPlainUnit,
+}
+
+export const isPlainUnit = (some: unknown): some is PlainUnit =>
+  isDataUnit(some) && (some as any).plainUnit === symPlainUnit
 
 export const symReduceUnit = Symbol.for('DataUnit.Reduce')
 
@@ -142,7 +183,7 @@ export interface ReduceUnit <
   P extends Payload = Payload,
 > extends DataUnit
 {
-  reduceUnit: typeof symReduceUnit,
+  readonly reduceUnit: typeof symReduceUnit,
 
   /**
    * If not defined, the reducer takes whole application state.
@@ -192,7 +233,7 @@ export const symCloneUnit = Symbol.for('DataUnit.Clone')
 
 export interface CloneUnit extends DataUnit
 {
-  cloneUnit: typeof symCloneUnit,
+  readonly cloneUnit: typeof symCloneUnit,
 
   original: DataUnit,
 }
@@ -206,9 +247,9 @@ export interface DispatchSelf<A extends any[] = any[], P extends Payload = Paylo
 {
   (...args: A): void,
 
-  dispatchSelf: typeof symDispatchSelf,
+  readonly dispatchSelf: typeof symDispatchSelf,
 
-  unit: DataUnit,
+  readonly unit: DataUnit,
 }
 
 export const isDispatchSelf = <A extends any[] = any[], P extends Payload = Payload> (
@@ -245,9 +286,9 @@ export const symUnitSelector = Symbol.for('DataUnit.selector')
 export interface UnitSelector<S, R> {
   (state: S): R,
 
-  unitSelector: typeof symUnitSelector,
+  readonly unitSelector: typeof symUnitSelector,
 
-  unit: DataUnit,
+  readonly unit: DataUnit,
 }
 
 export const isUnitSelector = <S extends any = any, R extends any = any> (
@@ -282,6 +323,10 @@ export interface DefineUnit <
   name: string, // i.e. type of Redux action
 
   init?: (appContext: AppContext<S, D>) => void,
+
+  actsOn?: () => Array<DataUnit | string>,
+
+  trigger?: (type: string, payload: unknown, unit?: DataUnit) => void,
 }
 
 export interface UnitBuilder <

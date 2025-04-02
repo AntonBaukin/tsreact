@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="dbUsers" type="JavaScriptTestRunnerJest">
+    <config-file value="$PROJECT_DIR$/sample/jest.config.json" />
     <node-interpreter value="project" />
     <node-options value="--experimental-vm-modules" />
     <jest-package value="$PROJECT_DIR$/node_modules/jest" />

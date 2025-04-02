@@ -1,9 +1,8 @@
 {
   "verbose": true,
-  "moduleFileExtensions": ["ts", "js", "mjs"],
-  "testRegex": ".*\\.test\\.(ts|mjs)$",
-  "transform": {
-    "\\.ts$": "ts-jest",
-    "\\.mjs$": ["ts-jest", { "useESM": true }]
+  "moduleFileExtensions": ["js", "ts", "tsx"],
+  "testRegex": ".*\\.test\\.(ts)$",
+  "moduleNameMapper": {
+    "^sources/(.+)": "<rootDir>/sources/$1"
   }
 }

@@ -13,9 +13,18 @@ export const singleItem = <T>(items: ArrayLike<T>): T => {
   return items[0]
 }
 
-export const expectNotNil = <T>(item: T | null | undefined): T => {
+export const expectNotNil = <T>(
+  item: T | null | undefined,
+  msg?: () => string,
+): T => {
   if (isNil(item)) {
-    throw Error()
+    const m = msg?.() ?? null
+
+    if (isString(m)) {
+      throw Error(m)
+    } else {
+      throw Error()
+    }
   }
 
   return item
@@ -53,4 +62,8 @@ export const expectNever = (msg?: () => string): never => {
   } else {
     throw Error()
   }
+}
+
+export const warn = (msg: string) => {
+  console.warn(msg)
 }
