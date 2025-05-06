@@ -1,12 +1,11 @@
 import { produce } from 'immer'
 import { Action, Middleware } from 'redux'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
-import { expectNever, expectTrue, warn } from 'sources/asserts'
+import { expectTrue, warn } from 'sources/asserts'
 import {
   isFunction,
   isObject,
   isString,
-  isFinite,
   isEqual,
   isEmpty,
   isNil,
@@ -24,6 +23,7 @@ import {
   isReduceUnit,
   Payload,
   PlainUnit,
+  ReduceUnit,
 } from './types'
 
 export const unitsReducer = (registry: Map<string, DataUnit>) =>
@@ -102,13 +102,22 @@ class PlainUnits
   private units = new Map<string, PlainUnit>()
 }
 
+export type UnitsQueueAnalyser = (queue: DataUnit[]) => {
+  // What timout (ms) to set when delaying the queue execution:
+  timeout?: number,
+}
+
 export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
 {
-  constructor (registry: UnitsRegistry<S, D>) {
+  constructor (registry: UnitsRegistry<S, D>, analyzer?: UnitsQueueAnalyser) {
     this.registry = registry
+    this.analyzer = analyzer
+    this.reenter = this.reenter.bind(this)
   }
 
-  private registry: UnitsRegistry<S, D>
+  private readonly registry: UnitsRegistry<S, D>
+
+  private readonly analyzer: UnitsQueueAnalyser | undefined
 
   private current: DataUnit | string | undefined
 
@@ -119,7 +128,7 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
   private plainUnits = new PlainUnits()
 
   plain (type: string, p?: any) {
-    let unit = this.registry.get(type)
+    let unit = this.registry.lookup(type)
 
     if (unit) {
       if (p) {
@@ -127,29 +136,61 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
           unit = cloneUnitPayload(unit, p)
         }
       }
-
-      this.enter(unit)
     } else {
-      this.enter(this.plainUnits.get(type, p))
+      unit = this.plainUnits.get(type, p)
     }
+
+    this.enter(unit)
   }
 
   enter (unit: DataUnit) {
+    if (this.current) {
+      this.enqueue(unit)
+    } else {
+      this.cycle(unit)
+    }
+  }
+
+  private enqueue(unit: DataUnit) {
+    // Note: we accumulate the unit types counters and do not
+    // decrement them intentionally to prevent infinite loops
     this.incType(unit.type)
 
-    if (this.current) {
-      if (this.current === unit) {
-        if (this.numType(unit.type) > 2) {
-          this.decType(unit.type)
-          warn(`Re-dispatching the same Data Unit ${unit.type} more than twice`)
-        } else {
-          this.queue.push(unit)
-        }
+    if (this.current === unit) {
+      if (this.numType(unit.type) > 2) {
+        warn(`Recursive dispatching the same Data Unit ${unit.type} more than twice`)
       } else {
         this.queue.push(unit)
       }
     } else {
-      this.handle(unit)
+      this.queue.push(unit)
+    }
+  }
+
+  private cycle(unit: DataUnit) {
+    let next: DataUnit | undefined = unit
+
+    // cycle in a synchronous loop:
+    while (next) {
+      if (this.handle(next)) {
+        next = this.queue.shift()
+      } else {
+        next = undefined
+      }
+    }
+  }
+
+  private handle (unit: DataUnit) {
+    const queueLength = this.queue.length
+
+    try {
+      expectTrue(this.current === undefined)
+      this.current = unit
+      this.trigger(unit)
+      return this.leave(unit)
+    } catch (e: unknown) {
+      this.current = undefined
+      this.recover(queueLength, e)
     }
   }
 
@@ -161,44 +202,26 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
     this.typeCycles.set(type, 1 + this.numType(type))
   }
 
-  private decType (type: string) {
-    const i = this.typeCycles.get(type)
-
-    if (!i) {
-      expectNever()
-    } else if (i === 1) {
-      this.typeCycles.delete(type)
-    } else {
-      this.typeCycles.set(type, i - 1)
-    }
+  private resetCounters () {
+    this.typeCycles.clear()
   }
 
-  private handle (unit: DataUnit) {
-    const queueLength = this.queue.length
-
-    try {
-      this.current = unit
-      this.trigger(unit)
-      this.leave(unit)
-    } catch (e: unknown) {
-      this.current = undefined
-      this.decType(unit.type)
-
-      if (queueLength > this.queue.length) {
-        const removed = this.queue.splice(
-          queueLength,
-          this.queue.length - queueLength,
-        )
-
-        removed.forEach(u => this.decType(u.type))
-      }
-
-      if (this.queue.length) {
-        this.plan()
-      }
-
-      throw e
+  private recover (queueLength: number, error: unknown) {
+    if (queueLength < this.queue.length) {
+      this.recoverPrune(this.queue.splice(queueLength))
     }
+
+    if (this.queue.length) {
+      this.plan()
+    } else {
+      this.stop()
+    }
+
+    throw error
+  }
+
+  private recoverPrune(removed: DataUnit[]) {
+    warn('Removed Data Units on error recover: ' + removed.map(u => u.type).join(', '))
   }
 
   private trigger (unit: DataUnit) {
@@ -214,6 +237,7 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
 
     followers.forEach(ft => {
       const fu = this.registry.get(ft)
+
       try {
         fu.trigger?.(unit.type, p, u)
       } catch (e) {
@@ -221,7 +245,9 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
       }
     })
 
-    if (errors.length) {
+    if (errors.length === 1) {
+      throw errors[0]
+    } else if (errors.length) {
       throw errors
     }
   }
@@ -229,35 +255,73 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
   private leave (unit: DataUnit) {
     expectTrue(this.current === unit)
     this.current = undefined
-    this.decType(unit.type)
 
     if (!this.queue.length) {
       this.stop()
-      return
+    } else if (this.isQueueDelayed) {
+      this.plan()
+    } else {
+      return true
     }
+  }
 
-    // !!! NOW OR THEN !!!
+  private get isQueueDelayed () {
+    return this.numType(this.queue[0].type) > 1
   }
 
   private timer: ReturnType<typeof setTimeout> | undefined
 
   private stop () {
     expectTrue(this.queue.length === 0)
-    expectTrue(this.typeCycles.size === 0)
+    this.stopTimer()
+    this.resetCounters()
+  }
 
+  private stopTimer() {
     if (this.timer) {
       clearTimeout(this.timer)
       this.timer = undefined
     }
   }
 
+  private get timeout () {
+    if (this.queue.length) {
+      const t = this.analyzer?.(this.queue)
+
+      if (isNil(t?.timeout)) {
+        return 1
+      } else {
+        expectTrue(t.timeout >= 1)
+        return t.timeout
+      }
+    } else {
+      return 1
+    }
+  }
+
   private plan () {
     if (!this.timer) {
-      this.timer = setTimeout(() => this.reenter(), 1)
+      const t = this.timeout
+
+      if (t) {
+        this.timer = setTimeout(this.reenter, t)
+      }
     }
   }
 
   private reenter () {
+    if (this.current) {
+      return
+    }
+
+    const next = this.queue.shift()
+
+    if (next) {
+      this.stopTimer()
+      this.cycle(next)
+    } else {
+      this.stop()
+    }
   }
 }
 
@@ -267,12 +331,13 @@ export const makeMiddleware = <
 > (
   _appContext: AppContext<S, D>,
   registry: UnitsRegistry<S, D>,
+  analyzer?: UnitsQueueAnalyser,
 ): Middleware<any, S, D> => () => (next) => {
-  const reduceAsAction = (unit: DataUnit) => {
+  const reduceAsAction = (unit: ReduceUnit) => {
     const { type } = unit
     const message: any = { type }
 
-    if (isReduceUnit(unit) && unit.slice === true) {
+    if (unit.slice === true) {
       message.privateUnit = true
     }
 
@@ -284,7 +349,7 @@ export const makeMiddleware = <
     return next(message)
   }
 
-  const unitsTrigger = new UnitsTrigger(registry)
+  const unitsTrigger = new UnitsTrigger(registry, analyzer)
 
   return (unit) => {
     if (!isDataUnit(unit)) {
@@ -312,20 +377,19 @@ export const makeMiddleware = <
       return // stop processing
     }
 
-    let result: unknown = undefined
-
     // Reduce units are processed before the chain actions:
     if (isReduceUnit(unit)) {
-      result = reduceAsAction(unit)
+      let result: unknown = reduceAsAction(unit)
+
+      // Trigger dependent units after the reduce is done:
+      unitsTrigger.enter(unit)
+
+      return result
+    } else {
+      // Trigger dependent units before the further middleware chain:
+      unitsTrigger.enter(unit)
+
+      return next(unit)
     }
-
-    if (!isReduceUnit(unit)) {
-      result = reduceAsAction(unit)
-    }
-
-    // Trigger dependent units after the reduce is done:
-    unitsTrigger.enter(unit)
-
-    return result
   }
 }

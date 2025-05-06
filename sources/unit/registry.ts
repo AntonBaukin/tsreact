@@ -23,6 +23,8 @@ export interface UnitsRegistry<S extends StateBase, D extends DispatchBase>
 
   get(type: string): DataUnit,
 
+  lookup(type: string): DataUnit | undefined,
+
   readonly followers: Map<string, Set<string>>,
 
   readonly middleware: Middleware<any, S, D>,
@@ -74,6 +76,7 @@ export const makeUnitsRegistry = <
         () => `Else Data Unit ${unit.type} is already registered`,
       )
     } else {
+      patchUnit(unit)
       registry.set(unit.type, unit)
       registerActsOn(unit)
 
@@ -126,6 +129,10 @@ export const makeUnitsRegistry = <
     }
   }
 
+  function patchUnit (u: DataUnit) {
+    Object.assign(u, { dispatch })
+  }
+
   class RegistryClause implements UnitsRegistry<S, D>
   {
     readonly appContext = appContext
@@ -144,6 +151,10 @@ export const makeUnitsRegistry = <
         registry.get(type),
         () => `Data Unit [${type}] is not defined`,
       )
+    }
+
+    lookup(type: string) {
+      return registry.get(type)
     }
 
     readonly followers = followers

@@ -1,26 +1,35 @@
 import { UnknownAction } from 'redux'
+import { expect } from '@jest/globals'
 import { DispatchBase, GetStore, makeAppContext, StateBase } from 'sources/app'
+import { expectNever } from 'sources/asserts'
 import { isString, get } from 'sources/lodash'
-import { DataUnit, isDataUnit } from './types'
+import { DataUnit, isDataUnit, isPayload } from './types'
 import { makeUnitsRegistry } from './registry'
 import { makeMiddleware } from './middleware'
-import { unitUtilities } from './utils'
+import { cloneUnitPayload, makePlainUnit, unitUtilities } from './utils'
 
 export type ActionLogger = (unit: DataUnit | string, payload?: unknown) => void
 
 export const collectingLogger = () => {
   const units: DataUnit[] = []
-  const actions: UnknownAction[] = []
 
   const log: ActionLogger = (unit: DataUnit | string, payload?: unknown) => {
     if (isDataUnit(unit)) {
       units.push(unit)
     } else {
-      actions.push(payload ? { type: unit, payload } : { type: unit })
+      const plain = makePlainUnit(unit)
+
+      if (payload) {
+        units.push(plain)
+      } else if (isPayload(payload)) {
+        units.push(cloneUnitPayload(plain, payload))
+      } else {
+        expectNever()
+      }
     }
   }
 
-  return { units, actions, log }
+  return { log, units }
 }
 
 export const makeTestRegistry = (log: ActionLogger) => {
@@ -31,8 +40,13 @@ export const makeTestRegistry = (log: ActionLogger) => {
     ...extraArgs: any[]
   ) => {
     expect(extraArgs).toHaveLength(0)
-    expect(isDataUnit(action)).toBeTruthy()
-    invokeMiddleware(action as any as DataUnit)
+
+    if (isDataUnit(action)) {
+      invokeMiddleware(action)
+    } else {
+      expect(isDataUnit(action)).toBeTruthy()
+    }
+
     return action
   }
 
@@ -67,7 +81,10 @@ export const makeTestRegistry = (log: ActionLogger) => {
   }
 
   function invokeMiddleware(unit: DataUnit) {
-    log(unit)
+    if (isDataUnit(unit)) {
+      expect(!!registry.lookup(unit.type)).toBeTruthy()
+    }
+
     middleware(unit)
   }
 

@@ -23,10 +23,17 @@ export interface DataUnit extends UnknownAction
 
   readonly actsOn?: () => Array<DataUnit | string>,
 
-  readonly trigger?: (type: string, payload: unknown, unit?: DataUnit) => void,
+  readonly trigger?: (
+    // This data unit instance:
+    this: DataUnit,
+    // Type of common action, or type of the data unit given:
+    type: string,
+    payload: unknown,
+    unit?: DataUnit,
+  ) => void,
 
   /**
-   * Assigned when registering units. The same for all units.
+   * Auto-assigned when registering units. The same for all units.
    *
    * @param unit — a Data Unit to dispatch into Redux.
    * @param payload — optional payload, clones the unit as a Payload one.
