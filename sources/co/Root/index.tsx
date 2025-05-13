@@ -1,4 +1,5 @@
 import { FC, useEffect } from 'react'
+import { nameHoc } from 'sources/co/utils/compose'
 import { RootProps } from './types'
 import { useReactRootDomNode } from './utils'
 
@@ -26,18 +27,17 @@ const Root: FC<RootProps> = ({ children, className }) => {
   )
 }
 
-export const withRootClass = (className: string | undefined, Component: FC) => {
-  const RootComponent: FC = () => (
-    <Root className={className}>
-      <Component />
-    </Root>
+export const withRootClass = (className: string | undefined) => (Component: FC) =>
+  nameHoc (
+    'Root',
+    Component,
+    () => (
+      <Root className={className}>
+        <Component />
+      </Root>
+    ),
   )
 
-  RootComponent.displayName = `Root_${Component.displayName ?? 'Component'}`
-
-  return RootComponent
-}
-
-export const withRoot = (Component: FC) => withRootClass(undefined, Component)
+export const withRoot = withRootClass(undefined)
 
 export default Root

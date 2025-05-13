@@ -1,10 +1,10 @@
 {
   "pages": {
-    "about": "About",
-    "search": "Search"
+    "list": "Search",
+    "about": "About"
   },
   "Main": {
     "title": "Sample application!",
-    "content": "The quick brown <%= name %> jumps over the lazy dog"
+    "content": "The quick brown <%=name%> jumps over the lazy dog"
   }
 }

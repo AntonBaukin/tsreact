@@ -1,7 +1,8 @@
 import { FC } from 'react'
-import { ScreenProps } from './types';
+import { nameHoc } from 'sources/co/utils/compose'
 import { ScreenDimensionContext, ScreenSizeContext } from './context'
 import { useScreenDimensionImpl, useScreenSizeImpl } from './hooks'
+import { ScreenProps } from './types';
 
 export { useScreenSize, useScreenDimension } from './hooks'
 
@@ -20,19 +21,17 @@ const Screen: FC<ScreenProps> = ({ children, debounce }) => {
   )
 }
 
-export const withScreenDebounce = (debounce: number, Component: FC) => {
-  const ScreenComponent: FC = () => (
-    <Screen debounce={debounce}>
-      <Component />
-    </Screen>
+export const withScreenDebounce = (debounce: number) => (Component: FC) =>
+  nameHoc (
+    'Screen',
+    Component,
+    () => (
+      <Screen debounce={debounce}>
+        <Component />
+      </Screen>
+    )
   )
 
-  ScreenComponent.displayName = `Screen_${Component.displayName ?? 'Component'}`
-
-  return ScreenComponent
-}
-
-export const withScreen = (Component: FC) =>
-  withScreenDebounce(defaultDebounce, Component)
+export const withScreen = withScreenDebounce(defaultDebounce)
 
 export default Screen

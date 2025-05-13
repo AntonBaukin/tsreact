@@ -1,13 +1,12 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import getRoutes, { RouteKey } from 'sources/main/routes'
-import { findDefaultRoute } from 'sources/co/utils/routing'
+import { RouteId, defaultRouteId } from 'sources/main/routes'
 
 export interface UiSlice {
-  routeId: RouteKey,
+  routeId: RouteId,
 }
 
 export const defUiSlice = (): UiSlice => ({
-  routeId: findDefaultRoute(getRoutes).id,
+  routeId: defaultRouteId,
 })
 
-export type SetUiRouteAction = PayloadAction<RouteKey>
+export type SetUiRouteAction = PayloadAction<RouteId>

@@ -333,11 +333,11 @@ export const makeMiddleware = <
   registry: UnitsRegistry<S, D>,
   analyzer?: UnitsQueueAnalyser,
 ): Middleware<any, S, D> => () => (next) => {
-  const reduceAsAction = (unit: ReduceUnit) => {
+  const invokeRedux = (unit: DataUnit) => {
     const { type } = unit
     const message: any = { type }
 
-    if (unit.slice === true) {
+    if (isReduceUnit(unit) && unit.slice === true) {
       message.privateUnit = true
     }
 
@@ -379,7 +379,7 @@ export const makeMiddleware = <
 
     // Reduce units are processed before the chain actions:
     if (isReduceUnit(unit)) {
-      let result: unknown = reduceAsAction(unit)
+      let result: unknown = invokeRedux(unit)
 
       // Trigger dependent units after the reduce is done:
       unitsTrigger.enter(unit)
@@ -389,7 +389,7 @@ export const makeMiddleware = <
       // Trigger dependent units before the further middleware chain:
       unitsTrigger.enter(unit)
 
-      return next(unit)
+      return invokeRedux(unit)
     }
   }
 }

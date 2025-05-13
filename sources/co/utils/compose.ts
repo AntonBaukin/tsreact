@@ -4,3 +4,8 @@ export type ReactHoc<P = {}> = (Component: FC<P>) => FC<P>
 
 export const composeReactHocs = <P = {}>(...hocs: ReactHoc<P>[]): ReactHoc<P> =>
   (Component: FC<P>) => hocs.reduce((acc: FC<P>, hoc: ReactHoc<P>) => hoc(acc), Component)
+
+export const nameHoc = (base: string, wrapped: FC, hoc: FC): FC => {
+  hoc.displayName = `${base}_${wrapped.displayName ?? 'Hoc'}`
+  return hoc
+}

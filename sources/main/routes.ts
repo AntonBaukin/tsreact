@@ -1,19 +1,23 @@
-import { Route } from 'sources/co/utils/routing'
+import { lazy } from 'react'
+import { Routes } from 'sources/co/Routing'
 
-const routes = [
+const items = [
   {
-    id: 'about',
+    id: 'list',
     path: '/',
-    default: true,
-    title: 'pages.about',
+    title: 'pages.list',
+    component: lazy(() => import('./List')),
   },
   {
-    id: 'search',
-    path: '/search',
-    title: 'pages.search',
+    id: 'about',
+    path: '/about',
+    title: 'pages.about',
+    component: lazy(() => import('./About')),
   },
 ] as const
 
-export type RouteKey = typeof routes[number]['id']
+export type RouteId = typeof items[number]['id']
 
-export default () => routes as readonly Route<RouteKey>[]
+export const defaultRouteId: RouteId = 'list'
+
+export const routes = items satisfies Routes<RouteId>

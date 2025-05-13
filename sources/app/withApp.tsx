@@ -1,4 +1,5 @@
 import { FC, createContext, useContext, useEffect } from 'react'
+import { nameHoc } from 'sources/co/utils/compose'
 import { StateBase, DispatchBase, AppContext } from './types'
 import { appInit } from './units'
 
@@ -8,8 +9,10 @@ export const appLinker = <
 > (appContext: AppContext<S, D>) => {
   const Context = createContext(appContext)
 
-  const withApp = (Component: FC) => {
-    const AppComponent: FC = () => {
+  const withApp = (Component: FC) => nameHoc (
+    'App',
+    Component,
+    () => {
       useEffect(() => {
         appContext.dispatch(appInit)
       }, [])
@@ -19,12 +22,8 @@ export const appLinker = <
           <Component />
         </Context.Provider>
       )
-    }
-
-    AppComponent.displayName = `App_${Component.displayName ?? 'Component'}`
-
-    return AppComponent
-  }
+    },
+  )
 
   const useAppContext = () => useContext(Context)
 

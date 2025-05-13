@@ -1,6 +1,8 @@
 export { default as Box } from './Box'
+export { Header } from './typo'
 export { default as Icon } from './Icon'
 export type { Icons } from './Icon/types'
 export { default as Root } from './Root'
+export { useRoutesSwitcher } from './Routing'
 export { default as Screen } from './Screen'
 export { default as Text, useTextValue } from './Text'
