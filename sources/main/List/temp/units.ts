@@ -1,6 +1,5 @@
 import { expectNotNil } from 'sources/asserts'
 import { defineOwnUnit } from 'sources/main/context'
-import { UiSlice } from 'sources/main/store/ui/types'
 
 type IncDec = {
   delta: number,

@@ -1,21 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { findRoute } from 'sources/co/Routing'
-import { routes } from 'sources/main/routes'
-import { defUiSlice, SetUiRouteAction } from './types'
+import { defUiSlice, SetUiAction } from './types'
 
 const uiSlice = createSlice({
   name: 'ui',
   initialState: defUiSlice(),
   reducers: {
-    setUiRouteId(slice, action: SetUiRouteAction) {
-      const route = findRoute(routes, action.payload)
-      slice.routeId = route.id
+    setUiState(slice, action: SetUiAction) {
+      Object.assign(slice, action.payload)
     },
   },
 });
 
 export const {
-  setUiRouteId,
+  setUiState,
 } = uiSlice.actions
 
 export const ui = uiSlice.reducer

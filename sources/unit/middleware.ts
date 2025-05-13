@@ -23,7 +23,6 @@ import {
   isReduceUnit,
   Payload,
   PlainUnit,
-  ReduceUnit,
 } from './types'
 
 export const unitsReducer = (registry: Map<string, DataUnit>) =>
