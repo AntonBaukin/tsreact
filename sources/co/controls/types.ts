@@ -8,3 +8,5 @@ export interface ControlIcon {
   i?: Icons,
   iv?: IconVariant,
 }
+
+export type ControlAction = () => void

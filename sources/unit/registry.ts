@@ -3,7 +3,7 @@ import { isObject, isString } from 'sources/lodash'
 import { expectString, expectTrue, expectNever, expectNotNil } from 'sources/asserts'
 import { DispatchBase, StateBase, AppContext, InferDispatchAction } from 'sources/app'
 import { makeMiddleware, unitsReducer } from './middleware'
-import { cloneUnitPayload } from './utils'
+import { cloneUnitPayload, makeUnitListeners } from './utils'
 import {
   Payload,
   DataUnit,
@@ -11,6 +11,8 @@ import {
   UnitsRegister,
   isParentUnit,
   isInitUnit,
+  UnitListener,
+  UnitListenerConnect,
 } from './types'
 
 export interface UnitsRegistry<S extends StateBase, D extends DispatchBase>
@@ -130,7 +132,9 @@ export const makeUnitsRegistry = <
   }
 
   function patchUnit (u: DataUnit) {
-    Object.assign(u, { dispatch })
+    const dispatchSelf = (p?: Payload) => dispatch(u, p)
+    const listen = makeUnitListeners(u)
+    Object.assign(u, { listen, dispatch, dispatchSelf })
   }
 
   class RegistryClause implements UnitsRegistry<S, D>

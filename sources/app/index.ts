@@ -9,3 +9,9 @@ export type {
   GetStore,
   AppContext,
 } from './types'
+
+export {
+  appInit,
+  appRouteChanged,
+  appDoChangeRoute,
+} from './units'

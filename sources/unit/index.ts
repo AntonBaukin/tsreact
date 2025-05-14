@@ -1,11 +1,13 @@
 export { makeUnitsRegistry } from './registry'
 export type {
   DataUnit,
+  UnitListener,
   UnitsRegister,
   ParentUnit,
   InitUnit,
   OnlyUnit,
   Payload,
+  PayloadSimple,
   PayloadUnit,
 } from './types'
 export {
@@ -18,5 +20,6 @@ export {
 export {
   initDataUnit,
   makeDataUnit,
+  makePayloadUnit,
   unitUtilities,
 } from './utils'

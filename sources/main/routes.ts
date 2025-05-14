@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { appDoChangeRoute } from 'sources/app'
 import { Routes } from 'sources/co/Routing'
 
 const items = [
@@ -21,3 +22,7 @@ export type RouteId = typeof items[number]['id']
 export const defaultRouteId: RouteId = 'list'
 
 export const routes = items satisfies Routes<RouteId>
+
+export const doChangeRoute = (id: RouteId) => {
+  appDoChangeRoute.dispatchSelf({ id })
+}

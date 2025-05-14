@@ -1,11 +1,11 @@
 import { FC, memo } from 'react'
 import cn from 'classnames'
-import { MenuItemProps } from './types'
 import { Box, Icon, Text } from 'sources/co'
 import { styles as cstyles } from 'sources/co/controls'
+import { MenuItemProps } from './types'
 import styles from './styles.module.scss'
 
-const MenuItem: FC<MenuItemProps> = ({ children, i, iv }) => {
+const MenuItem: FC<MenuItemProps> = ({ children, action, i, iv }) => {
   const icon = i && (
     <div className={cn(cstyles.icon, iv && cstyles[iv])}>
       <Icon name={i} />
@@ -15,6 +15,7 @@ const MenuItem: FC<MenuItemProps> = ({ children, i, iv }) => {
   return (
     <Box shadow focus>
       <button
+        onClick={action}
         className={
           cn(
             cstyles.control,

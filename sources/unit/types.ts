@@ -3,8 +3,13 @@ import { UnknownAction } from 'redux'
 import { isArrayLike, isFunction, isObject, isString, isFinite } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
 
-export type Payload =
-  null | string | number | boolean | Payload[] | { [key: string]: Payload }
+export type PayloadSimple = null | string | number | boolean
+
+export type Payload = PayloadSimple | Payload[] | { [key: string]: Payload }
+
+export type UnitListener<U extends DataUnit = DataUnit> = (unit: U) => void;
+
+export type UnitListenerConnect = (listener: UnitListener) => (() => void);
 
 export const symDataUnit = Symbol.for('DataUnit')
 
@@ -23,6 +28,17 @@ export interface DataUnit extends UnknownAction
 
   readonly actsOn?: () => Array<DataUnit | string>,
 
+  /**
+   * Auto-assigned when registering units.
+   *
+   * While actsOn property is intendent to link Data Units,
+   * lower-level listen() function connects arbitrary
+   * applicant to the reaction infrastructure.
+   *
+   * @returns unsubscribe function.
+   */
+  readonly listen: UnitListenerConnect,
+
   readonly trigger?: (
     // This data unit instance:
     this: DataUnit,
@@ -38,7 +54,7 @@ export interface DataUnit extends UnknownAction
    * @param unit — a Data Unit to dispatch into Redux.
    * @param payload — optional payload, clones the unit as a Payload one.
    */
-  readonly dispatch: (unit: DataUnit, payload?: Payload) => void;
+  readonly dispatch: (unit: DataUnit, payload?: Payload) => void,
 }
 
 export const isDataUnit = (some: unknown): some is DataUnit =>
@@ -154,6 +170,8 @@ export interface PayloadUnit<P extends Payload = Payload> extends DataUnit
   readonly payloadUnit: typeof symPayloadUnit,
 
   get payload(): P | undefined,
+
+  readonly dispatchSelf: (payload: P) => void,
 }
 
 export const isPayloadUnit = <P extends Payload = Payload>(
@@ -226,7 +244,7 @@ export interface ReduceUnit <
    * @param payload — optional payload of Redux action. If this unit
    * is a Payload Unit, — the payload is created with it.
    *
-   * @return optional, returns the new state, or updates the state proxy.
+   * @returns optional, returns the new state, or updates the state proxy.
    */
   reduce(draft: Draft<X>, payload: P | null): X | void,
 }

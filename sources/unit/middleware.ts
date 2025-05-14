@@ -13,7 +13,7 @@ import {
   set,
 } from 'sources/lodash'
 import { UnitsRegistry } from './registry'
-import { cloneUnitPayload, makePlainUnit } from './utils'
+import { asDataUnitListeners, cloneUnitPayload, makePlainUnit } from './utils'
 import {
   DataUnit,
   isDataUnit,
@@ -225,16 +225,14 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
 
   private trigger (unit: DataUnit) {
     const followers = this.registry.followers.get(unit.type)
-
-    if (!followers?.size) {
-      return
-    }
+    const listeners = asDataUnitListeners(unit)
 
     const p = isPayloadUnit(unit) ? unit.payload : undefined
     const u = isPlainUnit(unit) ? undefined : unit
     const errors: any[] = []
 
-    followers.forEach(ft => {
+    // Invoke the followers:
+    followers?.forEach(ft => {
       const fu = this.registry.get(ft)
 
       try {
@@ -243,6 +241,13 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
         errors.push(e)
       }
     })
+
+    // Then, call the side-effect listeners:
+    try {
+      listeners?.invoke(unit)
+    } catch (e) {
+      errors.push(e)
+    }
 
     if (errors.length === 1) {
       throw errors[0]

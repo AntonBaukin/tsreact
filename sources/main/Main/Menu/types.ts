@@ -1,6 +1,7 @@
 import { Icons } from 'sources/co'
-import { ControlIcon } from 'sources/co/controls/types'
+import { ControlAction, ControlIcon } from 'sources/co/controls'
 
 export interface MenuItemProps extends ControlIcon {
   children: string,
+  action?: ControlAction,
 }

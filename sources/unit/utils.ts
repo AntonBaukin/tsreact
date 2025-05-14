@@ -37,6 +37,8 @@ import {
   symUnitSelector,
   PlainUnit,
   symPlainUnit,
+  UnitListenerConnect,
+  UnitListener,
 } from './types'
 
 export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
@@ -89,7 +91,16 @@ export const unitUtilities = <
     const { name, init, actsOn, trigger } = definition
 
     const unit = makeDataUnit(name)
-    fields.push('dataUnit', 'name', 'actsOn', 'trigger', 'dispatch')
+
+    fields.push(
+      'dataUnit',
+      'name',
+      'actsOn',
+      'listen',
+      'trigger',
+      'dispatch',
+      'dispatchSelf',
+    )
 
     if (actsOn) {
       expectTrue(isFunction(trigger))
@@ -428,10 +439,29 @@ export const cloneUnit = <U extends DataUnit = DataUnit> (
     },
   ) as (U & CloneUnit)
 
-export const cloneUnitPayload = <U extends DataUnit = DataUnit> (
+export const makePayloadUnit = <P extends Payload = Payload> (
+  name: string,
+  defaultPayload?: P,
+): PayloadUnit<P> => {
+  const unit = makeDataUnit(name)
+
+  Object.assign(unit, {
+    payloadUnit: symPayloadUnit,
+    get payload() {
+      return defaultPayload
+    },
+  })
+
+  return unit as PayloadUnit<P>
+}
+
+export const cloneUnitPayload = <
+  U extends DataUnit = DataUnit,
+  P extends Payload = Payload,
+> (
   original: U,
-  payload: Payload,
-): U & CloneUnit & PayloadUnit => {
+  payload: P,
+): U & CloneUnit & PayloadUnit<P> => {
   expectTrue(isPayload(payload))
   const clone = cloneUnit(original)
 
@@ -442,5 +472,54 @@ export const cloneUnitPayload = <U extends DataUnit = DataUnit> (
     },
   })
 
-  return clone as (U & CloneUnit & PayloadUnit)
+  return clone as (U & CloneUnit & PayloadUnit<P>)
+}
+
+const symListenerConnect = Symbol.for('DataUnit.ListenerConnect')
+
+export interface UnitListeners extends UnitListenerConnect {
+  (listener: UnitListener): (() => void),
+
+  symListenerConnect: typeof symListenerConnect,
+
+  /**
+   * Invokes the listener on the Data Unit of the same type:
+   * the exact instance may differ for cloned payload units.
+   */
+  invoke(unit: DataUnit): void,
+}
+
+export const asDataUnitListeners = (unit: DataUnit): UnitListeners | undefined => {
+  const l = unit.listen
+
+  if ('symListenerConnect' in l && l.symListenerConnect === symListenerConnect) {
+    return l as UnitListeners
+  }
+}
+
+export const makeUnitListeners = (unit: DataUnit): UnitListeners => {
+  const listeners: UnitListener[] = []
+
+  function Listener (listener: UnitListener) {
+    expectTrue (
+      !listeners.includes(listener),
+      () => `Attempt to register the same listener for Data Unit [${unit.type}]`,
+    )
+
+    listeners.push(listener)
+
+    return () => {
+      const index = listeners.indexOf(listener)
+
+      if (index >= 0) {
+        listeners.splice(index, 1)
+      }
+    }
+  }
+
+  const invoke = (u: DataUnit) => {
+    listeners.forEach(l => l(u))
+  }
+
+  return Object.assign(Listener, { symListenerConnect, invoke }) as UnitListeners
 }

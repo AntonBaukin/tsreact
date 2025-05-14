@@ -1,5 +1,5 @@
 import { composeReactBoot, withRoot } from 'sources/co/Root'
-import { routeObjects, withRouting } from 'sources/co/Routing'
+import { withRouting } from 'sources/co/Routing'
 import { withScreen } from 'sources/co/Screen'
 import { withStore } from './store'
 import { withApp, registerUnits } from './context'
@@ -12,7 +12,7 @@ registerUnits(units)
 export default composeReactBoot (
   Main,
   withStore,
-  withRouting(routeObjects(routes)),
+  withRouting(routes),
   withApp,
   withRoot,
   withScreen,

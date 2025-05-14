@@ -4,13 +4,13 @@ import { Text } from 'sources/co'
 import Test from './temp/Test'
 
 const List: FC = () => (
-  <div>
+  <>
     <Header size="2">
       <Text>Main.title</Text>
     </Header>
     <Text name="fox">Main.content</Text>
     <Test />
-  </div>
+  </>
 )
 
 export default List
