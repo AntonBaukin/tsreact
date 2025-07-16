@@ -7,7 +7,7 @@ export interface Config {
   defaultLang: string;
   globalLangVariable: string;
   iconsSpriteFile: string;
-  endpoints: Record<string, string>;
+  servers: Record<string, string>;
 }
 
 export const IS_DEV = (() => {

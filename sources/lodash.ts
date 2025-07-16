@@ -1,5 +1,6 @@
 import isArrayLike from 'lodash/isArrayLike'
 import isFunction from 'lodash/isFunction'
+import isBoolean from 'lodash/isBoolean'
 import isObject from 'lodash/isObject'
 import isString from 'lodash/isString'
 import isFinite from 'lodash/isFinite'
@@ -16,6 +17,7 @@ import cloneDeep from 'lodash/cloneDeep'
 export {
   isArrayLike,
   isFunction,
+  isBoolean,
   isObject,
   isString,
   isFinite,

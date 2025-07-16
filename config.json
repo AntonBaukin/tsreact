@@ -5,7 +5,7 @@
   "webNodeName": "app",
   "globalLangVariable": "APP_LANG",
   "iconsSpriteFile": "images/icons.svg",
-  "endpoints": {
-    "main": "/api"
+  "servers": {
+    "api": "http://localhost:8080/api"
   }
 }
