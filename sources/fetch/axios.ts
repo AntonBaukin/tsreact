@@ -1,5 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { get, isObject, isString } from 'sources/lodash'
+import { get, isBoolean, isObject, isString, isFinite, isNil } from 'sources/lodash'
 import { Payload } from 'sources/unit'
 import {
   Fetcher,
@@ -51,16 +51,30 @@ export const axiosFetcher =
       }
     }
 
-    const makeBody = (data: unknown): Body => {
-      if (isString(data)) {
+    const isContentType = (contentType: string, mime: string) =>
+      mime === contentType || contentType.startsWith(mime + ';')
+
+    const makeBody = (data: unknown, contentType: string, status: number): Body => {
+      if (
+        (status === 204 || status >= 300) &&
+        isString(data) &&
+        !data.length
+      ) {
+        return { type: 'null' }
+      }
+
+      if (
+        isString(data) ||
+        (!isNil(data) && isContentType(contentType, mimeText))
+      ) {
         return {
           type: 'text',
           mime: mimeText,
-          text: data,
+          text: String(data),
         }
       }
 
-      if (isObject(data)) {
+      if (isObject(data) || isFinite(data) || isBoolean(data)) {
         return {
           type: 'json',
           mime: mimeJson,
@@ -72,12 +86,18 @@ export const axiosFetcher =
     }
 
     const makeResponse = (response: unknown, error?: unknown): Response => {
+      const status = get(response, 'status', 503) as number
+      const headers = get(response, 'headers', {}) as Headers
+      const body = makeBody(get(response, 'data'), headers['content-type'] ?? '', status)
+      const doneAt = Date.now()
+      const success = !error
+
       const result: Response = {
-        success: !error,
-        status: get(response, 'status', 503) as number,
-        doneAt: Date.now(),
-        headers: get(response, 'headers', {}) as Headers,
-        body: makeBody(get(response, 'data')),
+        success,
+        status,
+        doneAt,
+        headers,
+        body,
       }
 
       if (error) {
@@ -91,13 +111,13 @@ export const axiosFetcher =
       return result
     }
 
-    const result = new Promise<Response>((resolve, reject) => {
+    const result = new Promise<Response>((resolve) => {
       axios(config)
-        .catch((error) => {
-          reject(makeResponse(get(error, 'response'), error))
-        })
         .then((response) => {
           resolve(makeResponse(response))
+        })
+        .catch((error) => {
+          resolve(makeResponse(get(error, 'response'), error))
         })
     })
 

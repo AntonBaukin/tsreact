@@ -1,8 +1,8 @@
 import { Payload } from 'sources/unit'
 
-export type Value = string | number | boolean
+export type Headers = Record<string, string>
 
-export type Headers = Record<string, Value>
+export type Value = string | number | boolean
 
 export type Query = Record<string, Value | Value[]>
 

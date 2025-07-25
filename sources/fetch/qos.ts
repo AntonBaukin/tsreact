@@ -25,7 +25,7 @@ export interface QoSConfig {
 
 export type QoSFallback = (
   request: Request,
-  error: unknown,
+  response: Response,
   fetch: Readonly<Fetch>,
   setAbort: (abort: Abort) => void,
 ) => Promise<Response>
@@ -79,8 +79,14 @@ export const qosFetcher = (
             }
 
             if (isRetryStatus(config, result.status)) {
-              // By raising error we go into retry attempts:
-              expectNever() // !: ERROR
+              return fallback(
+                request,
+                result,
+                fetch,
+                (a: Abort) => {
+                  abort = a
+                },
+              )
             }
           }
 
@@ -89,7 +95,7 @@ export const qosFetcher = (
         .catch(
           (error) => fallback(
             request,
-            error,
+            errorAsResponse(config, error),
             fetch,
             (a: Abort) => {
               abort = a
@@ -117,7 +123,7 @@ const isRetryStatus = (config: QoSConfig, status: number) => {
     return config.retryStatuses.includes(status)
   }
 
-  return status >= 400 // client or server errors only
+  return status > 400 // client or server errors only
 }
 
 export interface Backoff {
@@ -163,13 +169,15 @@ export interface QoSBackoffFeedback {
 export const qosFallbackWithBackoff = (
   backoffer: Backoffer = fibonacciBackoffer(),
   feedback?: (f: QoSBackoffFeedback) => void,
+  // Change (the same) request instance before a retry:
+  tune?: (r: Request) => void,
 ) => (config: QoSConfig) => (fetcher: Fetcher): QoSFallback => {
   expectTrue(config.retries >= 0)
   expectTrue(isNil(config.rtQoSReq) || config.rtQoSReq >= 0)
 
   return (
     request: Request,
-    errorInitial: unknown,
+    resultInitial: Response,
     { id }: Readonly<Fetch>,
     setAbort: (abort: Abort) => void,
   ) => new Promise<Response>((resolve, reject) => {
@@ -184,8 +192,8 @@ export const qosFallbackWithBackoff = (
     }
 
     const resolver = async () => {
-      let retry = 1
-      let error = errorInitial
+      let retry = 0
+      let result = resultInitial
       let retries = config.retries
       const backoffs: Backoff[] = []
 
@@ -204,9 +212,10 @@ export const qosFallbackWithBackoff = (
         retries = config.rtQoSReq
       }
 
-      fb?.('E', { error })
+      fb?.('E', { result, error: result.error })
+      retry = 1 // 0 — is for the initial log entry
 
-      while (!aborted && retries > 0) {
+      while (!aborted && retry <= retries) {
         const backoff = backoffer(backoffs, retry, request, config)
 
         if (backoff.delay <= 0) {
@@ -222,9 +231,7 @@ export const qosFallbackWithBackoff = (
           })
           break     //!: EXIT
         } else {
-          retry++
-          retries--
-          fb?.('B', { backoff })
+          fb?.('B', { backoff, request: undefined })
           backoffs.push(backoff)
         }
 
@@ -243,11 +250,11 @@ export const qosFallbackWithBackoff = (
           break     //!: EXIT
         }
 
-        let result: Response
-        fb?.('F')
-
-        // Assign current retry index 1..
+        // Assign current retry index 1.. & tune it
         request.retry = retry
+        tune?.(request)
+
+        fb?.('F')
 
         try {
           // Reuse the same id for the same request repeated:
@@ -264,8 +271,7 @@ export const qosFallbackWithBackoff = (
 
         if (result.error) {
           result.success = false
-          error = result.error
-          fb?.('E', { error })
+          fb?.('E', { result, error: result.error })
         }
 
         if (result.status === 0) {
@@ -279,15 +285,17 @@ export const qosFallbackWithBackoff = (
           return result   //!: RETURN
         }
 
-        if (!isRetryStatus(config, result.status)) {
-          fb?.('S', { result })
-          break           //!: EXIT
+        if (retry >= retries || !isRetryStatus(config, result.status)) {
+          fb?.('X', { result })
+          return result   //!: RETURN (the last failed result)
+        } else {
+          retry++
         }
       }
 
       // Return the result with the last error available:
-      fb?.('X', { error })
-      return errorAsResponse(config, error)
+      fb?.('X', { result })
+      return result
     }
 
     setAbort(abort)

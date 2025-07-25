@@ -1,8 +1,15 @@
 import { expectNotNil } from 'sources/asserts'
+import { cloneDeep } from 'sources/lodash'
+import {
+  Backoffer,
+  QoSBackoffFeedback,
+  qosFallbackWithBackoff,
+} from './qos'
 import {
   Abort,
   Body,
-  FetcherHOF, fetcherIdentityHOF,
+  FetcherHOF,
+  fetcherIdentityHOF,
   isBodyJson,
   isBodyText,
   mimeJson,
@@ -162,4 +169,21 @@ export const testSequence = (
   let id = 0
 
   return (r: TestRequest = {}) => fetcher(makeTestRequest(r), ++id)
+}
+
+export const fbFallbackWithFeedbackCollector = (
+  backoffer: Backoffer,
+  tune?: (r: Request) => void,
+) => {
+  const feedbacks: QoSBackoffFeedback[] = []
+
+  const fb = qosFallbackWithBackoff(
+    backoffer,
+    (feedback) => {
+      feedbacks.push(cloneDeep(feedback))
+    },
+    tune,
+  )
+
+  return { fb, feedbacks }
 }
