@@ -1,4 +1,6 @@
+import { isFunction } from 'sources/lodash'
 import { Payload } from 'sources/unit'
+import { TransformerClass } from 'sources/fetch/transformer'
 
 export type Headers = Record<string, string>
 
@@ -110,3 +112,35 @@ export interface Fetcher {
 export type FetcherHOF = (f: Fetcher) => Fetcher
 
 export const fetcherIdentityHOF = (f: Fetcher) => f
+
+export interface DataSource<D, A extends any[]> {
+  (...args: A): D
+}
+
+export const symTransform = Symbol.for('Transform')
+
+export interface Transform<D, S = any> {
+  (source: S): D
+
+  readonly isTransform: typeof symTransform,
+}
+
+export const isTransform = <D, S = any>(some: unknown): some is Transform<D, S> =>
+  isFunction(some) && (some as any).isTransform === symTransform
+
+export const asTransform = <D, S = any>(f: (source: S) => D): Transform<D, S> => {
+  Object.assign(f, { isTransform: symTransform })
+  return f as Transform<D, S>
+}
+
+export const asTransformArray = <D, S = any> (
+  f: (source: S) => D,
+): Transform<D[], S[]> => asTransform((source: S[]): D[] => {
+  const results: D[] = []
+
+  for (const item of source) {
+    results.push(f(item))
+  }
+
+  return results
+})
