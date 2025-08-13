@@ -3,7 +3,6 @@ import isFunction from 'lodash/isFunction'
 import isBoolean from 'lodash/isBoolean'
 import isObject from 'lodash/isObject'
 import isString from 'lodash/isString'
-import isFinite from 'lodash/isFinite'
 import isEqual from 'lodash/isEqual'
 import isEmpty from 'lodash/isEmpty'
 import isNil from 'lodash/isNil'
@@ -20,7 +19,6 @@ export {
   isBoolean,
   isObject,
   isString,
-  isFinite,
   isEqual,
   isEmpty,
   isNil,

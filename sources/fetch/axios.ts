@@ -1,5 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { get, isBoolean, isObject, isString, isFinite, isNil } from 'sources/lodash'
+import { get, isBoolean, isObject, isString, isNil } from 'sources/lodash'
 import { Payload } from 'sources/unit'
 import {
   Fetcher,
@@ -74,7 +74,7 @@ export const axiosFetcher =
         }
       }
 
-      if (isObject(data) || isFinite(data) || isBoolean(data)) {
+      if (isObject(data) || Number.isFinite(data) || isBoolean(data)) {
         return {
           type: 'json',
           mime: mimeJson,

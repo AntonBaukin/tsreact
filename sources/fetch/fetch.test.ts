@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals'
 import axios, { AxiosError } from 'axios'
 import express from 'express'
 import { expectNotNil, expectTrue } from 'sources/asserts'
-import { get, isString, isFinite, noop } from 'sources/lodash'
+import { get, isString, noop } from 'sources/lodash'
 import { Fetcher, QoS, Query, Headers, Request } from './types'
 import { axiosFetcher } from './axios'
 import { Backoff, fibonacciBackoffer, QoSConfig, qosDelays, qosFetcher } from './qos'
@@ -239,7 +239,7 @@ describe('express', () => {
 
   app.get('/abc', (req, res) => {
     const [a, b, c] = [Number(req.query.a), Number(req.query.b), Number(req.query.c)]
-    const x = (i: number) => isFinite(i) && Number.isInteger(i)
+    const x = (i: number) => Number.isFinite(i) && Number.isInteger(i)
 
     if (!x(a) || !x(b) || !x(c)) {
       res.status(400).end()
@@ -387,7 +387,7 @@ describe('express', () => {
   app.get('/retry', (req, res) => {
     const retry = Number(req.headers['retry'])
     const retries = Number(req.headers['retries'])
-    const x = (i: number) => isFinite(i) && Number.isInteger(i)
+    const x = (i: number) => Number.isFinite(i) && Number.isInteger(i)
 
     if (x(retry) && x(retries)) {
       if (retry >= retries) {

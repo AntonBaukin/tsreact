@@ -6,19 +6,37 @@ import {
   toTransform,
   Transformer,
 } from './transformer'
+import { asTransform } from 'sources/fetch/types'
 
-interface SimpleObject {
+interface Simple {
   a: string,
   b: number,
   i: number,
   c: boolean,
 }
 
+interface Nested {
+  x: number,
+  y: number,
+}
+
+interface Outer {
+  a: string,
+  u: Nested,
+  v: Nested | undefined,
+}
+
+interface Data {
+  a: string,
+  v: Nested[] | undefined,
+  i: number[] | undefined,
+}
+
 describe('transformer', () => {
   test('simpleManual', () => {
 
-    class SimpleTr extends Transformer<SimpleObject>
-      implements ITransformer<SimpleObject>
+    class SimpleTr extends Transformer<Simple>
+      implements ITransformer<Simple>
     {
       get a() {
         return this.$string('a')
@@ -50,7 +68,7 @@ describe('transformer', () => {
   })
 
   test('directAuto', () => {
-    class SimpleAutoTr extends AutoTransformer<SimpleObject> {
+    class SimpleAutoTr extends AutoTransformer<Simple> {
       readonly $auto = {
         a: [, this.$string],
         b: [, this.$number],
@@ -66,7 +84,7 @@ describe('transformer', () => {
   })
 
   test('autoTransform', () => {
-    const autoTr = autoTransform((self) => ({
+    const autoTr = autoTransform<Simple>((self) => ({
         a: [, self.$string],
         b: [, self.$number],
         i: [, self.$integer],
@@ -78,7 +96,7 @@ describe('transformer', () => {
   })
 
   test('withPath', () => {
-    const autoTr = autoTransform((self) => ({
+    const autoTr = autoTransform<Simple>((self) => ({
         a: ['x.a', self.$string],
         b: ['x.n.1', self.$number],
         i: [['x', 'y', 'i'], self.$integer],
@@ -88,5 +106,49 @@ describe('transformer', () => {
     const a = { x: { a: 'Aaa', n: [, 12.3], y: { i: 345 } }, flag: true }
     const b = { a: 'Aaa', b: 12.3, i: 345, c: true }
     expect(autoTr(a)).toStrictEqual(b)
+  })
+
+  test('subObject', () => {
+    const subTr = autoTransform<Nested>((self) => ({
+        x: [, self.$number],
+        y: [, self.$number],
+    }))
+
+    const outerTr = autoTransform<Outer>((self) => ({
+        a: [, self.$string],
+        u: [, self.$object(subTr)],
+        v: [, self.$objectOptional(subTr)],
+    }))
+
+    const a = { a: 'Aaa', u: { x: 0, y: 1 }, v: { x: 0.5, y: 10 } }
+    expect(outerTr(a)).toStrictEqual(a)
+
+    const b = { a: 'Bbb', u: { x: 10, y: 11 } }
+    expect(outerTr(b)).toStrictEqual(b)
+
+    const c = { a: 'Ccc' }
+    expect(() => outerTr(c)).toThrow('".u" is not an object: undefined')
+
+    const d = { a: 'Ddd', u: { x: -12, y: '11' } }
+    expect(() => outerTr(d)).toThrow('".y" is nil or is not a finite number: 11')
+  })
+
+  test('subArray', () => {
+    const subTr = autoTransform<Nested>((self) => ({
+        x: [, self.$number],
+        y: [, self.$number],
+    }))
+
+    const dataTr = autoTransform<Data>((self) => ({
+        a: [, self.$string],
+        v: [, self.$arrayOptional(subTr)],
+        i: [, self.$arrayOptional(asTransform(Number))],
+    }))
+
+    const a = { a: 'Data', v: [{ x: 1, y: 2 }, { x: 0.5, y: -1.5 }, { x: 10, y: 20 }] }
+    expect(dataTr(a)).toStrictEqual(a)
+
+    const b = { a: 'Vector', v: [{ x: 1, y: 2 }], i: [1, 2, 3, 4, 5] }
+    expect(dataTr(b)).toStrictEqual(b)
   })
 })

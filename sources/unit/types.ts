@@ -1,6 +1,6 @@
 import { Draft } from 'immer'
 import { UnknownAction } from 'redux'
-import { isArrayLike, isFunction, isObject, isString, isFinite } from 'sources/lodash'
+import { isArrayLike, isFunction, isObject, isString } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
 
 export type PayloadSimple = null | string | number | boolean
@@ -130,7 +130,7 @@ export const isPayload = (some: unknown): some is Payload => {
   const objects: any[] = []
 
   const check = (x: unknown) => {
-    if (x === null || isString(x) || isFinite(x) || x === true || x === false) {
+    if (x === null || isString(x) || Number.isFinite(x) || x === true || x === false) {
       return true
     }
 

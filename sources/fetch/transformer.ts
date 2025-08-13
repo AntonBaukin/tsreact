@@ -72,7 +72,7 @@ export abstract class Transformer<D extends {}, S = any>
     const v = this.$get(path)
 
     expectTrue(
-      isFinite(v),
+      Number.isFinite(v),
       () => this.$msgFailure(path, 'is nil or is not a finite number', v),
     )
 
@@ -91,7 +91,7 @@ export abstract class Transformer<D extends {}, S = any>
     }
 
     expectTrue(
-      isFinite(v),
+      Number.isFinite(v),
       () => this.$msgFailure(path, 'is not a finite number', v),
     )
 
@@ -102,7 +102,7 @@ export abstract class Transformer<D extends {}, S = any>
     const v = this.$get(path)
 
     expectTrue(
-      isFinite(v) && Number.isInteger(v),
+      Number.isFinite(v) && Number.isInteger(v),
       () => this.$msgFailure(path, 'is nil or is not an integer number', v),
     )
 
@@ -121,7 +121,7 @@ export abstract class Transformer<D extends {}, S = any>
     }
 
     expectTrue(
-      isFinite(v) && Number.isInteger(v),
+      Number.isFinite(v) && Number.isInteger(v),
       () => this.$msgFailure(path, 'is not an integer number', v),
     )
 
@@ -158,57 +158,71 @@ export abstract class Transformer<D extends {}, S = any>
     return v
   }
 
-  $objectOrNil<X extends {}>(
-    T: Transform<X> | TransformerClass<X, any>,
-    path: GetPath,
-  ): X | undefined | null {
-    const x = this.$get(path)
+  $objectOptional<X extends {}>(T: Transform<X> | TransformerClass<X, any>):
+    AutoGetter<D, X | undefined>
+  {
+    return function (path: GetPath) {
+      const x = this.$get(path)
 
-    if (isNil(x)) {
-      return x
-    }
-
-    if(isTransform<X>(T)) {
-      return T(x)
-    } else {
-      const t = new T(x)
-      t.$transform()
-      return t.$result
-    }
-  }
-
-  $object<X extends {}>(
-    T: Transform<X> | TransformerClass<X, any>,
-    path: GetPath,
-  ): X {
-    return expectNotNil(
-      this.$objectOrNil(T, path),
-      () => this.$msgFailure(path, 'is not an object', this.$get(path)),
-    )
-  }
-
-  $arrayOrNil<X extends {}>(
-    T: Transform<X> | TransformerClass<X, any>,
-    path: GetPath,
-  ): X[] | undefined | null {
-    const x = this.$get(path)
-
-    if (isNil(x)) {
-      return x
-    }
-
-    if (!Array.isArray(x)) {
-      expectNever(() => this.$msgFailure(path, 'is not an array', x))
-    } else {
-      if(isTransform<X>(T)) {
-        return x.map(T)
-      } else {
-        return x.map(i => {
-          const t = new T(i)
-          t.$transform()
-          return t.$result
-        })
+      if (isNil(x)) {
+        return undefined
       }
+
+      if(isTransform<X>(T)) {
+        return T(x)
+      } else {
+        const t = new T(x)
+        t.$transform()
+        return t.$result
+      }
+    }
+  }
+
+  $object<X extends {}>(T: Transform<X> | TransformerClass<X, any>): AutoGetter<D, X> {
+    const $o = this.$objectOptional(T)
+
+    return function (path: GetPath) {
+      return expectNotNil(
+        $o.call(this, path),
+        () => this.$msgFailure(path, 'is not an object', this.$get(path)),
+      )
+    }
+  }
+
+  $arrayOptional<X extends {}>(T: Transform<X> | TransformerClass<X, any>):
+    AutoGetter<D, X[] | undefined>
+  {
+    return function (path: GetPath) {
+      const x = this.$get(path)
+
+      if (isNil(x)) {
+        return undefined
+      }
+
+      if (!Array.isArray(x)) {
+        expectNever(() => this.$msgFailure(path, 'is not an array', x))
+      } else {
+        if(isTransform<X>(T)) {
+          return x.map(T)
+        } else {
+          return x.map(i => {
+            const t = new T(i)
+            t.$transform()
+            return t.$result
+          })
+        }
+      }
+    }
+  }
+
+  $array<X extends {}>(T: Transform<X> | TransformerClass<X, any>): AutoGetter<D, X[]> {
+    const $o = this.$arrayOptional(T)
+
+    return function (path: GetPath) {
+      return expectNotNil(
+        $o.call(this, path),
+        () => this.$msgFailure(path, 'is not an array', this.$get(path)),
+      )
     }
   }
 
@@ -278,13 +292,15 @@ export type TransformProps = Map<string, PropertyDescriptor>
 
 export type GetPath = string | number | (string | number)[]
 
-export type AutoGetter<D extends {}, K extends keyof D> = readonly [
+export type AutoGetter<D extends {}, X> = (this: Transformer<D>, path: GetPath) => X
+
+export type AutoGetPair<D extends {}, K extends keyof D> = readonly [
   undefined | null | GetPath,
-  ((this: AutoTransformer<D>, path: GetPath) => D[K]) | Transform<D>,
+  AutoGetter<D, D[K]> | Transform<D>,
 ]
 
 export type AutoTransforms <D extends {}> = {
-  readonly [K in keyof D]: null | AutoGetter<D, K>
+  readonly [K in keyof D]: null | AutoGetPair<D, K>
 }
 
 export abstract class AutoTransformer<D extends {}, S = any> extends Transformer<D, S>
@@ -292,13 +308,21 @@ export abstract class AutoTransformer<D extends {}, S = any> extends Transformer
   abstract readonly $auto: AutoTransforms<D>
 
   $transform() {
-    this.$autoExtendThis()
+    this.$autoExtendProto()
     super.$transform()
   }
 
-  protected $autoExtendThis() {
+  private $autoExtendProto() {
+    const proto = Object.getPrototypeOf(this)
+
+    if (!proto.$autoExtended) {
+      proto.$autoExtended = true
+      this.$autoExtend(proto)
+    }
+  }
+
+  protected $autoExtend(proto: any) {
     const keys = Object.keys(this.$auto) as Array<keyof D>
-    const self = this
 
     for (const k of keys) {
       const a = this.$auto[k]
@@ -307,23 +331,23 @@ export abstract class AutoTransformer<D extends {}, S = any> extends Transformer
         continue
       }
 
-      if (Object.getOwnPropertyDescriptor(self, k)) {
+      if (Object.getOwnPropertyDescriptor(proto, k)) {
         continue
       }
 
       const [path, getter] = a
 
       Object.defineProperty(
-        self,
+        proto,
         k,
         {
           enumerable: true,
           configurable: true,
-          get: () => {
+          get: function () {
             if (isTransform<D>(getter)) {
-              return getter(self.$get(path ?? (k as string)))
+              return getter(this.$get(path ?? (k as string)))
             } else {
-              return getter.call(self, path ?? (k as string))
+              return getter.call(this, path ?? (k as string))
             }
           },
         },
@@ -355,7 +379,7 @@ export const trNumber = asTransform<number>((x: any) => {
     x = Number(x)
   }
 
-  if (isFinite(x)) {
+  if (Number.isFinite(x)) {
     return x
   } else {
     expectNever(() => `${x} is not a number, or string number`)
@@ -367,7 +391,7 @@ export const trInteger = asTransform<number>((x: any) => {
     x = Number(x)
   }
 
-  if (isFinite(x) && Number.isInteger(x)) {
+  if (Number.isFinite(x) && Number.isInteger(x)) {
     return x
   } else {
     expectNever(() => `${x} is not an integer number, or string integer`)
