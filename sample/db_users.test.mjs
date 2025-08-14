@@ -1,13 +1,17 @@
 import { describe, expect, test } from '@jest/globals'
 import { readDbUsers, PersonsView } from './db_users.mjs'
 
-const dbUsers = await readDbUsers()
-
 const sUuid = (e) => e.uuid.substring(0, 8)
 const pName = (p) => `${p.lastName} ${p.firstName}`
 
 describe('dbUsers.persons', () => {
-  const pView = new PersonsView(dbUsers)
+  let dbUsers
+  let pView
+
+  beforeAll(async () => {
+    dbUsers = await readDbUsers()
+    pView = new PersonsView(dbUsers)
+  })
 
   test('allByName', () => {
     const persons = pView.selectByName()

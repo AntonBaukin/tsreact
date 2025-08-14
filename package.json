@@ -61,7 +61,6 @@
     "stream-json": "^1.9.1",
     "svg-spritemap-webpack-plugin": "^4.7.0",
     "terser-webpack-plugin": "^5.3.14",
-    "ts-jest": "^29.4.1",
     "ts-loader": "^9.5.2",
     "typescript": "^5.9.2",
     "update-browserslist-db": "^1.1.3",

@@ -1,8 +1,25 @@
 {
   "verbose": true,
   "moduleFileExtensions": ["js", "mjs"],
-  "testRegex": ".*\\.test\\.(js|mjs)$",
+  "testRegex": ".*\\.test\\.mjs$",
   "transform": {
-    "\\.mjs$": ["ts-jest", { "useESM": true }]
+    "\\.mjs$": [
+      "babel-jest",
+      {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
+            }
+          ]
+        ],
+        "plugins": [
+          "babel-plugin-transform-import-meta"
+        ]
+      }
+    ]
   }
 }

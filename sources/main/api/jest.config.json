@@ -1,7 +1,7 @@
 {
   "verbose": true,
   "moduleFileExtensions": ["js", "ts"],
-  "testRegex": ".*\\.test\\.(ts)$",
+  "testRegex": ".*\\.test\\.ts$",
   "moduleNameMapper": {
     "^sources/(.+)": "<rootDir>/../../$1"
   },
