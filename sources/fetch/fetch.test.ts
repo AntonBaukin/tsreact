@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals'
 import axios, { AxiosError } from 'axios'
 import express from 'express'
-import { expectNotNil, expectTrue } from 'sources/asserts'
+import { expectTrue } from 'sources/asserts'
 import { get, isString, noop } from 'sources/lodash'
-import { Fetcher, QoS, Query, Headers, Request } from './types'
+import { Fetcher, QoS, Query, Headers, Request, nullFetcher } from './types'
 import { axiosFetcher } from './axios'
 import { Backoff, fibonacciBackoffer, QoSConfig, qosDelays, qosFetcher } from './qos'
 import {
@@ -80,7 +80,7 @@ describe('fallback', () => {
   test('bypass', async () => {
     const { feedbacks, seq } = testQosFetcher(
       { timeout: 1, retries: 1 },
-      ({ id, text, response, request }) => {
+      ({ id, response, request }) => {
         expectTrue(id === 1)
         expectTrue(request.retry === undefined)
         response.text = 'Success!'
@@ -99,7 +99,7 @@ describe('fallback', () => {
   test('off', async () => {
     const { feedbacks, seq } = testQosFetcher(
       { timeout: 1, retries: 1 },
-      ({ id, text, response }) => {
+      ({ id, response }) => {
         expectTrue(id === 1)
         response.success = false
       },
@@ -124,7 +124,7 @@ describe('fallback', () => {
       method: expect.stringMatching(/^(GET|POST)$/),
       headers: expect.any(Object),
       query: expect.any(Object),
-      path: expect.stringMatching(/^[/]/),
+      path: expect.stringMatching(/^\//),
       qos: expect.stringMatching(/^(standard|required|off)$/),
       timeout: expect.any(Number),
     })
@@ -135,7 +135,7 @@ describe('fallback', () => {
   test('retryFailed', async () => {
     const { feedbacks, seq } = testQosFetcher(
       { timeout: 1, retries: 1 },
-      ({ id, text, response }) => {
+      ({ id, response }) => {
         expectTrue(id === 1)
         response.success = false
       },
@@ -164,7 +164,7 @@ describe('fallback', () => {
   test('retrySuccess', async () => {
     const { feedbacks, seq } = testQosFetcher(
       { timeout: 1, retries: 1 },
-      ({ id, text, response, request }) => {
+      ({ id, response, request }) => {
         expectTrue(id === 1)
         if (request.retry === 1) {
           response.success = true
@@ -196,33 +196,26 @@ describe('fallback', () => {
   })
 })
 
-describe('express', () => {
+export const makeExpress = () => {
   const app = express()
   let server: ReturnType<typeof app['listen']> | undefined
-  let baseFetcher: Fetcher | undefined
+  let resolvePort: ((p: number) => void) = noop
 
-  beforeAll(async () => {
-    let resolvePort: ((p: number) => void) = noop
+  const portPromise = new Promise<number>((resolve) => {
+    resolvePort = resolve
+  })
 
-    const portPromise = new Promise<number>((resolve) => {
-      resolvePort = resolve
-    })
-
+  const startExpress = async () => {
     server = app.listen(0, () => {
       resolvePort(get(server?.address(), 'port', 0))
     })
 
     const port = await portPromise
 
-    const axiosInstance = axios.create({
-      baseURL: `http://127.0.0.1:${port}`,
-      timeout: 50,
-    })
+    return { port }
+  }
 
-    baseFetcher = axiosFetcher(axiosInstance)
-  })
-
-  afterAll(async () => {
+  const stopExpress = async () => {
     if (server) {
       let shutdown = noop
       const shutdownPromise = new Promise((resolve) => {
@@ -235,6 +228,28 @@ describe('express', () => {
 
       await shutdownPromise
     }
+  }
+
+  return { app, startExpress, stopExpress }
+}
+
+describe('express', () => {
+  const { app, startExpress, stopExpress } = makeExpress()
+  let baseFetcher: Fetcher = nullFetcher
+
+  beforeAll(async () => {
+    const { port } = await startExpress()
+
+    const axiosInstance = axios.create({
+      baseURL: `http://127.0.0.1:${port}`,
+      timeout: 50,
+    })
+
+    baseFetcher = axiosFetcher(axiosInstance)
+  })
+
+  afterAll(async () => {
+    await stopExpress()
   })
 
   app.get('/abc', (req, res) => {
@@ -253,7 +268,7 @@ describe('express', () => {
     makeTestRequest({ path, query, qos })
 
   test('abc200', async () => {
-    const fetcher = expectNotNil(baseFetcher)
+    const fetcher = baseFetcher
     const request = reqGet('/abc', { a: 1, b: 2, c: 3 })
     const fetch = fetcher(request, 1)
 
@@ -271,7 +286,7 @@ describe('express', () => {
   })
 
   test('abc400', async () => {
-    const fetcher = expectNotNil(baseFetcher)
+    const fetcher = baseFetcher
     const request = reqGet('/abc', { a: 1, b: true, c: 3 })
     const fetch = fetcher(request, 1)
 
@@ -288,7 +303,7 @@ describe('express', () => {
   })
 
   test('204', async () => {
-    const fetcher = expectNotNil(baseFetcher)
+    const fetcher = baseFetcher
     const request = reqGet('/204')
     const fetch = fetcher(request, 1)
 
@@ -304,7 +319,7 @@ describe('express', () => {
   const testBackoffFetcher = (retries: number, tune?: (r: Request) => void) => {
     const { fb, feedbacks } = fbFallbackWithFeedbackCollector(fb50MsBackoffer(), tune)
     const makeQosFetcher = qosFetcher({ retries, timeout: 50 }, fb)
-    const fetcher = makeQosFetcher(expectNotNil(baseFetcher))
+    const fetcher = makeQosFetcher(baseFetcher)
 
     return { feedbacks, fetcher }
   }
@@ -369,7 +384,7 @@ describe('express', () => {
   })
 
   test('headers', async () => {
-    const fetcher = expectNotNil(baseFetcher)
+    const fetcher = baseFetcher
     const request = reqGetHeaders('/headers', { 'Test-Content': 'Stop pots' })
     const fetch = fetcher(request, 1)
 

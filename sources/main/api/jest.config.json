@@ -1,0 +1,48 @@
+{
+  "verbose": true,
+  "moduleFileExtensions": ["js", "ts"],
+  "testRegex": ".*\\.test\\.(ts)$",
+  "moduleNameMapper": {
+    "^sources/(.+)": "<rootDir>/../../$1"
+  },
+  "transform": {
+    "\\.ts$": [
+      "babel-jest",
+      {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
+            }
+          ],
+          [
+            "@babel/preset-typescript",
+            {}
+          ],
+          "@babel/preset-flow"
+        ]
+      }
+    ],
+    "\\.mjs$": [
+      "babel-jest",
+      {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "node": "current"
+              }
+            }
+          ]
+        ],
+        "plugins": [
+          "babel-plugin-transform-import-meta"
+        ]
+      }
+    ]
+  }
+}

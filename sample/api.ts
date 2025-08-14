@@ -1,5 +1,3 @@
-import { PersonsSortOrder } from "./db_users.api";
-
 export type Uuid = string
 
 export interface Entity {

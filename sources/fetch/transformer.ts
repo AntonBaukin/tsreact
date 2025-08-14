@@ -22,13 +22,13 @@ export type ITransformer <D extends {}> = {
  *
  * NOTE: each concrete class implements ITransformer<D>!
  */
-export abstract class Transformer<D extends {}, S = any>
+export abstract class Transformer<D extends {}>
 {
-  readonly $data: S
+  readonly $data: any
 
   readonly $result: D = {} as D
 
-  constructor(source: S) {
+  constructor(source: any) {
     this.$data = source
   }
 
@@ -158,7 +158,7 @@ export abstract class Transformer<D extends {}, S = any>
     return v
   }
 
-  $objectOptional<X extends {}>(T: Transform<X> | TransformerClass<X, any>):
+  $objectOptional<X extends {}>(T: Transform<X> | TransformerClass<X>):
     AutoGetter<D, X | undefined>
   {
     return function (path: GetPath) {
@@ -178,7 +178,7 @@ export abstract class Transformer<D extends {}, S = any>
     }
   }
 
-  $object<X extends {}>(T: Transform<X> | TransformerClass<X, any>): AutoGetter<D, X> {
+  $object<X extends {}>(T: Transform<X> | TransformerClass<X>): AutoGetter<D, X> {
     const $o = this.$objectOptional(T)
 
     return function (path: GetPath) {
@@ -189,7 +189,7 @@ export abstract class Transformer<D extends {}, S = any>
     }
   }
 
-  $arrayOptional<X extends {}>(T: Transform<X> | TransformerClass<X, any>):
+  $arrayOptional<X extends {}>(T: Transform<X> | TransformerClass<X>):
     AutoGetter<D, X[] | undefined>
   {
     return function (path: GetPath) {
@@ -215,7 +215,7 @@ export abstract class Transformer<D extends {}, S = any>
     }
   }
 
-  $array<X extends {}>(T: Transform<X> | TransformerClass<X, any>): AutoGetter<D, X[]> {
+  $array<X extends {}>(T: Transform<X> | TransformerClass<X>): AutoGetter<D, X[]> {
     const $o = this.$arrayOptional(T)
 
     return function (path: GetPath) {
@@ -286,7 +286,7 @@ export abstract class Transformer<D extends {}, S = any>
   }
 }
 
-export type TransformerClass<D extends {}, S> = new (source: S) => Transformer<D, S>
+export type TransformerClass<D extends {}> = new (source: any) => Transformer<D>
 
 export type TransformProps = Map<string, PropertyDescriptor>
 
@@ -303,7 +303,7 @@ export type AutoTransforms <D extends {}> = {
   readonly [K in keyof D]: null | AutoGetPair<D, K>
 }
 
-export abstract class AutoTransformer<D extends {}, S = any> extends Transformer<D, S>
+export abstract class AutoTransformer<D extends {}> extends Transformer<D>
 {
   abstract readonly $auto: AutoTransforms<D>
 
@@ -357,18 +357,18 @@ export abstract class AutoTransformer<D extends {}, S = any> extends Transformer
 }
 
 export const autoTransform = <D extends {}, S = any> (
-  makeAuto: (self: Transformer<D, S>) => AutoTransforms<D>,
-): Transform<D, S> => {
-  class LocalAutoTransformer extends AutoTransformer<D, S> {
+  makeAuto: (self: Transformer<D>) => AutoTransforms<D>,
+): Transform<D> => {
+  class LocalAutoTransformer extends AutoTransformer<D> {
     readonly $auto = makeAuto(this)
   }
 
   return toTransform(LocalAutoTransformer)
 }
 
-export const toTransform = <D extends {}, S = any> (
-  Class: TransformerClass<D, S>,
-): Transform<D, S> => asTransform((source: S): D => {
+export const toTransform = <D extends {}> (
+  Class: TransformerClass<D>,
+): Transform<D> => asTransform((source: any): D => {
   const tr = new Class(source)
   tr.$transform()
   return tr.$result

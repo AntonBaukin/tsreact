@@ -1,2 +1,5 @@
 export { axiosFetcher } from './axios'
 export { qosFetcher } from './qos'
+export { dataGet, dataPost } from './data'
+export { nullFetcher } from './types'
+export type { Fetcher } from './types'

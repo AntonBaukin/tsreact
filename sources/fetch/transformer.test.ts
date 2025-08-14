@@ -1,4 +1,5 @@
 import { describe, expect, test } from '@jest/globals'
+import { asTransform } from './types'
 import {
   autoTransform,
   AutoTransformer,
@@ -6,7 +7,6 @@ import {
   toTransform,
   Transformer,
 } from './transformer'
-import { asTransform } from 'sources/fetch/types'
 
 interface Simple {
   a: string,

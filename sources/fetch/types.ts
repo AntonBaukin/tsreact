@@ -1,6 +1,6 @@
-import { isFunction } from 'sources/lodash'
+import { expectTrue } from 'sources/asserts'
+import { isArrayLike, isFunction, noop } from 'sources/lodash'
 import { Payload } from 'sources/unit'
-import { TransformerClass } from 'sources/fetch/transformer'
 
 export type Headers = Record<string, string>
 
@@ -109,38 +109,84 @@ export interface Fetcher {
   (request: Request, id?: number): Fetch,
 }
 
+export const nullFetcher: Fetcher = (request: Request, id?: number) => ({
+  id: id ?? nextFetchId(),
+  sentAt: Date.now(),
+  request,
+  abort: noop,
+  result: Promise.resolve({
+    success: false,
+    status: 501,
+    doneAt: Date.now(),
+    headers: {},
+    body: { type: 'null' },
+  }),
+})
+
 export type FetcherHOF = (f: Fetcher) => Fetcher
 
 export const fetcherIdentityHOF = (f: Fetcher) => f
 
-export interface DataSource<D, A extends any[]> {
-  (...args: A): D
-}
-
 export const symTransform = Symbol.for('Transform')
 
-export interface Transform<D, S = any> {
-  (source: S): D
+export interface Transform<D> {
+  (source: any): D
 
   readonly isTransform: typeof symTransform,
 }
 
-export const isTransform = <D, S = any>(some: unknown): some is Transform<D, S> =>
+export const isTransform = <D>(some: unknown): some is Transform<D> =>
   isFunction(some) && (some as any).isTransform === symTransform
 
-export const asTransform = <D, S = any>(f: (source: S) => D): Transform<D, S> => {
+export const asTransform = <D>(f: (source: any) => D): Transform<D> => {
   Object.assign(f, { isTransform: symTransform })
-  return f as Transform<D, S>
+  return f as Transform<D>
 }
 
-export const asTransformArray = <D, S = any> (
-  f: (source: S) => D,
-): Transform<D[], S[]> => asTransform((source: S[]): D[] => {
+export const asTransformArray = <D> (
+  f: (source: any) => D,
+): Transform<D[]> => asTransform((source: any): D[] => {
   const results: D[] = []
 
+  expectTrue(isArrayLike(source))
   for (const item of source) {
     results.push(f(item))
   }
 
   return results
 })
+
+export const symDataSource = Symbol.for('DataSource')
+
+export interface DataResultBase {
+  success: boolean,
+  headers: Headers,
+}
+
+export interface DataSuccess<D> extends DataResultBase {
+  success: true,
+  data: D,
+}
+
+export interface DataError extends DataResultBase {
+  success: false,
+  aborted?: any,
+  error?: unknown,
+}
+
+export type DataResult<D> = DataSuccess<D> | DataError
+
+export interface PendingData<D> {
+  result: Promise<DataResult<D>>,
+  abort?: Abort,
+}
+
+export interface DataSource<D, A extends any[]> {
+  (...args: A): PendingData<D>
+
+  readonly dataSource: typeof symDataSource
+}
+
+export const isDataSource = <D, A extends any[]>(some: unknown):
+  some is DataSource<D, A> =>
+    isFunction(some) && (some as any).dataSource === symDataSource
