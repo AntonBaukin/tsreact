@@ -53,11 +53,11 @@ export abstract class Transformer<D extends {}>
     return s
   }
 
-  $stringOrNil(path: GetPath): string | undefined | null {
+  $stringOptional(path: GetPath): string | undefined {
     const s = this.$get(path)
 
     if (isNil(s)) {
-      return s
+      return undefined
     }
 
     expectTrue(
@@ -79,11 +79,11 @@ export abstract class Transformer<D extends {}>
     return v
   }
 
-  $numberOrNil(path: GetPath): number | undefined | null {
+  $numberOptional(path: GetPath): number | undefined {
     let v = this.$get(path)
 
     if (isNil(v)) {
-      return v
+      return undefined
     }
 
     if (isString(v)) {
@@ -109,11 +109,11 @@ export abstract class Transformer<D extends {}>
     return v
   }
 
-  $integerOrNil(path: GetPath): number | undefined | null {
+  $integerOptional(path: GetPath): number | undefined {
     let v = this.$get(path)
 
     if (isNil(v)) {
-      return v
+      return undefined
     }
 
     if (isString(v)) {
@@ -139,11 +139,11 @@ export abstract class Transformer<D extends {}>
     return v
   }
 
-  $booleanOrNil(path: GetPath): boolean | undefined | null {
+  $booleanOptional(path: GetPath): boolean | undefined {
     let v = this.$get(path)
 
     if (isNil(v)) {
-      return v
+      return undefined
     }
 
     if (isString(v)) {
@@ -299,8 +299,25 @@ export type AutoGetPair<D extends {}, K extends keyof D> = readonly [
   AutoGetter<D, D[K]> | Transform<D>,
 ]
 
-export type AutoTransforms <D extends {}> = {
+export type AutoTransforms<D extends {}> = {
   readonly [K in keyof D]: null | AutoGetPair<D, K>
+}
+
+export type SimpleAutoTransforms<D extends {}> = {
+  readonly [K in keyof D]: null | AutoGetter<D, D[K]> | Transform<D>
+}
+
+export const autoTransformsSimple = <D extends {}> (
+  simple: SimpleAutoTransforms<D>,
+): AutoTransforms<D> => {
+  const keys = Object.keys(simple) as Array<keyof D>
+  const result: any = {}
+
+  for (const k of keys) {
+    result[k] = [null, simple[k]]
+  }
+
+  return result
 }
 
 export abstract class AutoTransformer<D extends {}> extends Transformer<D>
@@ -356,7 +373,7 @@ export abstract class AutoTransformer<D extends {}> extends Transformer<D>
   }
 }
 
-export const autoTransform = <D extends {}, S = any> (
+export const autoTransform = <D extends {}> (
   makeAuto: (self: Transformer<D>) => AutoTransforms<D>,
 ): Transform<D> => {
   class LocalAutoTransformer extends AutoTransformer<D> {
@@ -365,6 +382,10 @@ export const autoTransform = <D extends {}, S = any> (
 
   return toTransform(LocalAutoTransformer)
 }
+
+export const autoTransformSimple = <D extends {}> (
+  makeAutoSimple: (self: Transformer<D>) => SimpleAutoTransforms<D>,
+) => autoTransform((self: Transformer<D>) => autoTransformsSimple(makeAutoSimple(self)))
 
 export const toTransform = <D extends {}> (
   Class: TransformerClass<D>,

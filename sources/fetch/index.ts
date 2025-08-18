@@ -1,5 +1,6 @@
 export { axiosFetcher } from './axios'
 export { qosFetcher } from './qos'
-export { dataGet, dataPost } from './data'
-export { nullFetcher } from './types'
+export { dataGet, dataPost, dataSuccess } from './data'
+export { asTransform, asTransformArray, nullFetcher } from './types'
 export type { Fetcher } from './types'
+export { autoTransform, autoTransformSimple } from './transformer'

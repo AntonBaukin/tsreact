@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals'
 import { asTransform } from './types'
 import {
   autoTransform,
+  autoTransformSimple,
   AutoTransformer,
   ITransformer,
   toTransform,
@@ -84,11 +85,11 @@ describe('transformer', () => {
   })
 
   test('autoTransform', () => {
-    const autoTr = autoTransform<Simple>((self) => ({
-        a: [, self.$string],
-        b: [, self.$number],
-        i: [, self.$integer],
-        c: [, self.$boolean],
+    const autoTr = autoTransformSimple<Simple>((self) => ({
+        a: self.$string,
+        b: self.$number,
+        i: self.$integer,
+        c: self.$boolean,
       }))
 
     const a = { a: 'Aaa', b: 12.3, i: 345, c: true }
@@ -109,15 +110,15 @@ describe('transformer', () => {
   })
 
   test('subObject', () => {
-    const subTr = autoTransform<Nested>((self) => ({
-        x: [, self.$number],
-        y: [, self.$number],
+    const subTr = autoTransformSimple<Nested>((self) => ({
+        x: self.$number,
+        y: self.$number,
     }))
 
-    const outerTr = autoTransform<Outer>((self) => ({
-        a: [, self.$string],
-        u: [, self.$object(subTr)],
-        v: [, self.$objectOptional(subTr)],
+    const outerTr = autoTransformSimple<Outer>((self) => ({
+        a: self.$string,
+        u: self.$object(subTr),
+        v: self.$objectOptional(subTr),
     }))
 
     const a = { a: 'Aaa', u: { x: 0, y: 1 }, v: { x: 0.5, y: 10 } }
@@ -134,15 +135,15 @@ describe('transformer', () => {
   })
 
   test('subArray', () => {
-    const subTr = autoTransform<Nested>((self) => ({
-        x: [, self.$number],
-        y: [, self.$number],
+    const subTr = autoTransformSimple<Nested>((self) => ({
+        x: self.$number,
+        y: self.$number,
     }))
 
-    const dataTr = autoTransform<Data>((self) => ({
-        a: [, self.$string],
-        v: [, self.$arrayOptional(subTr)],
-        i: [, self.$arrayOptional(asTransform(Number))],
+    const dataTr = autoTransformSimple<Data>((self) => ({
+        a: self.$string,
+        v: self.$arrayOptional(subTr),
+        i: self.$arrayOptional(asTransform(Number)),
     }))
 
     const a = { a: 'Data', v: [{ x: 1, y: 2 }, { x: 0.5, y: -1.5 }, { x: 10, y: 20 }] }

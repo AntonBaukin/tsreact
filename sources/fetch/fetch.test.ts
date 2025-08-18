@@ -1,13 +1,13 @@
 import { describe, expect, test } from '@jest/globals'
 import axios, { AxiosError } from 'axios'
-import express from 'express'
 import { expectTrue } from 'sources/asserts'
-import { get, isString, noop } from 'sources/lodash'
+import { isString } from 'sources/lodash'
 import { Fetcher, QoS, Query, Headers, Request, nullFetcher } from './types'
 import { axiosFetcher } from './axios'
 import { Backoff, fibonacciBackoffer, QoSConfig, qosDelays, qosFetcher } from './qos'
 import {
   fbFallbackWithFeedbackCollector,
+  makeExpress,
   makeTestRequest,
   ResponderClause,
   testSequence,
@@ -195,43 +195,6 @@ describe('fallback', () => {
     ])
   })
 })
-
-export const makeExpress = () => {
-  const app = express()
-  let server: ReturnType<typeof app['listen']> | undefined
-  let resolvePort: ((p: number) => void) = noop
-
-  const portPromise = new Promise<number>((resolve) => {
-    resolvePort = resolve
-  })
-
-  const startExpress = async () => {
-    server = app.listen(0, () => {
-      resolvePort(get(server?.address(), 'port', 0))
-    })
-
-    const port = await portPromise
-
-    return { port }
-  }
-
-  const stopExpress = async () => {
-    if (server) {
-      let shutdown = noop
-      const shutdownPromise = new Promise((resolve) => {
-        shutdown = resolve
-      })
-
-      server.close(() => {
-        shutdown()
-      })
-
-      await shutdownPromise
-    }
-  }
-
-  return { app, startExpress, stopExpress }
-}
 
 describe('express', () => {
   const { app, startExpress, stopExpress } = makeExpress()

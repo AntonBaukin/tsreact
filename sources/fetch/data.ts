@@ -1,8 +1,7 @@
 import {
   Body,
-  BodyType,
   DataResult,
-  DataSource,
+  DataSource, DataSuccess,
   Fetcher,
   Headers,
   isBodyJson,
@@ -121,3 +120,16 @@ export const dataPost = <D, A extends any[]> (
     ...makeOptions?.(...args),
   }),
 )
+
+export const dataSuccess = <D>(result: Promise<DataResult<D>>): Promise<DataSuccess<D>> =>
+  new Promise<DataSuccess<D>>((resolve, reject) => {
+    result
+      .then(dr => {
+        if (dr.success) {
+          resolve(dr)
+        } else {
+          reject(dr)
+        }
+      })
+      .catch(reject)
+  })

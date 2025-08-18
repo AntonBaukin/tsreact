@@ -1,10 +1,12 @@
 import { describe, expect, test } from '@jest/globals'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import express from 'express'
-import { axiosFetcher, Fetcher, nullFetcher } from 'sources/fetch'
-import { makeExpress } from 'sources/fetch/fetch.test'
+import { axiosFetcher, dataSuccess, Fetcher, nullFetcher } from 'sources/fetch'
+import { makeExpress } from 'sources/fetch/base.test'
 import { PersonsView, readDbUsers } from '../../../sample/db_users.mjs'
 import dbUsersRouter from '../../../sample/db_users.router.mjs'
+import makeDataSources from './data'
+import { Person } from './types'
 
 describe('api', () => {
   const { app, startExpress, stopExpress } = makeExpress()
@@ -33,7 +35,19 @@ describe('api', () => {
     await stopExpress()
   })
 
-  test('getAllPersons', () => {
+  const personName = (p: Person) => `${p.lastName} ${p.firstName}`
 
+  test('getAllPersons', async () => {
+    const { personsAll } = makeDataSources(fetcher)
+    const { result } = personsAll({ offset: 0, limit: 4, sort: 'name', order: 'asc' })
+    const { success, data: persons, headers } = await dataSuccess(result)
+
+    expect(success).toBeTruthy()
+
+    expect(persons.map(personName)).toStrictEqual([
+      'Allison Amiyah', 'Barron Clay', 'Bartlett Morgan', 'Barton Laila'
+    ])
+
+    expect(Number(headers['x-total-count'])).toStrictEqual(100)
   })
 })

@@ -1,5 +1,6 @@
+import express from 'express'
 import { expectNotNil } from 'sources/asserts'
-import { cloneDeep } from 'sources/lodash'
+import { cloneDeep, get, noop } from 'sources/lodash'
 import {
   Backoffer,
   QoSBackoffFeedback,
@@ -186,4 +187,41 @@ export const fbFallbackWithFeedbackCollector = (
   )
 
   return { fb, feedbacks }
+}
+
+export const makeExpress = () => {
+  const app = express()
+  let server: ReturnType<typeof app['listen']> | undefined
+  let resolvePort: ((p: number) => void) = noop
+
+  const portPromise = new Promise<number>((resolve) => {
+    resolvePort = resolve
+  })
+
+  const startExpress = async () => {
+    server = app.listen(0, () => {
+      resolvePort(get(server?.address(), 'port', 0))
+    })
+
+    const port = await portPromise
+
+    return { port }
+  }
+
+  const stopExpress = async () => {
+    if (server) {
+      let shutdown = noop
+      const shutdownPromise = new Promise((resolve) => {
+        shutdown = resolve
+      })
+
+      server.close(() => {
+        shutdown()
+      })
+
+      await shutdownPromise
+    }
+  }
+
+  return { app, startExpress, stopExpress }
 }
