@@ -66,8 +66,24 @@ export interface BodyText extends BodyBase {
 export type Body = BodyNull | BodyJson | BodyText
 
 export const isBodyNull = (b: Body): b is BodyNull => b.type === 'null'
+
+export const bodyNull = (): BodyNull => (bodyNull())
+
 export const isBodyJson = (b: Body): b is BodyJson => b.type === 'json'
+
+export const bodyJson = <J extends {}>(json: J): BodyJson => ({
+  type: 'json',
+  mime: mimeJson,
+  json,
+})
+
 export const isBodyText = (b: Body): b is BodyText => b.type === 'text'
+
+export const bodyText = (text: string): BodyText => ({
+  type: 'text',
+  mime: mimeText,
+  text,
+})
 
 export interface PostBase extends RequestBase {
   body: Body,
@@ -119,7 +135,7 @@ export const nullFetcher: Fetcher = (request: Request, id?: number) => ({
     status: 501,
     doneAt: Date.now(),
     headers: {},
-    body: { type: 'null' },
+    body: bodyNull(),
   }),
 })
 
@@ -138,10 +154,8 @@ export interface Transform<D> {
 export const isTransform = <D>(some: unknown): some is Transform<D> =>
   isFunction(some) && (some as any).isTransform === symTransform
 
-export const asTransform = <D>(f: (source: any) => D): Transform<D> => {
-  Object.assign(f, { isTransform: symTransform })
-  return f as Transform<D>
-}
+export const asTransform = <D>(f: (source: any) => D): Transform<D> =>
+  Object.assign(f, { isTransform: symTransform }) as Transform<D>
 
 export const asTransformArray = <D> (
   f: (source: any) => D,
@@ -178,7 +192,8 @@ export type DataResult<D> = DataSuccess<D> | DataError
 
 export interface PendingData<D> {
   result: Promise<DataResult<D>>,
-  abort?: Abort,
+  request: Request,
+  abort: Abort,
 }
 
 export interface DataSource<D, A extends any[]> {
@@ -186,6 +201,11 @@ export interface DataSource<D, A extends any[]> {
 
   readonly dataSource: typeof symDataSource
 }
+
+export const asDataSource = <D, A extends any[]>(
+  ds: (...args: A) => PendingData<D>,
+): DataSource<D, A> =>
+  Object.assign(ds, { dataSource: symDataSource }) as DataSource<D, A>
 
 export const isDataSource = <D, A extends any[]>(some: unknown):
   some is DataSource<D, A> =>

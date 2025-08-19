@@ -1,4 +1,12 @@
-import { CountryCode, Date, Email, Entity, Phone, SortOrder, Sorted, Slice } from './api'
+import {
+  BodyRange,
+  CountryCode,
+  Date,
+  Email,
+  Entity,
+  Phone,
+  QueryRange,
+} from './api'
 
 export type Gender = 'MALE' | 'FEMALE'
 
@@ -14,16 +22,15 @@ export interface Person extends Entity {
 
 export type PersonsSortOrder = 'name' | 'dob'
 
-export interface GetAllPersons extends Slice, Sorted<PersonsSortOrder> {
-  years?: number[],
-  name?: string,
-}
+export type PersonsQueryRange = QueryRange<PersonsSortOrder>
 
 export interface SearchPersons {
   years?: number[],
   name?: string,
 }
 
-export interface PostSearchPersons extends Slice, Sorted<PersonsSortOrder> {
-  body: SearchPersons,
-}
+export type PersonsSearchRange = BodyRange <
+  PersonsSortOrder,
+  PersonsQueryRange,
+  SearchPersons
+>

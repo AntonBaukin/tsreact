@@ -1,7 +1,10 @@
+import { expectNotNil } from 'sources/asserts'
 import {
+  asDataSource,
   Body,
   DataResult,
-  DataSource, DataSuccess,
+  DataSource,
+  DataSuccess,
   Fetcher,
   Headers,
   isBodyJson,
@@ -10,9 +13,21 @@ import {
   QoS,
   Query,
   Request,
-  symDataSource,
   Transform,
 } from './types'
+
+export const dataSourceSwitch = <D, A extends any[], K extends string> (
+  sources: Record<K, DataSource<D, A>>,
+  selector: (...args: A) => K,
+): DataSource<D, A> => {
+  const dataSource = (...args: A) => {
+    const caseKey = selector(...args)
+    const source = sources[caseKey] as DataSource<D, A> | undefined
+    return expectNotNil(source)(...args)
+  }
+
+  return asDataSource<D, A>(dataSource)
+}
 
 export const dataFetcher = <D, A extends any[]> (
   fetcher: Fetcher,
@@ -69,13 +84,10 @@ export const dataFetcher = <D, A extends any[]> (
         } as const
       })
 
-    return { result, abort: fetch.abort }
+    return { result, abort: fetch.abort, request }
   }
 
-  return Object.assign(
-    dataSource,
-    { dataSource: symDataSource },
-  ) as DataSource<D, A>
+  return asDataSource<D, A>(dataSource)
 }
 
 export const dataGet = <D, A extends any[]> (
@@ -114,7 +126,7 @@ export const dataPost = <D, A extends any[]> (
   fetcher,
   transform,
   (...args: A) => ({
-    method: 'GET',
+    method: 'POST',
     path,
     body: makeBody(...args),
     ...makeOptions?.(...args),

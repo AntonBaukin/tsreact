@@ -1,4 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig } from 'axios'
+import { expectNever } from 'sources/asserts'
 import { get, isBoolean, isObject, isString, isNil } from 'sources/lodash'
 import { Payload } from 'sources/unit'
 import {
@@ -11,6 +12,7 @@ import {
   Abort,
   mimeJson,
   mimeText,
+  bodyNull,
 } from './types'
 
 export const axiosFetcher =
@@ -51,6 +53,37 @@ export const axiosFetcher =
       }
     }
 
+    if ('body' in request) {
+      const { body } = request
+
+      if (body.mime) {
+        config.headers = {
+          ...config.headers,
+          'content-type': body.mime,
+        }
+      }
+
+      switch (body.type) {
+        case 'text': {
+          config.data = body.text
+          break
+        }
+
+        case 'json': {
+          config.data = body.json
+          break
+        }
+
+        case 'null': {
+          break
+        }
+
+        default: {
+          expectNever()
+        }
+      }
+    }
+
     const isContentType = (contentType: string, mime: string) =>
       mime === contentType || contentType.startsWith(mime + ';')
 
@@ -60,7 +93,7 @@ export const axiosFetcher =
         isString(data) &&
         !data.length
       ) {
-        return { type: 'null' }
+        return bodyNull()
       }
 
       if (
@@ -82,7 +115,7 @@ export const axiosFetcher =
         }
       }
 
-      return { type: 'null' }
+      return bodyNull()
     }
 
     const makeResponse = (response: unknown, error?: unknown): Response => {
@@ -102,6 +135,7 @@ export const axiosFetcher =
 
       if (error) {
         result.error = error
+        console.log('E>', error)
       }
 
       if (aborted) {

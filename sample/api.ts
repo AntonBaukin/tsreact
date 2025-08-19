@@ -20,6 +20,15 @@ export interface Slice {
   limit?: Limit,
 }
 
+export type QueryRange<SortBy> = Required<Sorted<SortBy>> & Required<Slice>
+
+export interface QueryAndBody<Q, B> {
+  query: Q,
+  body: B,
+}
+
+export type BodyRange<SortBy, Q extends QueryRange<SortBy>, B> = QueryAndBody<Q, B>
+
 /**
  * Date in ISO format: 'YYYY-DD-MM'.
  */

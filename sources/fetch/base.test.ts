@@ -47,7 +47,7 @@ const testFetcher = (responder: TestResponder) => (request: Request, extId?: num
         error,
         doneAt: 0,
         headers: {},
-        body: { type: 'null' },
+        body: bodyNull(),
       }
 
       if (aborted) {
@@ -85,7 +85,7 @@ const makeTestBody = (b: TestBody): Body => {
     return { type: 'text', mime: mimeText, text: b.text }
   }
 
-  return { type: 'null' }
+  return bodyNull()
 }
 
 const makeTestResponse = (r: ResponderResponse): Response => ({
@@ -113,7 +113,7 @@ export type ResponderClause = (block: ResponderBlock) => void
 
 const testResponder = (clause: ResponderClause): TestResponder =>
   (id: number, request: Request, abort: Abort) => {
-    const body: Body = 'body' in request ? request.body : { type: 'null' }
+    const body: Body = 'body' in request ? request.body : bodyNull()
     const json = isBodyJson(body) ? body.json : {}
     const text = isBodyText(body) ? body.text : ''
     const response: ResponderResponse = {}
@@ -135,7 +135,7 @@ const testResponder = (clause: ResponderClause): TestResponder =>
         error,
         doneAt: 0,
         headers: {},
-        body: { type: 'null' },
+        body: bodyNull(),
       })
     }
 

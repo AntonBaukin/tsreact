@@ -2,8 +2,8 @@ import { describe, expect, test } from '@jest/globals'
 import axios, { AxiosError } from 'axios'
 import { expectTrue } from 'sources/asserts'
 import { isString } from 'sources/lodash'
-import { Fetcher, QoS, Query, Headers, Request, nullFetcher } from './types'
 import { axiosFetcher } from './axios'
+import { Fetcher, QoS, Query, Headers, Request, nullFetcher, bodyNull } from './types'
 import { Backoff, fibonacciBackoffer, QoSConfig, qosDelays, qosFetcher } from './qos'
 import {
   fbFallbackWithFeedbackCollector,
@@ -37,7 +37,7 @@ describe('fetch', () => {
       status: 503,
       success: false,
       error: 'Hoops :(',
-      body: { type: 'null' },
+      body: bodyNull(),
     })
   })
 })
@@ -110,7 +110,7 @@ describe('fallback', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 503,
       success: false,
-      body: { type: 'null' }
+      body: bodyNull()
     })
 
     expect(fetch.request.retry).toBeUndefined()
@@ -146,7 +146,7 @@ describe('fallback', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 503,
       success: false,
-      body: { type: 'null' }
+      body: bodyNull()
     })
 
     expect(fetch.request.retry).toBe(1)
@@ -256,7 +256,7 @@ describe('express', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 400,
       success: false,
-      body: { type: 'null' },
+      body: bodyNull(),
       error: expect.any(AxiosError),
     })
   })
@@ -273,7 +273,7 @@ describe('express', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 204,
       success: true,
-      body: { type: 'null' },
+      body: bodyNull(),
     })
   })
 
@@ -309,7 +309,7 @@ describe('express', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 400,
       success: false,
-      body: { type: 'null' },
+      body: bodyNull(),
       error: expect.any(AxiosError),
     })
 
@@ -324,7 +324,7 @@ describe('express', () => {
     await expect(fetch.result).resolves.toMatchObject({
       status: 400,
       success: false,
-      body: { type: 'null' },
+      body: bodyNull(),
       error: expect.any(AxiosError),
     })
 

@@ -1,6 +1,15 @@
-import { expectTrue, expectNever } from 'sources/asserts'
+import { expectTrue } from 'sources/asserts'
 import { isNil, noop } from 'sources/lodash'
-import { Abort, Fetch, Fetcher, FetcherHOF, QoS, Request, Response } from './types'
+import {
+  Abort,
+  bodyNull,
+  Fetch,
+  Fetcher,
+  FetcherHOF,
+  QoS,
+  Request,
+  Response,
+} from './types'
 
 export interface QoSConfig {
   // Default timeout for a request. Note, that zero timeout,
@@ -309,7 +318,7 @@ const errorAsResponse = (config: QoSConfig, error: unknown): Response => ({
   error,
   doneAt: Date.now(),
   headers: {},
-  body: { type: 'null' },
+  body: bodyNull(),
 })
 
 export type QosDelays = Record<QoS, number>
