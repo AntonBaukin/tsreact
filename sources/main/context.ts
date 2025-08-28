@@ -1,5 +1,6 @@
 import { appLinker, makeAppContext } from 'sources/app'
 import { makeUnitsRegistry, unitUtilities } from 'sources/unit'
+import { fetchUnitUnitilties } from 'sources/fetch'
 import { getStore, addMiddleware, installReducer } from './store/create'
 
 const appContext = makeAppContext(getStore)
@@ -10,13 +11,19 @@ const registerUnits = registry.register.bind(registry)
 addMiddleware(registry.middleware)
 installReducer(registry.reducer)
 
+const uu = unitUtilities(appContext)
+
 const {
   defineUnit,
   defineOnlyUnit,
   defineGlobalUnit,
   defineSliceUnit,
   defineOwnUnit,
-} = unitUtilities(appContext)
+} = uu
+
+const {
+  defineFetchUnit,
+} = fetchUnitUnitilties(appContext, uu)
 
 export {
   withApp,
@@ -27,4 +34,5 @@ export {
   defineGlobalUnit,
   defineSliceUnit,
   defineOwnUnit,
+  defineFetchUnit,
 }

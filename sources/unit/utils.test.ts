@@ -1,97 +1,69 @@
 import { UnknownAction } from 'redux'
-import { expect } from '@jest/globals'
-import { DispatchBase, GetStore, makeAppContext, StateBase } from 'sources/app'
-import { expectNever } from 'sources/asserts'
-import { isString, get } from 'sources/lodash'
-import { DataUnit, isDataUnit, isPayload } from './types'
+import { configureStore, createDynamicMiddleware } from '@reduxjs/toolkit'
+import { deepDiff } from 'sources/lodash'
+import { GetStore, makeAppContext } from 'sources/app'
+import { dynamicReducer, ReduceLogger } from 'sources/unit/utils'
 import { makeUnitsRegistry } from './registry'
-import { makeMiddleware } from './middleware'
-import { cloneUnitPayload, makePlainUnit, unitUtilities } from './utils'
+import { unitUtilities } from './utils'
 
-export type ActionLogger = (unit: DataUnit | string, payload?: unknown) => void
-
-export const collectingLogger = () => {
-  const units: DataUnit[] = []
-
-  const log: ActionLogger = (unit: DataUnit | string, payload?: unknown) => {
-    if (isDataUnit(unit)) {
-      units.push(unit)
-    } else {
-      const plain = makePlainUnit(unit)
-
-      if (payload) {
-        units.push(plain)
-      } else if (isPayload(payload)) {
-        units.push(cloneUnitPayload(plain, payload))
-      } else {
-        expectNever()
-      }
-    }
-  }
-
-  return { log, units }
+export interface ActionDiff extends UnknownAction {
+  diff?: any,
 }
 
-export const makeTestRegistry = (log: ActionLogger) => {
-  const appState: StateBase = Object.freeze({})
+export const collectingLogger = () => {
+  const actions: ActionDiff[] = []
 
-  const dispatch: DispatchBase = <T extends UnknownAction> (
-    action: T,
-    ...extraArgs: any[]
+  const logger: ReduceLogger = (
+    stateNew: any,
+    action: UnknownAction,
+    stateOld: any,
   ) => {
-    expect(extraArgs).toHaveLength(0)
-
-    if (isDataUnit(action)) {
-      invokeMiddleware(action)
-    } else {
-      expect(isDataUnit(action)).toBeTruthy()
+    // Skip Redux system actions:
+    if (!action.type.startsWith('@@')) {
+      const diff = deepDiff(stateNew, stateOld)
+      actions.push(diff ? { ...action, diff } : action)
     }
-
-    return action
   }
 
-  const getStore: GetStore<StateBase, DispatchBase> = {
+  return { logger, actions }
+}
+
+export const makeTestStore = (logger?: ReduceLogger) => {
+  const { reducer, installReducer } = dynamicReducer((state: any) => state, logger)
+  const dynMiddleware = createDynamicMiddleware()
+  const addMiddleware = dynMiddleware.addMiddleware
+
+  const store = configureStore({
+    reducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().prepend(dynMiddleware.middleware),
+  })
+
+  const getStore: GetStore<any, typeof store.dispatch> = {
     get state() {
-      return appState
+      return store.getState()
     },
 
     get dispatch() {
-      return dispatch
-    }
+      return store.dispatch
+    },
   }
 
+  const dispatch = store.dispatch
   const appContext = makeAppContext(getStore)
+  const uu = unitUtilities(appContext)
   const registry = makeUnitsRegistry(appContext)
-  const { defineUnit } = unitUtilities(appContext)
-  // @ts-expect-error our middleware does not require the api instance
-  const middleware = makeMiddleware(appContext, registry)()(next)
+  const registerUnits = registry.register.bind(registry)
 
-  function next(action: unknown) {
-    if (isDataUnit(action)) {
-      log(action)
-    } else {
-      const type = get(action, 'type')
-
-      if (isString(type)) {
-        log(type, get(action, 'payload'))
-      } else {
-        expect(isString(type)).toBeTruthy()
-      }
-    }
-  }
-
-  function invokeMiddleware(unit: DataUnit) {
-    if (isDataUnit(unit)) {
-      expect(!!registry.lookup(unit.type)).toBeTruthy()
-    }
-
-    middleware(unit)
-  }
+  //@ts-expect-error not interested in complex typings for some tests?
+  addMiddleware(registry.middleware)
+  installReducer(registry.reducer)
 
   return {
     appContext,
     registry,
+    registerUnits,
     dispatch,
-    defineUnit,
+    ...uu,
   }
 }

@@ -17,6 +17,7 @@ import {
   DataUnit,
   isDataUnit,
   Payload,
+  PayloadResult,
   isPayload,
   DefineUnit,
   CloneUnit,
@@ -49,11 +50,13 @@ export const makeDataUnit = (name: string): DataUnit => initDataUnit(name, {})
 export const makePlainUnit = (type: string): PlainUnit =>
   initDataUnit(type, { plainUnit: symPlainUnit })
 
+export type ReduceLogger = (stateNew: any, action: UnknownAction, stateOld: any) => void
+
 export const dynamicReducer = <
   S = any,
   A extends Action = UnknownAction,
   PS = S
-> (reducer: Reducer<S, A, PS>) => {
+> (reducer: Reducer<S, A, PS>, logger?: ReduceLogger) => {
   let dynReducer: typeof reducer | undefined
 
   const installReducer = (dr: typeof reducer) => {
@@ -63,15 +66,20 @@ export const dynamicReducer = <
 
   const wrappingReducer: typeof reducer = (state, action) => {
     if (!dynReducer) {
-      return reducer(state, action)
+      const stateNew = reducer(state, action)
+      logger?.(stateNew, action, state)
+      return stateNew
     }
 
     const dynState = dynReducer(state, action)
 
     if (get(action, 'privateUnit') === true) {
+      logger?.(dynState, action, state)
       return dynState
     } else {
-      return reducer(dynState, action)
+      const stateNew = reducer(dynState, action)
+      logger?.(stateNew, action, state)
+      return stateNew
     }
   }
 
@@ -342,6 +350,36 @@ export const unitUtilities = <
   }
 }
 
+export type UnitUtilities <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = ReturnType<typeof unitUtilities<S, D>>
+
+export type DefineUnitUtility <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = UnitUtilities<S, D>['defineUnit']
+
+export type DefineOnlyUnitUtility <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = UnitUtilities<S, D>['defineOnlyUnit']
+
+export type DefineGlobalUnitUtility <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = UnitUtilities<S, D>['defineGlobalUnit']
+
+export type DefineSliceUnitUtility <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = UnitUtilities<S, D>['defineSliceUnit']
+
+export type DefineOwnUnitUtility <
+  S extends StateBase,
+  D extends DispatchBase = DispatchBase,
+> = UnitUtilities<S, D>['defineOwnUnit']
+
 const makeDispatchSelf = <
   S extends StateBase,
   D extends DispatchBase,
@@ -351,7 +389,7 @@ const makeDispatchSelf = <
 > (
   appContext: AppContext<S, D>,
   unit: U,
-  getPayload: (this: U, ...args: A) => P | Promise<P>,
+  getPayload: (this: U, ...args: A) => PayloadResult<P>,
 ) => {
   const dispatchSelf = (...args: A) => {
     const unit = (dispatchSelf as any).unit
@@ -360,10 +398,14 @@ const makeDispatchSelf = <
       expectTrue(isNil(this) || this === unit)
       const payload = getPayload.call(unit as U, ...args)
 
-      if (payload instanceof Promise || isFunction((payload as any).then)) {
+      if (isNil(payload) || payload === undefined) {
+        return
+      } else if (payload instanceof Promise || isFunction((payload as any).then)) {
         Promise.resolve(payload).then(resolvedPayload => {
-          const clone = cloneUnitPayload(unit, resolvedPayload)
-          appContext.dispatch(clone)
+          if (!isNil(resolvedPayload) && resolvedPayload !== undefined) {
+            const clone = cloneUnitPayload(unit, resolvedPayload)
+            appContext.dispatch(clone)
+          }
         })
       } else {
         const clone = cloneUnitPayload(unit, payload)
@@ -477,7 +519,11 @@ export const cloneUnitPayload = <
 
 const symListenerConnect = Symbol.for('DataUnit.ListenerConnect')
 
-export interface UnitListeners extends UnitListenerConnect {
+export interface UnitListeners extends UnitListenerConnect
+{
+  /**
+   * Registers the listener and returns unsubscribe function.
+   */
   (listener: UnitListener): (() => void),
 
   symListenerConnect: typeof symListenerConnect,

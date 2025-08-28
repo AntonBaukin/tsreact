@@ -282,16 +282,25 @@ export const isDispatchSelf = <A extends any[] = any[], P extends Payload = Payl
 ): some is DispatchSelf<A, P> =>
   isFunction(some) && (some as any).dispatchSelf === symDispatchSelf
 
+export type PayloadResult<P> =
+  | P
+  | null
+  | undefined
+  | void
+  | Promise<P | null | undefined | void>
+
 /**
  * Extension object to data unit builder with builders of payloads to dispatch.
  * The limitation is that each builder must have the same function signature:
  * thus, commonly such an object have only one key.
+ *
+ * Hint: by returning nil, the action is not dispatched.
  */
 export type DataUnitDispatchers <
   U extends DataUnit,
   A extends any[] = any[],
   P extends Payload = Payload,
-> = Record<string, (this: U, ...args: A) => P | Promise<P>>
+> = Record<string, (this: U, ...args: A) => PayloadResult<P>>
 
 /**
  * Extension of a Data Unit with (self) dispatchers.

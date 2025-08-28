@@ -23,3 +23,11 @@ export {
   makePayloadUnit,
   unitUtilities,
 } from './utils'
+export type {
+  UnitUtilities,
+  DefineUnitUtility,
+  DefineOnlyUnitUtility,
+  DefineGlobalUnitUtility,
+  DefineSliceUnitUtility,
+  DefineOwnUnitUtility,
+} from './utils'

@@ -29,3 +29,37 @@ export {
   throttle,
   cloneDeep,
 }
+
+const isDiffTarget = (some: unknown) => isObject(some) || isArrayLike(some)
+
+export const deepDiff = (prev: any, next: any) => {
+  let diff: any = isArrayLike(prev) ? [] : {}
+
+  for (const key in prev) {
+    if (Object.prototype.hasOwnProperty.call(prev, key)) {
+      if (!Object.prototype.hasOwnProperty.call(next, key)) {
+        diff[key] = undefined // Property removed
+      } else if (!isEqual(prev[key], next[key])) {
+        if (isDiffTarget(prev[key]) && isDiffTarget(next[key])) {
+          const nestedDiff = deepDiff(prev[key], next[key])
+          if (!isEmpty(nestedDiff)) {
+            diff[key] = nestedDiff
+          }
+        } else {
+          diff[key] = next[key] // Property value changed
+        }
+      }
+    }
+  }
+
+  for (const key in next) {
+    if (
+      Object.prototype.hasOwnProperty.call(next, key) &&
+      !Object.prototype.hasOwnProperty.call(prev, key)
+    ) {
+      diff[key] = next[key] // Property added
+    }
+  }
+
+  return isEmpty(diff) ? undefined : diff
+}
