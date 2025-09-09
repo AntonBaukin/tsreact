@@ -53,7 +53,7 @@ const getOrPostRange = <Q extends {}, B extends {}, D>(
   return { get, post, switcher }
 }
 
-export default (fetcher: Fetcher) => {
+const makeAppDataSources = (fetcher: Fetcher) => {
   const { get: personsAll, post: personsSearch, switcher: personsSource } =
     getOrPostRange <PersonsQueryRange, SearchPersons, Person> (
       fetcher,
@@ -64,3 +64,7 @@ export default (fetcher: Fetcher) => {
 
   return { personsAll, personsSearch, personsSource }
 }
+
+export type AppDataSources = ReturnType<typeof makeAppDataSources>
+
+export default makeAppDataSources

@@ -67,7 +67,7 @@ export type Body = BodyNull | BodyJson | BodyText
 
 export const isBodyNull = (b: Body): b is BodyNull => b.type === 'null'
 
-export const bodyNull = (): BodyNull => (bodyNull())
+export const bodyNull = (): BodyNull => ({ type: 'null' })
 
 export const isBodyJson = (b: Body): b is BodyJson => b.type === 'json'
 

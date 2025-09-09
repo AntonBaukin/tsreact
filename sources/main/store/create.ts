@@ -1,6 +1,7 @@
 import { configureStore, combineReducers, createDynamicMiddleware } from '@reduxjs/toolkit'
 import { IS_DEV } from 'sources/config'
-import { GetStore, makeWithStore } from 'sources/app'
+import { GetStore } from 'sources/app'
+import { makeWithStore } from 'sources/app/withStore'
 import { dynamicReducer } from 'sources/unit/utils'
 import { AppState, reducers } from './slices'
 

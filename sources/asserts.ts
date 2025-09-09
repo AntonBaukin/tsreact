@@ -42,7 +42,7 @@ export const expectTrue = (item: unknown, msg?: () => string) => {
   }
 }
 
-export const expectString = (item: unknown, msg?: () => string) => {
+export const expectString = (item: unknown, msg?: () => string): string => {
   if (!isString(item) || !item.length) {
     const m = msg?.() ?? null
 
@@ -52,6 +52,8 @@ export const expectString = (item: unknown, msg?: () => string) => {
       throw Error()
     }
   }
+
+  return item
 }
 
 export const expectNever = (msg?: () => string): never => {
@@ -66,4 +68,47 @@ export const expectNever = (msg?: () => string): never => {
 
 export const warn = (msg: string) => {
   console.warn(msg)
+}
+
+export const expectProps = <T extends {}> (instance?: T) => {
+  const proxy = new Proxy({} as T, {
+    get(_, prop) {
+      const k = expectString(prop) as keyof T & string
+      const v = (instance as any)?.[k]
+
+      return expectNotNil(v, () => `Property [${k}] is undefined or null`)
+    },
+
+    apply() {
+      throw Error()
+    },
+
+    set() {
+      throw Error()
+    },
+
+    deleteProperty() {
+      throw Error()
+    },
+
+    setPrototypeOf() {
+      throw Error()
+    },
+
+    defineProperty() {
+      throw Error()
+    }
+  })
+
+  const assign = (t: T | undefined | null) => {
+    instance = expectNotNil(t)
+  }
+
+  return {
+    proxy,
+    assign,
+    get instance() {
+      return instance
+    },
+  }
 }

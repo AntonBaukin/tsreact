@@ -30,7 +30,7 @@ export const unitsReducer = (registry: Map<string, DataUnit>) =>
     const { type } = action
     const unit = registry.get(type)
 
-    if (isNil(state) || !isReduceUnit(unit)) {
+    if (!isReduceUnit(unit)) {
       return state as S
     }
 
@@ -42,7 +42,7 @@ export const unitsReducer = (registry: Map<string, DataUnit>) =>
     }
 
     if (slice === true) {
-      return produce(state as S, (draft) => {
+      return produce((state ?? {}) as S, (draft) => {
         let sliceState = get(draft, type)
 
         if (isNil(sliceState)) {

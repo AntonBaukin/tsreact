@@ -91,6 +91,7 @@ export const unitUtilities = <
   D extends DispatchBase = DispatchBase,
 > (
   appContext: AppContext<S, D>,
+  onAsyncError?: (error: unknown) => void,
 ) => {
   const initDataUnit = <E extends object> (
     definition: DefineUnit<S, D>,
@@ -205,7 +206,7 @@ export const unitUtilities = <
         const g = ext[k]
         expectTrue(isFunction(g))
 
-        const d = makeDispatchSelf<S, D, U, P, A>(appContext, unit, g);
+        const d = makeDispatchSelf<S, D, U, P, A>(appContext, unit, g, onAsyncError);
         Object.assign(unit, { [k]: d })
       }
 
@@ -390,6 +391,7 @@ const makeDispatchSelf = <
   appContext: AppContext<S, D>,
   unit: U,
   getPayload: (this: U, ...args: A) => PayloadResult<P>,
+  onAsyncError?: (error: unknown) => void,
 ) => {
   const dispatchSelf = (...args: A) => {
     const unit = (dispatchSelf as any).unit
@@ -401,12 +403,14 @@ const makeDispatchSelf = <
       if (isNil(payload) || payload === undefined) {
         return
       } else if (payload instanceof Promise || isFunction((payload as any).then)) {
-        Promise.resolve(payload).then(resolvedPayload => {
-          if (!isNil(resolvedPayload) && resolvedPayload !== undefined) {
-            const clone = cloneUnitPayload(unit, resolvedPayload)
-            appContext.dispatch(clone)
-          }
-        })
+        Promise.resolve(payload)
+          .then(resolvedPayload => {
+            if (!isNil(resolvedPayload) && resolvedPayload !== undefined) {
+              const clone = cloneUnitPayload(unit, resolvedPayload)
+              appContext.dispatch(clone)
+            }
+          })
+          .catch((error: unknown) => onAsyncError?.(error))
       } else {
         const clone = cloneUnitPayload(unit, payload)
         appContext.dispatch(clone)

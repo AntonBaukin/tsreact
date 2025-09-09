@@ -1,4 +1,5 @@
-import { appLinker, makeAppContext } from 'sources/app'
+import { makeAppContext } from 'sources/app'
+import { appLinker } from 'sources/app/withApp'
 import { makeUnitsRegistry, unitUtilities } from 'sources/unit'
 import { fetchUnitUnitilties } from 'sources/fetch'
 import { getStore, addMiddleware, installReducer } from './store/create'
