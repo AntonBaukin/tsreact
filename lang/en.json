@@ -6,5 +6,8 @@
   "Main": {
     "title": "Sample application!",
     "content": "The quick brown <%=name%> jumps over the lazy dog"
+  },
+  "List": {
+    "loaded": "Found <%=total%> person records"
   }
 }

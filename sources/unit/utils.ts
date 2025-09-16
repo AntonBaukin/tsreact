@@ -1,5 +1,5 @@
 import { Action, Reducer, UnknownAction } from 'redux'
-import { expectTrue, expectNever } from 'sources/asserts'
+import { expectTrue, expectNever, expectNotNil } from 'sources/asserts'
 import { isFunction, isString, isNil, get, cloneDeep } from 'sources/lodash'
 import {
   AppContext,
@@ -438,6 +438,26 @@ const makeSelector = <
   unit: U,
   localSelector: (this: U, state: X) => R,
 ) => {
+  let initialStateCached: StateBase | undefined
+
+  const getInitialState = () => {
+    if (initialStateCached) {
+      return initialStateCached
+    }
+
+    const { initialState } = unit
+
+    if (isNil(initialState)) {
+      expectNever()
+    } else if (isFunction(initialState)) {
+      initialStateCached = initialState()
+    } else {
+      initialStateCached = initialState
+    }
+
+    return expectNotNil(initialStateCached)
+  }
+
   const selector = (global: S): R => {
     if (unit.slice === undefined) {
       return localSelector.call(unit, global as any as X)
@@ -445,17 +465,7 @@ const makeSelector = <
       let sliceState: any = get(global, unit.type)
 
       if (isNil(sliceState)) {
-        const { initialState } = unit
-
-        if (isNil(initialState)) {
-          expectNever()
-        } else if (isFunction(initialState)) {
-          sliceState = initialState()
-        } else {
-          sliceState = initialState
-        }
-
-        expectTrue(!isNil(sliceState))
+        sliceState = getInitialState()
       }
 
       return localSelector.call(unit, sliceState as X)

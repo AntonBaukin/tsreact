@@ -15,3 +15,7 @@ export {
   appRouteChanged,
   appDoChangeRoute,
 } from './units'
+
+export type {
+  RouteChanged,
+} from './units'

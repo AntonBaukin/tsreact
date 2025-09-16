@@ -39,6 +39,12 @@ export interface DataUnit extends UnknownAction
    */
   readonly listen: UnitListenerConnect,
 
+  /**
+   * Whether the trigger function is invoked synchronously.
+   * Defaults to false.
+   */
+  readonly triggerSync?: boolean,
+
   readonly trigger?: (
     // This data unit instance:
     this: DataUnit,

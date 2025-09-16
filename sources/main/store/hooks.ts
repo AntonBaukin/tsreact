@@ -16,8 +16,9 @@ export const useSelectDataRange = <
   SortBy,
   Q extends QueryRange<SortBy>,
   B extends {},
-  D extends Payload,
-  X extends Payload,
+  D,
+  X,
+  // @ts-expect-error: Payload Vs Any
 > (unit: FetchUnit<AppState, AppDispatch, D[], [QueryAndBody<Q, B>], X>): DataSlice<D> => {
   const {
     isLoading,

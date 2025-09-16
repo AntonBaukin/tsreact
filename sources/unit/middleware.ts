@@ -235,8 +235,17 @@ export class UnitsTrigger<S extends StateBase, D extends DispatchBase>
     followers?.forEach(ft => {
       const fu = this.registry.get(ft)
 
+      // TODO Support asynchronous triggering for data units
       try {
-        fu.trigger?.(unit.type, p, u)
+        const { trigger } = fu
+
+        if (trigger) {
+          if (fu.triggerSync) {
+            trigger.call(fu, unit.type, p, u)
+          } else {
+            Promise.resolve().then(() => trigger.call(fu, unit.type, p, u))
+          }
+        }
       } catch (e) {
         errors.push(e)
       }

@@ -132,7 +132,7 @@ export const makeTestStore = (
   const registerUnits = registry.register.bind(registry)
   const select = (selector: Selector) => () => selector(store.getState())
 
-  //@ts-expect-error not interested in complex typings for some tests?
+  // @ts-expect-error not interested in complex typings for some tests?
   addMiddleware(registry.middleware)
   installReducer(registry.reducer)
 
