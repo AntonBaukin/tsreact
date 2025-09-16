@@ -186,7 +186,7 @@ describe('api.units', () => {
   test('fetchPersons', async () => {
     const { personsSource } = dataSources
     const { stepsComplete, finishSteps, failSteps, logger } = asyncLogger(1000, stepper)
-    const { appContext, select, registerUnits, uu } = makeTestStore(logger, asyncError)
+    const { appContext, registerUnits, uu } = makeTestStore(logger, asyncError)
     const { defineFetchUnit } = fetchUnitUnitilties(appContext, uu)
     const fetchPersons = defineFetchUnit('fetchPersons', personsSource)
 

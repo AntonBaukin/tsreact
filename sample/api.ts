@@ -27,8 +27,6 @@ export interface QueryAndBody<Q, B> {
   body: B,
 }
 
-export type BodyRange<SortBy, Q extends QueryRange<SortBy>, B> = QueryAndBody<Q, B>
-
 /**
  * Date in ISO format: 'YYYY-DD-MM'.
  */

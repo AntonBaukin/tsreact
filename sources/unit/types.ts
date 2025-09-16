@@ -54,7 +54,12 @@ export interface DataUnit extends UnknownAction
    * @param unit — a Data Unit to dispatch into Redux.
    * @param payload — optional payload, clones the unit as a Payload one.
    */
-  readonly dispatch: (unit: DataUnit, payload?: Payload) => void,
+  readonly dispatch: <P extends Payload>(unit: DataUnit, payload?: P) => void,
+
+  /**
+   * Shorthand for unit.dispatch(unit).
+   */
+  readonly dispatchIt: () => void,
 }
 
 export const isDataUnit = (some: unknown): some is DataUnit =>

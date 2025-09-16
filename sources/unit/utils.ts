@@ -108,6 +108,7 @@ export const unitUtilities = <
       'listen',
       'trigger',
       'dispatch',
+      'dispatchIt',
       'dispatchSelf',
     )
 
@@ -120,6 +121,9 @@ export const unitUtilities = <
       fields.push('initUnit', 'init')
       Object.assign(unit, { initUnit: symInitUnit, init })
     }
+
+    const dispatchIt = () => unit.dispatch(unit)
+    Object.assign(unit, { dispatchIt })
 
     return unit as DataUnit & E
   }

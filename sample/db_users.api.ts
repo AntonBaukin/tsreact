@@ -1,5 +1,4 @@
 import {
-  BodyRange,
   CountryCode,
   Date,
   Email,
@@ -28,9 +27,3 @@ export interface SearchPersons {
   years?: number[],
   name?: string,
 }
-
-export type PersonsSearchRange = BodyRange <
-  PersonsSortOrder,
-  PersonsQueryRange,
-  SearchPersons
->

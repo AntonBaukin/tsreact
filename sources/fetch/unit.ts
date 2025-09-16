@@ -190,12 +190,20 @@ export const makeFetchUnit = <
   return unit
 }
 
+export type FetchUnit <
+  S extends StateBase,
+  G extends DispatchBase,
+  D extends Payload,
+  A extends any[],
+  X extends Payload = Payload,
+> = ReturnType<typeof makeFetchUnit<S, G, D, A, X>>
+
 export const fetchUnitUnitilties = <
   S extends StateBase,
-  D extends DispatchBase = DispatchBase
+  G extends DispatchBase = DispatchBase
 > (
-  appContext: AppContext<S, D>,
-  { defineOwnUnit }: UnitUtilities<S, D>,
+  appContext: AppContext<S, G>,
+  { defineOwnUnit }: UnitUtilities<S, G>,
 ) => {
   const defineFetchUnit = <
     D extends any,
@@ -205,10 +213,11 @@ export const fetchUnitUnitilties = <
     name: string,
     dataSource: DataSource<D, A>,
     onError?: OnFetchError<X>,
-  ) => makeFetchUnit (
+    // @ts-expect-error: Payload type is not "ready" to be compatible with any object
+  ): FetchUnit<S, G, D, A, X> => makeFetchUnit (
     appContext,
     defineOwnUnit,
-    // @ts-expect-error: Payload ензу is not "ready" to be compatible with any object
+    // @ts-expect-error: Payload Vs Any
     dataSource,
     name,
     onError,
