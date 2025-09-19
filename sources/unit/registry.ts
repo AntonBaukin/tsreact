@@ -12,7 +12,7 @@ import {
   isParentUnit,
   isInitUnit,
   UnitListener,
-  UnitListenerConnect,
+  UnitListenerConnect, isReduceUnit,
 } from './types'
 
 export interface UnitsRegistry<S extends StateBase, D extends DispatchBase>
@@ -32,6 +32,8 @@ export interface UnitsRegistry<S extends StateBase, D extends DispatchBase>
   readonly middleware: Middleware<any, S, D>,
 
   readonly reducer: Reducer<S, InferDispatchAction<D>, Partial<S>>,
+
+  readonly privateSlices: () => readonly string[],
 }
 
 export const flattenUnits = (...units: UnitsRegister[]): DataUnit[] => {
@@ -67,6 +69,7 @@ export const makeUnitsRegistry = <
   const all: DataUnit[] = []
   const registry = new Map<string, DataUnit>()
   const followers = new Map<string, Set<string>>()
+  const privateSlices: string[] = []
 
   const registerOne = (unit: DataUnit) => {
     expectTrue(isDataUnit(unit))
@@ -88,6 +91,10 @@ export const makeUnitsRegistry = <
         if (children) {
           registerMany(children)
         }
+      }
+
+      if (isReduceUnit(unit) && unit.slice === true) {
+        privateSlices.push(unit.type)
       }
     }
   }
@@ -166,6 +173,8 @@ export const makeUnitsRegistry = <
     middleware: Middleware<any, S, D>
 
     reducer: Reducer<S, InferDispatchAction<D>, Partial<S>>
+
+    readonly privateSlices = () => privateSlices
 
     constructor() {
       this.middleware = makeMiddleware(appContext, this)

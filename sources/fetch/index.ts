@@ -8,6 +8,7 @@ export type {
   Fetcher,
   Query,
   Headers,
+  HeadersFilter,
   Transform,
 } from './types'
 export {

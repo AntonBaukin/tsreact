@@ -1,4 +1,4 @@
-import { isEmpty } from 'sources/lodash'
+import { isEmpty, pick } from 'sources/lodash'
 import {
   asTransformArray,
   bodyJson,
@@ -9,6 +9,8 @@ import {
   Query,
   dataSourceSwitch,
   asDataSource,
+  Headers,
+  HeadersFilter,
 } from 'sources/fetch'
 import {
   Person,
@@ -27,12 +29,15 @@ const getOrPostRange = <Q extends {}, B extends {}, D>(
   transform: Transform<D>,
   pathGet: string,
   pathPost: string,
+  hFilter?: HeadersFilter,
 ) => {
   const get = dataGet (
     fetcher,
     asTransformArray(transform),
     pathGet,
     (query: Q) => query as Query,
+    undefined,
+    hFilter,
   )
 
   const getAsPost = asDataSource(({ query }: QueryAndBody<Q, B>) => get(query))
@@ -43,6 +48,7 @@ const getOrPostRange = <Q extends {}, B extends {}, D>(
     pathPost,
     ({ body }: QueryAndBody<Q, B>) => bodyJson(body),
     ({ query }: QueryAndBody<Q, B>) => ({ query }),
+    hFilter,
   )
 
   const switcher = dataSourceSwitch(
@@ -58,12 +64,15 @@ export type AppDataSources = ReturnType<typeof makeAppDataSources>
 export default makeAppDataSources
 
 function makeAppDataSources (fetcher: Fetcher) {
+  const xTotalCountOnly = (h: Headers) => pick(h, ['x-total-count'])
+
   const { get: personsAll, post: personsSearch, switcher: personsSource } =
     getOrPostRange <PersonsQueryRange, SearchPersons, Person> (
       fetcher,
       trPerson,
       '/api/users/all',
       '/api/users/search',
+      xTotalCountOnly,
     )
 
   return {

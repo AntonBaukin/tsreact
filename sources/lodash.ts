@@ -9,6 +9,8 @@ import isNil from 'lodash/isNil'
 import get from 'lodash/get'
 import set from 'lodash/set'
 import noop from 'lodash/noop'
+import omit from 'lodash/omit'
+import pick from 'lodash/pick'
 import template from 'lodash/template'
 import throttle from 'lodash/throttle'
 import cloneDeep from 'lodash/cloneDeep'
@@ -25,6 +27,8 @@ export {
   get,
   set,
   noop,
+  omit,
+  pick,
   template,
   throttle,
   cloneDeep,

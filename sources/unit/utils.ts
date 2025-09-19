@@ -1,6 +1,6 @@
 import { Action, Reducer, UnknownAction } from 'redux'
 import { expectTrue, expectNever, expectNotNil } from 'sources/asserts'
-import { isFunction, isString, isNil, get, cloneDeep } from 'sources/lodash'
+import { isFunction, isString, isNil, get, omit, pick, cloneDeep } from 'sources/lodash'
 import {
   AppContext,
   DispatchBase,
@@ -58,10 +58,28 @@ export const dynamicReducer = <
   PS = S
 > (reducer: Reducer<S, A, PS>, logger?: ReduceLogger) => {
   let dynReducer: typeof reducer | undefined
+  let excludeSlices: (() => string[]) = () => []
 
-  const installReducer = (dr: typeof reducer) => {
+  const installReducer = (
+    dynamicReducer: typeof reducer,
+    privateSlices?: () => string[],
+  ) => {
     expectTrue(dynReducer === undefined)
-    dynReducer = dr
+    dynReducer = dynamicReducer
+    excludeSlices = privateSlices ?? (() => [])
+  }
+
+  const reducePrivately = (s: S | PS | undefined, a: A, r: Reducer<S, A, PS>): S => {
+    const excluded = excludeSlices()
+
+    if (!excluded.length || !s) {
+      return r(s, a)
+    }
+
+    const cleanSlices = omit(s, excluded) as S | PS
+    const resultState = r(cleanSlices, a)
+
+    return { ...pick(s, excluded), ...resultState }
   }
 
   const wrappingReducer: typeof reducer = (state, action) => {
@@ -77,7 +95,7 @@ export const dynamicReducer = <
       logger?.(dynState, action, state)
       return dynState
     } else {
-      const stateNew = reducer(dynState, action)
+      const stateNew = reducePrivately(dynState, action, reducer)
       logger?.(stateNew, action, state)
       return stateNew
     }

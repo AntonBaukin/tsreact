@@ -134,7 +134,7 @@ export const makeTestStore = (
 
   // @ts-expect-error not interested in complex typings for some tests?
   addMiddleware(registry.middleware)
-  installReducer(registry.reducer)
+  installReducer(registry.reducer, registry.privateSlices)
 
   return {
     appContext,

@@ -135,7 +135,6 @@ export const axiosFetcher =
 
       if (error) {
         result.error = error
-        console.log('E>', error)
       }
 
       if (aborted) {

@@ -62,7 +62,7 @@ export const makeFetchUnit = <
     headers: null,
   })
 
-  const selectFetched = (state: LocalSlice) => ({ ...state })
+  const selectFetched = (state: LocalSlice) => state
 
   const unitBase = defineOwnUnit({
     name,
@@ -168,8 +168,8 @@ export const makeFetchUnit = <
           ...resetPayload,
           isLoading: false,
           success: true,
-          data: result.data,
           headers: { ...result.headers },
+          data: result.data,
         }
       } else {
         return errorPayload(result.error, result.aborted)

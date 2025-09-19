@@ -10,7 +10,7 @@ const { withApp, useAppContext } = appLinker(appContext)
 const registerUnits = registry.register.bind(registry)
 
 addMiddleware(registry.middleware)
-installReducer(registry.reducer)
+installReducer(registry.reducer, registry.privateSlices)
 
 const uu = unitUtilities(appContext)
 

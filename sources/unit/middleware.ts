@@ -102,7 +102,7 @@ class PlainUnits
 }
 
 export type UnitsQueueAnalyser = (queue: DataUnit[]) => {
-  // What timout (ms) to set when delaying the queue execution:
+  // What timeout (ms) to set when delaying the queue execution:
   timeout?: number,
 }
 

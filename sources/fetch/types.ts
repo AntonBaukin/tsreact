@@ -4,6 +4,8 @@ import { Payload } from 'sources/unit'
 
 export type Headers = Record<string, string>
 
+export type HeadersFilter = (h: Headers) => Headers
+
 export type Value = string | number | boolean
 
 export type Query = Record<string, Value | Value[]>

@@ -7,6 +7,7 @@ import {
   DataSuccess,
   Fetcher,
   Headers,
+  HeadersFilter,
   isBodyJson,
   isBodyNull,
   isBodyText,
@@ -33,6 +34,7 @@ export const dataFetcher = <D, A extends any[]> (
   fetcher: Fetcher,
   transform: Transform<D>,
   makeRequest: (...args: A) => Request,
+  hFilter?: HeadersFilter,
 ): DataSource<D, A> => {
   const dataSource = (...args: A) => {
     const request = makeRequest(...args)
@@ -66,7 +68,7 @@ export const dataFetcher = <D, A extends any[]> (
           return {
             success: true,
             data,
-            headers,
+            headers: hFilter ? hFilter(headers) : headers,
           } as const
         } catch (trError: unknown) {
           return {
@@ -100,6 +102,7 @@ export const dataGet = <D, A extends any[]> (
     timeout?: number,
     qos?: QoS,
   },
+  hFilter?: HeadersFilter,
 ) => dataFetcher<D, A>(
   fetcher,
   transform,
@@ -109,6 +112,7 @@ export const dataGet = <D, A extends any[]> (
     query: makeQuery?.(...args),
     ...makeOptions?.(...args),
   }),
+  hFilter,
 )
 
 export const dataPost = <D, A extends any[]> (
@@ -122,6 +126,7 @@ export const dataPost = <D, A extends any[]> (
     timeout?: number,
     qos?: QoS,
   },
+  hFilter?: HeadersFilter,
 ) => dataFetcher<D, A>(
   fetcher,
   transform,
@@ -131,6 +136,7 @@ export const dataPost = <D, A extends any[]> (
     body: makeBody(...args),
     ...makeOptions?.(...args),
   }),
+  hFilter,
 )
 
 export const dataSuccess = <D>(result: Promise<DataResult<D>>): Promise<DataSuccess<D>> =>
