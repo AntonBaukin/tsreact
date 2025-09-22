@@ -18,6 +18,8 @@
     .content {
       flex: 1;
       container-type: inline-size;
+      display: flex;
+      flex-direction: column;
     }
   }
 
@@ -48,6 +50,8 @@
       .content {
         grid-area: c;
         container-type: inline-size;
+        display: flex;
+        flex-direction: column;
       }
     }
   }

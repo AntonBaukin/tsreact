@@ -1,5 +1,6 @@
 export { default as Box } from './Box'
 export { Header } from './typo'
+export { default as Everscroll } from './Everscroll'
 export { default as Icon } from './Icon'
 export type { Icons } from './Icon/types'
 export { default as Root } from './Root'

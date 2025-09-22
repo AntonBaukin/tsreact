@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { isString } from 'sources/lodash'
 import { DispatchBase, StateBase } from 'sources/app'
@@ -42,4 +42,47 @@ export const useSelectDataRange = <
     qb?.query?.limit,
     total,
   ])
+}
+
+export const useAccumulateData = <D, A extends any[], R = void> (
+  { isLoading, data, offset, limit }: DataSlice<D>,
+  fetch: (offset: number, limit: number) => void,
+  render: (item: D, ...args: A) => R | undefined,
+) => {
+  const [indexMap] = useState(new Map<number, D | undefined>())
+
+  if (!isLoading && data && offset >= 0) {
+    for (let i = 0; i < data.length; i++) {
+      indexMap.set(offset + i, data[i])
+    }
+  }
+
+  const getAt = useCallback((i: number) => indexMap.get(i), [])
+
+  const renderRef = useRef(render)
+  renderRef.current = render
+
+  const renderAt = useCallback((i: number, ...args: A): R | undefined => {
+    const item = indexMap.get(i)
+    return item ? render(item, ...args) : undefined
+  }, [])
+
+  const windowFetcher = useCallback((offset: number, window: number) => {
+    let fetchAt = offset + window
+
+    while (fetchAt > offset) {
+      if (indexMap.get(fetchAt)) {
+        fetchAt++
+        break
+      } else {
+        fetchAt--
+      }
+    }
+
+    if (!indexMap.get(fetchAt)) {
+      fetch(fetchAt, limit)
+    }
+  }, [])
+
+  return { getAt, renderAt, windowFetcher }
 }

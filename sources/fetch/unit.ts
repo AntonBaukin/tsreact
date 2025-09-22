@@ -27,7 +27,7 @@ export type OnFetchError<X extends Payload> =
 /**
  * The root unit created owns Redux data slice of type FetchUnitSlice.
  */
-export const makeFetchUnit = <
+const makeFetchUnitImpl = <
   S extends StateBase,
   G extends DispatchBase,
   // Payload-like data instance (object or array of objects):
@@ -190,6 +190,8 @@ export const makeFetchUnit = <
   return unit
 }
 
+export const makeFetchUnit = makeFetchUnitImpl
+
 export type FetchUnit <
   S extends StateBase,
   G extends DispatchBase,
@@ -205,7 +207,7 @@ export const fetchUnitUnitilties = <
   appContext: AppContext<S, G>,
   { defineOwnUnit }: UnitUtilities<S, G>,
 ) => {
-  const defineFetchUnit = <
+  const makeFetchUnit = <
     D extends any,
     A extends any[],
     X extends Payload = Payload
@@ -214,7 +216,7 @@ export const fetchUnitUnitilties = <
     dataSource: DataSource<D, A>,
     onError?: OnFetchError<X>,
     // @ts-expect-error: Payload type is not "ready" to be compatible with any object
-  ): FetchUnit<S, G, D, A, X> => makeFetchUnit (
+  ): FetchUnit<S, G, D, A, X> => makeFetchUnitImpl (
     appContext,
     defineOwnUnit,
     // @ts-expect-error: Payload Vs Any
@@ -223,5 +225,5 @@ export const fetchUnitUnitilties = <
     onError,
   )
 
-  return { defineFetchUnit }
+  return { makeFetchUnit }
 }

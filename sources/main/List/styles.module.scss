@@ -1,0 +1,36 @@
+@use "styles/vars.json";
+@use "styles/mixins";
+
+.personsContainer {
+  position: relative;
+  flex: 1;
+  margin: var(--l) 0 0;
+  overflow: hidden;
+}
+
+.personsList {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: bisque;
+  display: flex;
+  flex-direction: column;
+}
+
+.personsListGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-rows: auto repeat(auto-fit, minmax(250px, 1fr)) auto;
+  grid-auto-flow: row dense;
+  gap: var(--l);
+}
+
+.personItem {
+  min-width: 150px;
+  max-width: 200px;
+  min-height: 250px;
+  max-height: 300px;
+  background: burlywood;
+}

@@ -23,7 +23,7 @@ const {
 } = uu
 
 const {
-  defineFetchUnit,
+  makeFetchUnit,
 } = fetchUnitUnitilties(appContext, uu)
 
 export {
@@ -35,5 +35,5 @@ export {
   defineGlobalUnit,
   defineSliceUnit,
   defineOwnUnit,
-  defineFetchUnit,
+  makeFetchUnit,
 }

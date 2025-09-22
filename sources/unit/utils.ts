@@ -42,8 +42,14 @@ import {
   UnitListener,
 } from './types'
 
-export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit =>
-  Object.assign(unit, { dataUnit: symDataUnit, type: name }) as (U & DataUnit)
+export const initDataUnit = <U extends object>(name: string, unit: U): U & DataUnit => {
+  const dispatchIt = () => (unit as DataUnit).dispatch(unit as DataUnit)
+
+  return Object.assign(
+    unit,
+    { dataUnit: symDataUnit, type: name, dispatchIt },
+  ) as (U & DataUnit)
+}
 
 export const makeDataUnit = (name: string): DataUnit => initDataUnit(name, {})
 
@@ -58,11 +64,11 @@ export const dynamicReducer = <
   PS = S
 > (reducer: Reducer<S, A, PS>, logger?: ReduceLogger) => {
   let dynReducer: typeof reducer | undefined
-  let excludeSlices: (() => string[]) = () => []
+  let excludeSlices: (() => readonly string[]) = () => []
 
   const installReducer = (
     dynamicReducer: typeof reducer,
-    privateSlices?: () => string[],
+    privateSlices?: () => readonly string[],
   ) => {
     expectTrue(dynReducer === undefined)
     dynReducer = dynamicReducer
@@ -139,9 +145,6 @@ export const unitUtilities = <
       fields.push('initUnit', 'init')
       Object.assign(unit, { initUnit: symInitUnit, init })
     }
-
-    const dispatchIt = () => unit.dispatch(unit)
-    Object.assign(unit, { dispatchIt })
 
     return unit as DataUnit & E
   }
@@ -517,9 +520,10 @@ export const cloneUnit = <U extends DataUnit = DataUnit> (
     },
   ) as (U & CloneUnit)
 
-export const makePayloadUnit = <P extends Payload = Payload> (
+export const makePayloadUnit = <P extends any> (
   name: string,
   defaultPayload?: P,
+  // @ts-expect-error: Payload Vs Any
 ): PayloadUnit<P> => {
   const unit = makeDataUnit(name)
 
@@ -530,6 +534,7 @@ export const makePayloadUnit = <P extends Payload = Payload> (
     },
   })
 
+  // @ts-expect-error: Payload Vs Any
   return unit as PayloadUnit<P>
 }
 
