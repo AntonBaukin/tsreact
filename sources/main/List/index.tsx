@@ -12,7 +12,7 @@ const List: FC = () => {
 
   const { renderAt, windowFetcher } = useAccumulateData(
     slice,
-    (offset: number) => listFetch.dispatchSelf({ offset }),
+    (offset, limit) => listFetch.dispatchSelf({ offset, limit }),
     (p: Person) => <PersonItemMem key={p.uuid} person={p} />,
   )
 

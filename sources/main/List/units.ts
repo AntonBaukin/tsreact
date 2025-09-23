@@ -13,6 +13,7 @@ export const listPageInit = makeRouteChangeActUnit({
 
 interface ListFetch {
   offset: number,
+  limit?: number,
 }
 
 export const listFetch = makePayloadUnit(
@@ -26,10 +27,10 @@ export const listDoFetch = defineOnlyUnit({
 
   trigger(type: string, p: unknown) {
     expectTrue(type === 'list.Fetch')
-    const { offset } = p as ListFetch
+    const { offset, limit = 10 } = p as ListFetch
 
     fetchPersons.fetch({
-      query: { offset, limit: 10, sort: 'name', order: 'asc' },
+      query: { offset, limit, sort: 'name', order: 'asc' },
       body: {},
     })
   }

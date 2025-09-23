@@ -18,11 +18,18 @@ export type FetchUnitSlice<D, A extends any[], X> = {
   error: X | null,
   // The HTTP response headers (both, succeed or failed):
   headers: Headers | null,
+  // Payload only, reporting obsolete data:
+  obsolete?: boolean,
 }
 
 // Invoked for still actual request to produce Redux-compatible data:
 export type OnFetchError<X extends Payload> =
   (error: unknown, abortReason: any) => X | null | undefined | void
+
+export interface FetchUnitOptions<X extends Payload> {
+  onError?: OnFetchError<X>,
+  aborting?: boolean, // * = false
+}
 
 /**
  * The root unit created owns Redux data slice of type FetchUnitSlice.
@@ -42,7 +49,7 @@ const makeFetchUnitImpl = <
   dataSource: DataSource<D, A>,
   // Name of the root Data Unit — reports fetched data, owns the data slice:
   name: string,
-  onError?: OnFetchError<X>,
+  options?: FetchUnitOptions<X>,
 ) => {
   type LocalSlice = FetchUnitSlice<D, A, X>
 
@@ -70,7 +77,9 @@ const makeFetchUnitImpl = <
     initialState,
 
     reduceOwn(state: LocalSlice, payload: UnitPayload | null) {
-      Object.assign(state, isNil(payload) ? initialState() : payload)
+      if (!payload?.obsolete) {
+        Object.assign(state, isNil(payload) ? initialState() : payload)
+      }
     },
   })
 
@@ -106,8 +115,8 @@ const makeFetchUnitImpl = <
   const errorPayload = (e: unknown, abortReason: any): UnitPayload => {
     let error: X | null = null
 
-    if (onError) {
-      const x = onError(e, abortReason)
+    if (options?.onError) {
+      const x = options.onError(e, abortReason)
 
       if (!isNil(x) && x !== undefined) {
         error = x
@@ -146,7 +155,9 @@ const makeFetchUnitImpl = <
     unit.dispatch(unit, resetPayload)
 
     // Abort all now obsolete requests:
-    abortAll(resetPayload)
+    if (options?.aborting) {
+      abortAll(resetPayload)
+    }
 
     // Fetch the data
     const { result: pendingResult, abort } = dataSource(...args)
@@ -157,9 +168,10 @@ const makeFetchUnitImpl = <
     // Wait for the results:
     try {
       const result = await pendingResult
+      const obsolete = isRequestObsolete()
 
       // Check this request is still actual:
-      if(isRequestObsolete()) {
+      if(obsolete && options?.aborting) {
         return
       }
 
@@ -168,6 +180,7 @@ const makeFetchUnitImpl = <
           ...resetPayload,
           isLoading: false,
           success: true,
+          obsolete,
           headers: { ...result.headers },
           data: result.data,
         }
@@ -214,15 +227,15 @@ export const fetchUnitUnitilties = <
   > (
     name: string,
     dataSource: DataSource<D, A>,
-    onError?: OnFetchError<X>,
-    // @ts-expect-error: Payload type is not "ready" to be compatible with any object
+    options?: FetchUnitOptions<X>,
+    // @ts-expect-error: Payload Vs Any
   ): FetchUnit<S, G, D, A, X> => makeFetchUnitImpl (
     appContext,
     defineOwnUnit,
     // @ts-expect-error: Payload Vs Any
     dataSource,
     name,
-    onError,
+    options,
   )
 
   return { makeFetchUnit }

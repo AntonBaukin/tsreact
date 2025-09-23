@@ -4,6 +4,7 @@ import { isString } from 'sources/lodash'
 import { DispatchBase, StateBase } from 'sources/app'
 import { FetchUnit } from 'sources/fetch'
 import { Payload } from 'sources/unit'
+import { useEffectDebounce } from 'sources/co/hooks'
 import { DataSlice, QueryAndBody, QueryRange } from 'sources/main/api/types'
 import { AppDispatch } from './create'
 import { AppState } from './slices'
@@ -48,6 +49,7 @@ export const useAccumulateData = <D, A extends any[], R = void> (
   { isLoading, data, offset, limit }: DataSlice<D>,
   fetch: (offset: number, limit: number) => void,
   render: (item: D, ...args: A) => R | undefined,
+  debounce = 200,
 ) => {
   const [indexMap] = useState(new Map<number, D | undefined>())
 
@@ -67,21 +69,38 @@ export const useAccumulateData = <D, A extends any[], R = void> (
     return item ? render(item, ...args) : undefined
   }, [])
 
-  const windowFetcher = useCallback((offset: number, window: number) => {
-    let fetchAt = offset + window
+  type FetchAt = { offset: number, window: number }
+  const [fetchAt, setFetchAt] = useState<FetchAt>({ offset: 0, window: 1 })
+  const borderRef = useRef(offset + limit)
 
-    while (fetchAt > offset) {
-      if (indexMap.get(fetchAt)) {
-        fetchAt++
+  useEffectDebounce(debounce, () => {
+    const { offset, window } = fetchAt
+    let fAt = offset + window
+
+    while (fAt > offset) {
+      if (indexMap.get(fAt)) {
+        fAt++
         break
       } else {
-        fetchAt--
+        fAt--
       }
     }
 
-    if (!indexMap.get(fetchAt)) {
-      fetch(fetchAt, limit)
+    if (indexMap.get(fAt)) {
+      return
     }
+
+    if (fAt > borderRef.current) {
+      borderRef.current = fAt + window + 1
+      fetch(fAt, window)
+      // DEBUG!!!
+      setTimeout(() => fetch(fAt + 20, window), 2)
+    }
+
+  }, [fetchAt.offset, fetchAt.window])
+
+  const windowFetcher = useCallback((offset: number, window: number) => {
+    setFetchAt({ offset, window })
   }, [])
 
   return { getAt, renderAt, windowFetcher }

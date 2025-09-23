@@ -36,14 +36,27 @@ const Everscroll: FC<EverscrollProps> = ({
     const s = stateRef.current
     const { clientWidth: W, clientHeight: H } = view
 
-    s.W = W
-    s.H = H
-
     if (!W || !H) {
       return
     }
 
-    console.log('L>', stateRef.current)
+    const isSame = (a: number, b: number) => Math.abs(a - b) < 2
+
+    // Viewport dimensions have changed?
+    if (isSame(s.W, W) && isSame(s.H, H)) {
+      if (s.task === Task.NIL) {
+        return
+      }
+    } else {
+      s.W = W
+      s.H = H
+
+      if (s.task === Task.NIL) {
+        s.task = Task.INV
+      }
+    }
+
+    console.log('R>', s)
 
     const itemsStats = () => {
       let [n, sArea, sW, sH] = [0, 0, 0, 0]
@@ -67,20 +80,6 @@ const Everscroll: FC<EverscrollProps> = ({
       return n ? Math.round(W * H * n / sArea) : 0
     }
 
-    if (s.task === Task.WND) {
-      s.task = Task.NIL
-
-      const window = approxWindow()
-
-      if (window > s.window) {
-        fetcher?.(s.offset + s.window, window, 0)
-        s.window = window
-        incLayout()
-      }
-
-      return
-    }
-
     const avgItem = (stats = itemsStats()) => {
       const { n, sW, sH } = stats
       const iW = sW / (n || 1)
@@ -89,48 +88,37 @@ const Everscroll: FC<EverscrollProps> = ({
       return { iW, iH }
     }
 
-    if (s.task === Task.IND) {
+    if (s.task === Task.INV) {
       s.task = Task.NIL
 
       const stats = itemsStats()
-      const window = approxWindow(stats)
-      const { iW, iH } = avgItem(stats)
-      let inc = false
+      const window = approxWindow()
 
+      // Viewport capacity became larger?
       if (window > s.window) {
+        fetcher?.(s.offset + s.window, window, 0)
         s.window = window
-        inc = true
-      }
-
-      if (inc) {
         incLayout()
+        return
       }
 
-      // console.log({ iW, iH, window })
+      // const { iW, iH } = avgItem(stats)
     }
 
   }, [])
 
-  const setGridNode = useCallback((grid: HTMLDivElement | null) => {
-    gridRef.current = grid
+  // console.log('S>', stateRef.current)
 
-    if (!grid) {
-      return
-    }
-
-    // Nothing is rendered yet?
-    if (grid.firstChild) {
-      return
-    }
-
+  // Processing initial state?
+  if(stateRef.current.task === Task.INI) {
     const s = stateRef.current
+    const grid = gridRef.current
 
-    // First render?
-    if (s.task === Task.INI) {
-      s.task = Task.WND
-      incLayout()
+    // Rendered just one item?
+    if (grid?.firstChild && grid.firstChild === grid.lastChild) {
+      s.task = Task.INV
     }
-  }, [])
+  }
 
   useLayoutEffectDebounce(debounce, doLayout, [layoutIndex])
 
@@ -138,7 +126,7 @@ const Everscroll: FC<EverscrollProps> = ({
     const s = stateRef.current
 
     if (s.task === Task.NIL) {
-      s.task = Task.IND
+      s.task = Task.INV
     }
 
     incLayout()
@@ -150,7 +138,7 @@ const Everscroll: FC<EverscrollProps> = ({
   return (
     <div ref={viewRef} className={className}>
       <div style={topStyle} />
-      <div ref={setGridNode} className={classNameGrid}>
+      <div ref={gridRef} className={classNameGrid}>
         {renderRange(stateRef.current).map(i => children(i, layoutIndex))}
       </div>
       <div style={bottomStyle} />
@@ -159,11 +147,11 @@ const Everscroll: FC<EverscrollProps> = ({
 }
 
 enum Task {
-  // Initial render:
+  // Initial render of a single item:
   INI = 'initial',
-  // Approximate the window:
-  WND = 'window',
-  IND = 'index',
+  // Invalidate the layout, approximate the window:
+  INV = 'invalidate',
+  // Stale...
   NIL = 'nil',
 }
 

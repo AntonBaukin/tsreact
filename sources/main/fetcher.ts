@@ -5,7 +5,12 @@ import { axiosFetcher } from 'sources/fetch'
 
 const apiUrl = expectString(config.servers.api)
 
-const apiFetcher = axiosFetcher(axios.create({ baseURL: apiUrl, timeout: 500 }))
+const apiFetcher = axiosFetcher(
+  axios.create({
+    baseURL: apiUrl,
+    timeout: 4000,
+  }),
+)
 
 // TODO Wrap apiFetcher instance with QoS fallbacks
 export default apiFetcher
