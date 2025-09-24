@@ -3,24 +3,24 @@ import { Header } from 'sources/co/typo'
 import { Everscroll, Text } from 'sources/co'
 import { Person } from 'sources/main/api/types'
 import { useAccumulateData, useSelectDataRange } from 'sources/main/store/hooks'
-import { fetchPersons, listFetch } from './units'
+import { fetchPersons, fetchPersonsAccum, listFetch } from './units'
 import styles from './styles.module.scss'
 
 const List: FC = () => {
-  const slice = useSelectDataRange(fetchPersons)
+  const { isLoading, total } = useSelectDataRange(fetchPersons)
   const [renderIndex, setRenderIndex] = useState(0);
 
   const { renderAt, windowFetcher } = useAccumulateData(
-    slice,
+    fetchPersonsAccum,
     (offset, limit) => listFetch.dispatchSelf({ offset, limit }),
     (p: Person) => <PersonItemMem key={p.uuid} person={p} />,
   )
 
   useEffect(() => {
-    if (!slice.isLoading) {
+    if (!isLoading) {
       setRenderIndex(i => i + 1)
     }
-  }, [slice.isLoading])
+  }, [isLoading])
 
   return (
     <>
@@ -30,7 +30,7 @@ const List: FC = () => {
 
       <div className={styles.personsContainer}>
         <Everscroll
-          total={slice.total}
+          total={total}
           fetcher={windowFetcher}
           renderIndex={renderIndex}
           className={styles.personsList}

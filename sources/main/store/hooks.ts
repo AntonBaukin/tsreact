@@ -1,10 +1,8 @@
 import { useMemo, useCallback, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { isString } from 'sources/lodash'
-import { DispatchBase, StateBase } from 'sources/app'
-import { FetchUnit } from 'sources/fetch'
-import { Payload } from 'sources/unit'
 import { useEffectDebounce } from 'sources/co/hooks'
+import { AccumExtractor, AccumUnit, FetchUnit, FetchUnitSlice } from 'sources/fetch'
 import { DataSlice, QueryAndBody, QueryRange } from 'sources/main/api/types'
 import { AppDispatch } from './create'
 import { AppState } from './slices'
@@ -45,36 +43,46 @@ export const useSelectDataRange = <
   ])
 }
 
+export const makeAccumExtractor = <D>(): AccumExtractor<D> => (p: unknown) => {
+  const { data, args } = p as FetchUnitSlice<D[], any[], any>
+
+  if (Array.isArray(data)) {
+    const { query } = args?.[0] as QueryAndBody<QueryRange<any>, any>
+    const { offset } = query ?? {}
+
+    if (Number.isFinite(offset)) {
+      return { data, offset }
+    }
+  }
+
+  return { data: undefined, offset: 0 }
+}
+
 export const useAccumulateData = <D, A extends any[], R = void> (
-  { isLoading, data, offset, limit }: DataSlice<D>,
+  accumUnit: AccumUnit<AppState, AppDispatch, D>,
   fetch: (offset: number, limit: number) => void,
   render: (item: D, ...args: A) => R | undefined,
   debounce = 200,
 ) => {
-  const [indexMap] = useState(new Map<number, D | undefined>())
 
-  if (!isLoading && data && offset >= 0) {
-    for (let i = 0; i < data.length; i++) {
-      indexMap.set(offset + i, data[i])
-    }
-  }
-
-  const getAt = useCallback((i: number) => indexMap.get(i), [])
+  const getAt = useCallback((i: number) => accumUnit.indexMap.get(i), [])
 
   const renderRef = useRef(render)
   renderRef.current = render
 
   const renderAt = useCallback((i: number, ...args: A): R | undefined => {
-    const item = indexMap.get(i)
+    const item = accumUnit.indexMap.get(i)
     return item ? render(item, ...args) : undefined
   }, [])
 
   type FetchAt = { offset: number, window: number }
   const [fetchAt, setFetchAt] = useState<FetchAt>({ offset: 0, window: 1 })
-  const borderRef = useRef(offset + limit)
+  const borderRef = useRef(0)
 
   useEffectDebounce(debounce, () => {
+    const indexMap = accumUnit.indexMap
     const { offset, window } = fetchAt
+
     let fAt = offset + window
 
     while (fAt > offset) {
@@ -90,11 +98,10 @@ export const useAccumulateData = <D, A extends any[], R = void> (
       return
     }
 
-    if (fAt > borderRef.current) {
+    const border = borderRef.current
+    if (fAt > border) {
       borderRef.current = fAt + window + 1
       fetch(fAt, window)
-      // DEBUG!!!
-      setTimeout(() => fetch(fAt + 20, window), 2)
     }
 
   }, [fetchAt.offset, fetchAt.window])

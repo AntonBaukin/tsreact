@@ -172,13 +172,16 @@ const initialState: State = {
 }
 
 const renderRange = (s: State): number[] => {
-  if (s.window <= 0) {
-    return []
+  if (s.task === Task.INI) {
+    return [0] //<-- render single element
   }
 
-  const r = new Array(s.window)
-  for (let i = 0; i < s.window; i++) {
-    r[i] = s.offset + i
+  const b = Math.max(0, s.offset - s.window)
+  const e = s.offset + 2 * s.window
+  const r = new Array(e - b)
+
+  for (let i = b; i < e; i++) {
+    r[i] = i
   }
 
   return r

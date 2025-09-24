@@ -362,8 +362,6 @@ export interface DefineUnit <
   S extends StateBase,
   // Application dispatcher type:
   D extends DispatchBase = DispatchBase,
-  // Extension fields:
-  E extends object = {},
 > {
   name: string, // i.e. type of Redux action
 
@@ -386,8 +384,7 @@ export interface UnitBuilder <
 export interface DefineOnlyUnit <
   S extends StateBase,
   D extends DispatchBase = DispatchBase,
-  E extends object = {},
-> extends DefineUnit<S, D, E> {
+> extends DefineUnit<S, D> {
   isOnlyUnit?: () => boolean,
 }
 
@@ -407,7 +404,6 @@ export interface DefineGlobalUnit <
   D extends DispatchBase = DispatchBase,
   // Type of payload that receives the reducer:
   P extends Payload = Payload,
-  E extends object = {},
 > extends DefineUnit<S, D> {
   // This reducer updates the global state via Immer draft:
   reduceGlobal: (draft: S, payload: P | null) => void,
@@ -441,7 +437,6 @@ export interface DefineSliceUnit <
   K extends keyof S,
   D extends DispatchBase = DispatchBase,
   P extends Payload = Payload,
-  E extends object = {},
 > extends DefineUnit<S, D> {
   // The name of the slice:
   slice: K,
@@ -478,7 +473,6 @@ export interface DefineOwnUnit <
   X extends Payload,
   D extends DispatchBase = DispatchBase,
   P extends Payload = Payload,
-  E extends object = {},
 > extends DefineUnit<S, D> {
   // The initial state is required:
   initialState: X | (() => X),

@@ -1,6 +1,11 @@
 import { isEqual, isNil } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
-import { UnitUtilities, DefineOwnUnitUtility, Payload } from 'sources/unit'
+import {
+  UnitUtilities,
+  DefineOwnUnitUtility,
+  Payload,
+  DefineOnlyUnitUtility, DataUnit,
+} from 'sources/unit'
 import { Abort, DataSource, Headers } from './types'
 
 export type FetchUnitSlice<D, A extends any[], X> = {
@@ -213,12 +218,66 @@ export type FetchUnit <
   X extends Payload = Payload,
 > = ReturnType<typeof makeFetchUnit<S, G, D, A, X>>
 
+export interface AccumData<D> {
+  data: (D | undefined)[] | undefined,
+  offset: number,
+}
+
+export type AccumExtractor<D> =
+  (payload: unknown, type: string, unit?: DataUnit) => AccumData<D>
+
+/**
+ * Acts on fetch results of ranged queries, and maps the index
+ * corresponding to the data offset to the entities.
+ *
+ * Warning. This unit works as the data cache.
+ * It doesn't store anything in Redux!
+ *
+ * The unit has 'indexMap' Map: index => optional entity.
+ * Hint: there may be holes in the data.
+ */
+const makeAccumUnitImpl = <
+  S extends StateBase,
+  G extends DispatchBase,
+  D,
+> (
+  appContext: AppContext<S, G>,
+  defineOnlyUnit: DefineOnlyUnitUtility<S, G>,
+  name: string,
+  actsOnFetch: string | DataUnit | Array<string | DataUnit>,
+  extractor: AccumExtractor<D>,
+) => {
+  const indexMap = new Map<number, D | undefined>()
+
+  const actsOn = () => Array.isArray(actsOnFetch) ? actsOnFetch : [actsOnFetch]
+
+  const trigger = (type: string, payload: unknown, unit?: DataUnit) => {
+    const { data, offset } = extractor(payload, type, unit)
+
+    if (data && offset >= 0) {
+      for (let i = 0; i < data.length; i++) {
+        indexMap.set(offset + i, data[i])
+      }
+    }
+  }
+
+  return defineOnlyUnit({ name, actsOn, trigger, indexMap }).dataUnit
+}
+
+export const makeAccumUnit = makeAccumUnitImpl
+
+export type AccumUnit <
+  S extends StateBase,
+  G extends DispatchBase,
+  D,
+> = ReturnType<typeof makeAccumUnit<S, G, D>>
+
 export const fetchUnitUnitilties = <
   S extends StateBase,
   G extends DispatchBase = DispatchBase
 > (
   appContext: AppContext<S, G>,
-  { defineOwnUnit }: UnitUtilities<S, G>,
+  { defineOnlyUnit, defineOwnUnit }: UnitUtilities<S, G>,
 ) => {
   const makeFetchUnit = <
     D extends any,
@@ -238,5 +297,17 @@ export const fetchUnitUnitilties = <
     options,
   )
 
-  return { makeFetchUnit }
+  const makeAccumUnit = <D extends any > (
+    name: string,
+    actsOnFetch: string | DataUnit | Array<string | DataUnit>,
+    extractor: AccumExtractor<D>,
+  ): AccumUnit<S, G, D> => makeAccumUnitImpl (
+    appContext,
+    defineOnlyUnit,
+    name,
+    actsOnFetch,
+    extractor,
+  )
+
+  return { makeFetchUnit, makeAccumUnit }
 }

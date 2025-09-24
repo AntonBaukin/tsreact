@@ -117,7 +117,7 @@ export const unitUtilities = <
   appContext: AppContext<S, D>,
   onAsyncError?: (error: unknown) => void,
 ) => {
-  const initDataUnit = <E extends object> (
+  const initDataUnit = <E = {}> (
     definition: DefineUnit<S, D>,
     fields: string[]
   ): DataUnit & E => {
@@ -158,8 +158,8 @@ export const unitUtilities = <
     })
   }
 
-  const defineUnit = <E extends object = {}> (
-    definition: DefineUnit<S, D, E>,
+  const defineUnit = <E = {}> (
+    definition: DefineUnit<S, D> & E,
   ): UnitBuilder<S, D, DataUnit & E> => {
     const fields: string[] = []
     const unit = initDataUnit<E>(definition, fields)
@@ -173,8 +173,8 @@ export const unitUtilities = <
     }
   }
 
-  const defineOnlyUnit = <E extends object = {}> (
-    definition: DefineOnlyUnit<S, D, E>,
+  const defineOnlyUnit = <E = {}> (
+    definition: DefineOnlyUnit<S, D> & E,
   ): OnlyUnitBuilder<S, D, OnlyUnit & E> => {
     const fields: string[] = []
     const unit = initDataUnit<OnlyUnit & E>(definition, fields)
@@ -260,11 +260,8 @@ export const unitUtilities = <
     Object.assign(builder, { select })
   }
 
-  const defineGlobalUnit = <
-    P extends Payload = Payload,
-    E extends object = {},
-  > (
-    definition: DefineGlobalUnit<S, D, P, E>,
+  const defineGlobalUnit = <P extends Payload = Payload, E = {}> (
+    definition: DefineGlobalUnit<S, D, P> & E,
   ): GlobalUnitBuilder<S, D, P, ReduceUnit<S, S, P> & E> => {
     const fields: string[] = []
     const unit = initDataUnit<ReduceUnit<S, S, P> & E>(definition, fields)
@@ -298,9 +295,9 @@ export const unitUtilities = <
   const defineSliceUnit = <
     K extends keyof S,
     P extends Payload = Payload,
-    E extends object = {},
+    E = {},
   > (
-    definition: DefineSliceUnit<S, K, D, P, E>,
+    definition: DefineSliceUnit<S, K, D, P> & E,
   ): SliceUnitBuilder<S, K, D, P, ReduceUnit<S, S[K], P> & E> => {
     const fields: string[] = []
     const unit = initDataUnit<ReduceUnit<S, S[K], P> & E>(definition, fields)
@@ -334,9 +331,9 @@ export const unitUtilities = <
   const defineOwnUnit = <
     X extends Payload,
     P extends Payload = Payload,
-    E extends object = {},
+    E = {},
   > (
-    definition: DefineOwnUnit<S, X, D, P, E>,
+    definition: DefineOwnUnit<S, X, D, P> & E,
   ): OwnUnitBuilder<S, X, D, P, ReduceUnit<S, X, P> & E> => {
     const fields: string[] = []
     const unit = initDataUnit<ReduceUnit<S, X, P> & E>(definition, fields)

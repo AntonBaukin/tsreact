@@ -1,10 +1,18 @@
 import { expectTrue } from 'sources/asserts'
-import { defineOnlyUnit, makeFetchUnit } from 'sources/main/context'
-import { makeRouteChangeActUnit } from 'sources/main/routes'
-import { personsSource } from 'sources/main/data'
 import { makePayloadUnit } from 'sources/unit'
+import { makeRouteChangeActUnit } from 'sources/main/routes'
+import { defineOnlyUnit, makeFetchUnit, makeAccumUnit } from 'sources/main/context'
+import { makeAccumExtractor } from 'sources/main/store/hooks'
+import { Person } from 'sources/main/api/types'
+import { personsSource } from 'sources/main/data'
 
 export const fetchPersons = makeFetchUnit('fetchPersons', personsSource)
+
+export const fetchPersonsAccum = makeAccumUnit(
+  'fetchPersonsAccum',
+  fetchPersons,
+  makeAccumExtractor<Person>(),
+)
 
 export const listPageInit = makeRouteChangeActUnit({
   name: 'list.PageInit',
@@ -41,6 +49,8 @@ export const listInitialFetch = defineOnlyUnit({
   actsOn: () => [listPageInit],
 
   trigger() {
-    listFetch.dispatchIt()
+    if (!fetchPersonsAccum.indexMap.get(0)) {
+      listFetch.dispatchIt()
+    }
   }
 }).dataUnit

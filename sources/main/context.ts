@@ -24,6 +24,7 @@ const {
 
 const {
   makeFetchUnit,
+  makeAccumUnit,
 } = fetchUnitUnitilties(appContext, uu)
 
 export {
@@ -36,4 +37,5 @@ export {
   defineSliceUnit,
   defineOwnUnit,
   makeFetchUnit,
+  makeAccumUnit,
 }
