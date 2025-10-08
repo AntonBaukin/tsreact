@@ -14,6 +14,7 @@ const List: FC = () => {
     fetchPersonsAccum,
     (offset, limit) => listFetch.dispatchSelf({ offset, limit }),
     (p: Person) => <PersonItemMem key={p.uuid} person={p} />,
+    { total },
   )
 
   useEffect(() => {
@@ -35,6 +36,7 @@ const List: FC = () => {
           renderIndex={renderIndex}
           className={styles.personsList}
           classNameGrid={styles.personsListGrid}
+          classNameEnd={styles.personsListEnd}
         >
           {renderAt}
         </Everscroll>

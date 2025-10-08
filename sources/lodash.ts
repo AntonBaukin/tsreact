@@ -67,3 +67,21 @@ export const deepDiff = (prev: any, next: any) => {
 
   return isEmpty(diff) ? undefined : diff
 }
+
+/**
+ * Returns array of indexes in [b, e) — end excluded.
+ */
+export const iRange = (b: number, e: number): number[] => {
+  if (b >= e) {
+    return []
+  }
+
+  const l = e - b
+  const r = new Array(l)
+
+  for (let i = 0; i < l; i++) {
+    r[i] = b + i
+  }
+
+  return r
+}
