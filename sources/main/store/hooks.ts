@@ -72,9 +72,9 @@ export const useAccumulateData = <D, A extends any[], R = void> (
   accumUnit: AccumUnit<AppState, AppDispatch, D>,
   fetch: (offset: number, limit: number) => void,
   render: (item: D, ...args: A) => R | undefined,
-  options?: { total?: number, debounce?: number },
+  options?: { total?: number, debounce?: number, minLimit?: number },
 ) => {
-  const { total, debounce = 32 * 8 } = options ?? {}
+  const { total, debounce = 32 * 8, minLimit = 0 } = options ?? {}
 
   const getAt = useCallback((i: number) => accumUnit.indexMap.get(i), [])
 
@@ -145,7 +145,7 @@ export const useAccumulateData = <D, A extends any[], R = void> (
       return
     }
 
-    end = Math.max(end, begin + window)
+    end = Math.max(end, begin + Math.max(window, minLimit))
 
     // Mark requested items as pending:
     iRange(begin, end).forEach(i => pendingAts.add(i))

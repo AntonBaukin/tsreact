@@ -32,10 +32,12 @@ export const listFetch = makePayloadUnit(
 export const listDoFetch = defineOnlyUnit({
   name: 'list.DoFetch',
   actsOn: () => [listFetch],
+  minLimit: 10,
 
   trigger(type: string, p: unknown) {
     expectTrue(type === 'list.Fetch')
-    const { offset, limit = 10 } = p as ListFetch
+    const { minLimit } = this
+    const { offset, limit = minLimit } = p as ListFetch
 
     fetchPersons.fetch({
       query: { offset, limit, sort: 'name', order: 'asc' },

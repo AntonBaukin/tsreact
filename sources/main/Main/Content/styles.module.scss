@@ -55,4 +55,10 @@
       }
     }
   }
+
+  @include mixins.tablet {
+    .pagelayout {
+      grid-template-columns: var(--m) 1fr var(--m);
+    }
+  }
 }

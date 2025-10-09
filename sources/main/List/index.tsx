@@ -3,7 +3,7 @@ import { Header } from 'sources/co/typo'
 import { Everscroll, Text } from 'sources/co'
 import { Person } from 'sources/main/api/types'
 import { useAccumulateData, useSelectDataRange } from 'sources/main/store/hooks'
-import { fetchPersons, fetchPersonsAccum, listFetch } from './units'
+import { fetchPersons, fetchPersonsAccum, listFetch, listDoFetch } from './units'
 import styles from './styles.module.scss'
 
 const List: FC = () => {
@@ -14,7 +14,7 @@ const List: FC = () => {
     fetchPersonsAccum,
     (offset, limit) => listFetch.dispatchSelf({ offset, limit }),
     (p: Person) => <PersonItemMem key={p.uuid} person={p} />,
-    { total },
+    { total, minLimit: listDoFetch.minLimit },
   )
 
   useEffect(() => {

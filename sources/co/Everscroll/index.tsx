@@ -7,7 +7,6 @@ import {
   useLayoutEffect,
   useMemo,
 } from 'react'
-import cn from 'classnames'
 import { iRange } from 'sources/lodash'
 import { useLayoutEffectDebounce } from 'sources/co/hooks'
 import { EverscrollProps } from './types'
@@ -142,6 +141,9 @@ const Everscroll: FC<EverscrollProps> = ({
     }
   }, [])
 
+  // (Do not effect on total change:)
+  stateRef.current.total = total
+
   // Processing initial state?
   if(stateRef.current.task === Task.INI) {
     const s = stateRef.current
@@ -164,9 +166,6 @@ const Everscroll: FC<EverscrollProps> = ({
 
     incLayout()
   }, [renderIndex])
-
-  // Do not effect on total change:
-  stateRef.current.total = total
 
   const bounds = renderBounds(stateRef.current)
   const indexesToDisplay = renderRange(stateRef.current, bounds)
@@ -203,14 +202,12 @@ const Everscroll: FC<EverscrollProps> = ({
   return (
     <div ref={viewRef} className={className} onScroll={onScroll}>
       <div style={scrollHeightStyle} />
-      <div
-        ref={gridRef}
-        style={gridStyle}
-        className={cn(classNameGrid, isAllDisplayed && classNameEnd)}
-      >
+
+      <div ref={gridRef} style={gridStyle} className={classNameGrid}>
         {indexesToDisplay.map(i => children(i, layoutIndex))}
-        {isAllDisplayed && classNameEnd && <div className={classNameEnd} />}
       </div>
+
+      {isAllDisplayed && classNameEnd && <div  className={classNameEnd} />}
     </div>
   )
 }

@@ -20,7 +20,7 @@ export interface EverscrollProps {
   fetcher?: WindowFetcher,
   className?: string,
   classNameGrid?: string,
-  // Class applied to the grid container when the list is at the end:
+  // Class of div node added after the grid when the list is at the end:
   classNameEnd?: string,
   // Increment render index to reflow the elements when the data are changed.
   // It's also required as the component itself doesn't track it's dimensions.
