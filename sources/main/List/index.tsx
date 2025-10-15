@@ -1,8 +1,9 @@
-import React, { FC, useState, useEffect } from 'react'
+import React, { FC, useState, useEffect, useCallback } from 'react'
 import { Header } from 'sources/co/typo'
 import { Everscroll, Text } from 'sources/co'
 import { Person } from 'sources/main/api/types'
 import { useAccumulateData, useSelectDataRange } from 'sources/main/store/hooks'
+import { menuUnit } from 'sources/main/Main/units'
 import { fetchPersons, fetchPersonsAccum, listFetch, listDoFetch } from './units'
 import styles from './styles.module.scss'
 
@@ -23,6 +24,10 @@ const List: FC = () => {
     }
   }, [isLoading])
 
+  const onScroll = useCallback((row: number) => {
+    menuUnit.setCompact(row > 1)
+  }, []);
+
   return (
     <>
       <Header size="2">
@@ -37,6 +42,7 @@ const List: FC = () => {
           className={styles.personsList}
           classNameGrid={styles.personsListGrid}
           classNameEnd={styles.personsListEnd}
+          onScroll={onScroll}
         >
           {renderAt}
         </Everscroll>

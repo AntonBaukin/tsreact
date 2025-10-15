@@ -1,5 +1,5 @@
-import { Draft } from 'immer'
 import { UnknownAction } from 'redux'
+import { Draft, Immutable } from 'immer'
 import { isArrayLike, isFunction, isObject, isString } from 'sources/lodash'
 import { AppContext, DispatchBase, StateBase } from 'sources/app'
 
@@ -238,6 +238,8 @@ export interface ReduceUnit <
    */
   readonly initialState?: X | (() => X),
 
+  get currentState(): Immutable<X>,
+
   /**
    * Pure function (as required by Redux).
    *
@@ -258,6 +260,8 @@ export interface ReduceUnit <
    * @returns optional, returns the new state, or updates the state proxy.
    */
   reduce(draft: Draft<X>, payload: P | null): X | void,
+
+  readonly dispatchSelf: (payload: P) => void,
 }
 
 export const isReduceUnit = <S extends any = StateBase, U extends any = S> (

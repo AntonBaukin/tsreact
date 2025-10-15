@@ -5,7 +5,16 @@
     padding: var(--s) 0 var(--l);
 
     @include mixins.narrow {
+      overflow: hidden;
       padding-top: var(--m);
+      max-height: 100%;
+      transition: all 0.4s;
+
+      &.compact {
+        padding: var(--m) 0 0 0;
+        max-height: 0;
+        opacity: 0;
+      }
     }
   }
 

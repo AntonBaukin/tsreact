@@ -274,6 +274,7 @@ export const unitUtilities = <
       'reduceUnit', // also include general fields...
       'slice',
       'initialState',
+      'currentState',
       'reduce',
       'reduceGlobal',
       'payload',
@@ -284,6 +285,12 @@ export const unitUtilities = <
         return unit
       }
     }
+
+    Object.defineProperty(unit, 'currentState', {
+      get() {
+        return appContext.state
+      },
+    })
 
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)
@@ -321,6 +328,12 @@ export const unitUtilities = <
       }
     }
 
+    Object.defineProperty(unit, 'currentState', {
+      get() {
+        return get(appContext.state, slice)
+      },
+    })
+
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)
     initSelect<S, typeof unit>(unit, builder)
@@ -338,7 +351,7 @@ export const unitUtilities = <
     const fields: string[] = []
     const unit = initDataUnit<ReduceUnit<S, X, P> & E>(definition, fields)
 
-    const { reduceOwn: reduce, initialState, payload } = definition
+    const { name, reduceOwn: reduce, initialState, payload } = definition
     Object.assign(unit, { reduceUnit: symReduceUnit, slice: true, initialState, reduce })
     initPayloadUnit(unit, fields, payload)
 
@@ -356,6 +369,14 @@ export const unitUtilities = <
         return unit
       }
     }
+
+    Object.defineProperty(unit, 'currentState', {
+      get() {
+        return get(appContext.state, name) ?? (
+          isFunction(initialState) ? initialState() : (initialState ?? {})
+        )
+      },
+    })
 
     assignExt(unit, definition, fields)
     initDispatchSelf<typeof unit, P>(unit, builder)

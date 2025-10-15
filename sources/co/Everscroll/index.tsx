@@ -18,6 +18,7 @@ const Everscroll: FC<EverscrollProps> = ({
   className,
   classNameGrid,
   classNameEnd,
+  onScroll,
   renderIndex = 0,
   debounce = 32,
 }) => {
@@ -128,11 +129,17 @@ const Everscroll: FC<EverscrollProps> = ({
           s.offset = scrollRow * cols
           fetcher?.(s.offset, window, 0)
         }
+
+        if (onScroll && scrollRow !== s.scrollResponded) {
+          const totalRows = Math.ceil(s.total / cols)
+          s.scrollResponded = scrollRow
+          onScroll(scrollRow, totalRows)
+        }
       }
     }
-  }, [fetcher])
+  }, [fetcher, onScroll])
 
-  const onScroll = useCallback(() => {
+  const onScrollView = useCallback(() => {
     const s = stateRef.current
 
     if (s.task === Task.NIL) {
@@ -200,7 +207,7 @@ const Everscroll: FC<EverscrollProps> = ({
   }), [gridTop])
 
   return (
-    <div ref={viewRef} className={className} onScroll={onScroll}>
+    <div ref={viewRef} className={className} onScroll={onScrollView}>
       <div style={scrollHeightStyle} />
 
       <div ref={gridRef} style={gridStyle} className={classNameGrid}>
@@ -232,6 +239,7 @@ type State = {
   iW: number,
   W: number,
   H: number,
+  scrollResponded: number,
 }
 
 const initialState: State = {
@@ -244,6 +252,7 @@ const initialState: State = {
   iW: 0,
   W: 0,
   H: 0,
+  scrollResponded: 0,
 }
 
 const renderBounds = (s: State): [number, number] => {
